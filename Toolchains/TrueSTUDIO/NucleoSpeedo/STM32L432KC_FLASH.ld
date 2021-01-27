@@ -1,0 +1,1 @@
+../../.cubemx/TrueSTUDIO/NucleoSpeedo/STM32L432KC_FLASH.ld

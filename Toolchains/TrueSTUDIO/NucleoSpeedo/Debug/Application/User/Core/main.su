@@ -1,0 +1,12 @@
+main.c:117:5:main	304	dynamic
+main.c:312:6:SystemClock_Config	184	static
+main.c:371:13:MX_NVIC_Init	8	static
+main.c:382:6:vTaskCode	16	static
+main.c:387:6:WgtMainSpeedCb	16	static
+main.c:392:6:ScreenLogoShowCb	16	static
+main.c:398:6:ScreenMainShowCb	16	static
+main.c:404:6:ScreenLogoHideCb	16	static
+main.c:409:6:DisplayInitCb	16	static
+main.c:466:6:HAL_TIM_IC_CaptureCallback	32	static
+main.c:507:6:HAL_TIM_PeriodElapsedCallback	16	static
+main.c:534:6:Error_Handler	4	static

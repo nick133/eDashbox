@@ -1,0 +1,5 @@
+omgui.c:17:6:omDisplayInit	16	static
+omgui.c:25:6:omDisplayDeInit	16	static
+omgui.c:31:6:omScreenSelect	16	static
+omgui.c:48:6:_omScreenInit	24	static
+omgui.c:65:6:omScreenIsActive	16	static

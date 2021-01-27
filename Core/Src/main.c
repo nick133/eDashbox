@@ -260,8 +260,8 @@ int main(void)
   ssd1306_SetCursor(0, 0);
   ssd1306_WriteString("Test: FreeRTOS", Font_7x10, White);
   ssd1306_UpdateScreen();
+
 //  ssd1306_DrawPixel(12, 30, White);
-//  ssd1306_UpdateScreen();
 
 //  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
 

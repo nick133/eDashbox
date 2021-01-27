@@ -119,12 +119,12 @@
 		<link>
 			<name>Application/TrueSTUDIO/startup_stm32l432xx.s</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/startup_stm32l432xx.s</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/_cubemx/TrueSTUDIO/startup_stm32l432xx.s</locationURI>
 		</link>
 		<link>
 			<name>Application/TrueSTUDIO/syscalls.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/syscalls.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/_cubemx/TrueSTUDIO/syscalls.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/Core</name>

@@ -65,7 +65,7 @@
 
 /* USER CODE BEGIN PV */
 ConfigSettingsT config;
-SensorsDataT sensdata;/
+SensorsDataT sensdata;
 
 volatile uint8_t u8_RPM_State = IDLE;
 volatile uint32_t u32_RPM_T1 = 0;
@@ -155,7 +155,7 @@ int main(void)
     vTaskDelete( xHandle );
   }
 
-  //vTaskStartScheduler();
+  vTaskStartScheduler();
 
   /* USER CODE END 2 */
 

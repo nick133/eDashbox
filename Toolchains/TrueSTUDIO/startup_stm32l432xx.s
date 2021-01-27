@@ -1,1 +1,0 @@
-../.cubemx/TrueSTUDIO/startup_stm32l432xx.s

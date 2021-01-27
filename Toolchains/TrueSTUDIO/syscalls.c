@@ -1,1 +1,0 @@
-../.cubemx/TrueSTUDIO/syscalls.c

@@ -12,3 +12,4 @@ echo "==> Creating firmware.."
 arm-atollic-eabi-objcopy -v -O ihex "$elf" "${proj}.hex"
 arm-atollic-eabi-objcopy -v -O binary "$elf" "${proj}.bin"
 
+stat --format="%n: %s bytes" "${proj}.hex" "${proj}.bin"

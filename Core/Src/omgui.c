@@ -46,6 +46,7 @@ Bool omScreenSelect(omScreenT *screen)
   return True;
 }
 
+
 void _omScreenInit(omScreenT *screen)
 {
   if (screen->ShowCallback != NULL)
@@ -66,4 +67,10 @@ void _omScreenInit(omScreenT *screen)
 Bool omScreenIsActive(omScreenT *screen)
 {
   return (screen->Display->Screen->Id == screen->Id) ? True : False;
+}
+
+
+void omBitmapLoad(omBitmapT *bitmap)
+{
+  return;
 }

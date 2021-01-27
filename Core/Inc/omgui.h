@@ -12,8 +12,10 @@
 
 #include "stm32l4xx_hal.h"
 
-
+#ifndef CAMELCASE_BOOL_T
+#define CAMELCASE_BOOL_T
 typedef enum { False, True } Bool;
+#endif
 
 typedef struct omDisplay omDisplayT;
 typedef struct omScreen omScreenT;
@@ -54,8 +56,9 @@ struct omWidget {
 struct omBitmap {
   uint16_t Width, Height;
   uint32_t *RawData;
-  Bool Transparency;
-  uint32_t TransparencyColor;
+  uint16_t ColorsNumOf;
+  Bool IsAlpha;
+  uint32_t AlphaColor;
 };
 
 // Public methods

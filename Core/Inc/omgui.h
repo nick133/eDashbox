@@ -10,11 +10,10 @@
 #ifndef _OMGUI_H_
 #define _OMGUI_H_
 
-#include "main.h"
+#include "stm32l4xx_hal.h"
 
 
 typedef enum { False, True } Bool;
-
 
 typedef struct omDisplay omDisplayT;
 typedef struct omScreen omScreenT;

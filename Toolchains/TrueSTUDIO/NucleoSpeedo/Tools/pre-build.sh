@@ -4,6 +4,7 @@
 # pre-build.sh ${BuildArtifactFileBaseName}
 #
 
-#nimble release
- 
 echo "==> Pre-Build script entered for $1"
+
+cd ../Tools/pgm2c
+nimble build

@@ -39,7 +39,6 @@ extern "C" {
 /* USER CODE BEGIN ET */
 int HallSpeed_RPSecCounter;
 
-
 typedef enum { UnitsSpeedKph, UnitsSpeedMph } UnitsSpeedT;
 typedef enum { UnitsTempCelsius, UnitsTempFahrenheit } UnitsTempT;
 
@@ -50,7 +49,7 @@ typedef struct ConfigSettings {
   uint16_t WheelCirc; // millimeters
   Bool ShowLogo;
 
-} ConfigSettings_T;
+} ConfigSettingsT;
 
 typedef struct SensorsData {
   volatile uint16_t MotorRpm;
@@ -64,7 +63,10 @@ typedef struct SensorsData {
   float BattVoltage;
   float BattCurrent;
 
-} SensorsData_T;
+} SensorsDataT;
+
+
+extern ConfigSettingsT config;
 
 /* USER CODE END ET */
 

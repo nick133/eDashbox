@@ -1,10 +1,10 @@
 
 import
-  os,
+#  os,
   re,
   strutils,
   strformat,
-  tables,
+#  tables,
   parseopt
 
 const pix_in_row = 16

@@ -30,33 +30,23 @@
 /* USER CODE BEGIN Includes */
 //
 // ^^^^^^^^  REMOVE cmsis_os.h from regenerated include!!!
-// \/\/\/\/  REMOVE all FreeRTOS funcs from section 'Private function prototypes' below
-//
+// \/\/\/\/  REMOVE all FreeRTOS-CMSIS funcs from section 'Private function prototypes' below and main()
+
+#include <FreeRTOS.h>
+#include <task.h>
+#include <timers.h>
 
 #include "ssd1306.h"
 #include <stdio.h> // for sprintf()
 //#include "stdlib.h" // for itoa()
 //#include "string.h" // for strcpy()
 
-#include <omgui.h>
-
-#include <FreeRTOS.h>
-#include <task.h>
-#include <timers.h>
+#include "omgui.h"
+#include "screens.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
-typedef enum {
-  IdScreenLogo,
-  IdScreenMain,
-  IdScreenData,
-  IdScreenTemp,
-  IdScreenSetup,
-  IdScreensNumOf
-} omScreenIdT;
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -74,11 +64,9 @@ typedef enum {
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-ConfigSettings_T config;
-SensorsData_T sensdata;
+ConfigSettingsT config;
+SensorsDataT sensdata;
 
-omDisplayT oled1;
-omScreenT screenLogo, screenMain, screenData, screenTemp, screenSetup;
 
 int btn1set;
 
@@ -92,22 +80,14 @@ volatile uint32_t u32_RPM_Freq = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void MX_FREERTOS_Init(void);
+//void MX_FREERTOS_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-void ScreenLogoShowCb(omScreenT *);
-void ScreenLogoHideCb(omScreenT *);
-void ScreenMainShowCb(omScreenT *);
-
-void WgtMainSpeedCb(omWidgetT *);
-void DisplayInitCb(omDisplayT *);
-
 void vTaskCode(void *pvParameters);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 /**
@@ -150,112 +130,7 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-
-  //// Init struct data for Display, Screens and Widgets ////
-
-  /****************************************************************************\
-   **** Display ***************************************************************
-   ****************************************************************************/
-  oled1.Id = 0;
-  oled1.Screen = (config.ShowLogo == True) ? &screenLogo : &screenMain;
-  oled1.InitCallback = DisplayInitCb;
-
-  /****************************************************************************\
-   ** Screen: Logo
-   ****************************************************************************/
-  const uint8_t LogoWidgetsNumOf = 1;
-  omWidgetT logoWidgets[LogoWidgetsNumOf];
-
-  screenLogo.Id = IdScreenLogo;
-  screenLogo.Display = &oled1;
-  screenLogo.Widgets = logoWidgets;
-  screenLogo.ShowCallback = ScreenLogoShowCb;
-  screenLogo.HideCallback = NULL;
-
-  //////////////////////////////////////
-  /// Widget: Logo
-  omWidgetT wgtLogoImage;
-  wgtLogoImage.Id = 0;
-
-  struct WgtCfgLogoImage {
-    float Speed;
-  } wgtCfgLogoImage;
-
-  wgtLogoImage.Id = 0;
-  wgtLogoImage.Config = &wgtCfgLogoImage;
-
-
-  logoWidgets[0] = wgtLogoImage;
-
-  /****************************************************************************\
-   ** Screen: Main
-   ****************************************************************************/
-  const uint8_t MainWidgetsNumOf = 4;
-  omWidgetT mainWidgets[MainWidgetsNumOf];
-
-  screenMain.Id = IdScreenMain;
-  screenMain.Display = &oled1;
-  screenMain.Widgets = &mainWidgets[0];
-  screenMain.WidgetsNumOf = MainWidgetsNumOf;
-  screenMain.ShowCallback = ScreenMainShowCb;
-  screenMain.HideCallback = NULL;
-
-  //////////////////////////////////////
-  /// Widget: Speed
-  omWidgetT wgtMainSpeed;
-
-  struct WgtCfgMainSpeed {
-    float Speed;
-    UnitsSpeedT Units;
-  } wgtCfgMainSpeed;
-
-  wgtCfgMainSpeed.Speed = 0.0;
-  wgtCfgMainSpeed.Units = config.SpeedUnits;
-
-  wgtMainSpeed.Id = 0;
-  wgtMainSpeed.Config = &wgtCfgMainSpeed;
-  wgtMainSpeed.InitCallback = WgtMainSpeedCb; /// EMPTY !!!!!!!!!
-
-  //////////////////////////////////////
-  /// Widget: Tacho
-  omWidgetT wgtMainTacho;
-
-  struct WgtCfgMainTacho { uint16_t Tacho; } wgtCfgMainTacho;
-  wgtMainTacho.Id = 1;
-  wgtMainTacho.Config = &wgtCfgMainTacho;
-  wgtMainTacho.InitCallback = WgtMainSpeedCb; /// EMPTY !!!!!!!!!
-
-  //////////////////////////////////////
-  /// Widget: Volt
-  omWidgetT wgtMainVolt;
-
-  struct WgtCfgMainVolt { float Volt; } wgtCfgMainVolt;
-  wgtMainVolt.Id = 2;
-  wgtMainVolt.Config = &wgtCfgMainVolt;
-  wgtMainVolt.InitCallback = WgtMainSpeedCb; /// EMPTY !!!!!!!!!
-
-  //////////////////////////////////////
-  /// Widget: Odo
-  omWidgetT wgtMainOdo;
-
-  struct WgtCfgMainOdo { uint32_t Odo; } wgtCfgMainOdo;
-  wgtMainOdo.Id = 3;
-  wgtMainOdo.Config = &wgtCfgMainOdo;
-  wgtMainOdo.InitCallback = WgtMainSpeedCb; /// EMPTY !!!!!!!!!
-
-
-  mainWidgets[0] = wgtMainSpeed;
-  mainWidgets[1] = wgtMainTacho;
-  mainWidgets[2] = wgtMainVolt;
-  mainWidgets[3] = wgtMainOdo;
-
-  /****************************************************************************/
-
-  omDisplayInit(&oled1);
-
-  HAL_Delay(1000);
-
-  omScreenSelect(&screenMain);
+  OLED_GUI_Init();
 
   ssd1306_SetCursor(0, 0);
   ssd1306_WriteString("Test: FreeRTOS", Font_7x10, White);
@@ -383,82 +258,6 @@ void vTaskCode(void *pvParameters)
 {
   return;
 }
-
-void WgtMainSpeedCb(omWidgetT *wgt)
-{
-  return;
-}
-
-void ScreenLogoShowCb(omScreenT *screen)
-{
-
-  return;
-}
-
-void ScreenMainShowCb(omScreenT *screen)
-{
-
-  return;
-}
-
-void ScreenLogoHideCb(omScreenT *screen)
-{
-  return;
-}
-
-void DisplayInitCb(omDisplayT *displ)
-{
-  /* HAL_TIM_IC_Start_IT is not enabling HAL_TIM_PeriodElapsedCallback,
-   * so we need to manually enable it. See:
-   * https://community.st.com/s/question/0D50X00009hpBdlSAE/timer3-update-event-interrupt-not-working-properly
-   */
-  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
-  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
-
-  ssd1306_Init();
-  return;
-}
-
-//uint8_t Display_UpdateSpeed(uint16_t speed) // Default units: KPH
-//{
-//    return 0;
-//}
-//uint8_t Display_UpdateTacho(uint16_t speed) // Default units: RPM
-//{
-//    return 0;
-//}
-//uint8_t Display_UpdateTime(uint16_t speed) // Default units: RPM
-//{
-//    return 0;
-//}
-//uint8_t Display_UpdateOdometer(uint16_t speed) // Default units: RPM
-//{
-//    return 0;
-//}
-//uint8_t Display_UpdateDistance(uint16_t speed) // Default units: RPM
-//{
-//    return 0;
-//}
-//uint8_t Display_UpdateTemp1(uint16_t speed) // Default units: RPM
-//{
-//    return 0;
-//}
-//uint8_t Display_UpdateTemp2(uint16_t speed) // Default units: RPM
-//{
-//    return 0;
-//}
-//uint8_t Display_UpdateVoltage(uint16_t speed) // Default units: RPM
-//{
-//    return 0;
-//}
-//uint8_t Display_UpdateCurrent(uint16_t speed) // Default units: RPM
-//{
-//    return 0;
-//}
-//uint8_t Display_UpdatePower(uint16_t speed) // Default units: RPM
-//{
-//    return 0;
-//}
 
 /*
  * Callbacks for Interupts

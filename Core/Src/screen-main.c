@@ -1,10 +1,14 @@
 
 #include "omgui.h"
-#include "main.h"
 #include "screens.h"
+#include "main.h"
+
 
 void ScreenMainShowCb(omScreenT *);
 void WgtMainSpeedCb(omWidgetT *);
+void WgtMainTachoCb(omWidgetT *);
+void WgtMainVoltCb(omWidgetT *);
+void WgtMainOdoCb(omWidgetT *);
 
 
 void MainScreenInit(void)
@@ -19,8 +23,9 @@ void MainScreenInit(void)
   screenMain.ShowCallback = ScreenMainShowCb;
   screenMain.HideCallback = NULL;
 
-  //////////////////////////////////////
-  /// Widget: Speed
+  ////
+  ///  Widget: Speed
+  //
   omWidgetT wgtMainSpeed;
      struct WgtCfgMainSpeed {
     float Speed;
@@ -34,32 +39,35 @@ void MainScreenInit(void)
   wgtMainSpeed.Config = &wgtCfgMainSpeed;
   wgtMainSpeed.InitCallback = WgtMainSpeedCb; /// EMPTY !!!!!!!!!
 
-  //////////////////////////////////////
-  /// Widget: Tacho
+  ////
+  ///  Widget: Tacho
+  //
   omWidgetT wgtMainTacho;
 
   struct WgtCfgMainTacho { uint16_t Tacho; } wgtCfgMainTacho;
   wgtMainTacho.Id = 1;
   wgtMainTacho.Config = &wgtCfgMainTacho;
-  wgtMainTacho.InitCallback = WgtMainSpeedCb; /// EMPTY !!!!!!!!!
+  wgtMainTacho.InitCallback = WgtMainTachoCb; /// EMPTY !!!!!!!!!
 
-  //////////////////////////////////////
-  /// Widget: Volt
+  ////
+  ///  Widget: Volt
+  //
   omWidgetT wgtMainVolt;
 
   struct WgtCfgMainVolt { float Volt; } wgtCfgMainVolt;
   wgtMainVolt.Id = 2;
   wgtMainVolt.Config = &wgtCfgMainVolt;
-  wgtMainVolt.InitCallback = WgtMainSpeedCb; /// EMPTY !!!!!!!!!
+  wgtMainVolt.InitCallback = WgtMainVoltCb; /// EMPTY !!!!!!!!!
 
-  //////////////////////////////////////
-  /// Widget: Odo
+  ////
+  ///  Widget: Odo
+  //
   omWidgetT wgtMainOdo;
 
   struct WgtCfgMainOdo { uint32_t Odo; } wgtCfgMainOdo;
   wgtMainOdo.Id = 3;
   wgtMainOdo.Config = &wgtCfgMainOdo;
-  wgtMainOdo.InitCallback = WgtMainSpeedCb; /// EMPTY !!!!!!!!!
+  wgtMainOdo.InitCallback = WgtMainOdoCb; /// EMPTY !!!!!!!!!
 
 
   mainWidgets[0] = wgtMainSpeed;
@@ -74,6 +82,21 @@ void ScreenMainShowCb(omScreenT *screen)
 }
 
 void WgtMainSpeedCb(omWidgetT *wgt)
+{
+  return;
+}
+
+void WgtMainTachoCb(omWidgetT *wgt)
+{
+  return;
+}
+
+void WgtMainVoltCb(omWidgetT *wgt)
+{
+  return;
+}
+
+void WgtMainOdoCb(omWidgetT *wgt)
 {
   return;
 }

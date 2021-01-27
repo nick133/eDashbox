@@ -19,8 +19,9 @@ void LogoScreenInit(void)
   screenLogo.ShowCallback = ScreenLogoShowCb;
   screenLogo.HideCallback = NULL;
 
-  //////////////////////////////////////
-  /// Widget: Logo
+  ////
+  ///  Widget: Logo
+  //
   omWidgetT wgtLogoImage;
   wgtLogoImage.Id = 0;
 
@@ -38,6 +39,5 @@ void LogoScreenInit(void)
 
 void ScreenLogoShowCb(omScreenT *screen)
 {
-
   return;
 }

@@ -65,10 +65,7 @@
 
 /* USER CODE BEGIN PV */
 ConfigSettingsT config;
-SensorsDataT sensdata;
-
-
-int btn1set;
+SensorsDataT sensdata;/
 
 volatile uint8_t u8_RPM_State = IDLE;
 volatile uint32_t u32_RPM_T1 = 0;

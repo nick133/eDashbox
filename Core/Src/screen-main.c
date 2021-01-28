@@ -2,6 +2,7 @@
 #include "omgui.h"
 #include "screens.h"
 #include "main.h"
+#include <stdlib.h>
 
 
 void ScreenMainShowCb(omScreenT *);
@@ -13,12 +14,12 @@ void WgtMainOdoCb(omWidgetT *);
 
 void MainScreenInit(void)
 {
-  const uint8_t MainWidgetsNumOf = 4;
+  const uint8_t MainWidgetsNumOf = 1;
   omWidgetT mainWidgets[MainWidgetsNumOf];
 
   screenMain.Id = IdScreenMain;
   screenMain.Display = &oled1;
-  screenMain.Widgets = &mainWidgets[0];
+//  screenMain.Widgets = malloc(sizeof(omWidgetT) * 1);
   screenMain.WidgetsNumOf = MainWidgetsNumOf;
   screenMain.ShowCallback = ScreenMainShowCb;
   screenMain.HideCallback = NULL;
@@ -26,8 +27,8 @@ void MainScreenInit(void)
   ////
   ///  Widget: Speed
   //
-  omWidgetT wgtMainSpeed;
-     struct WgtCfgMainSpeed {
+
+  struct WgtCfgMainSpeed {
     float Speed;
     UnitsSpeedT Units;
   } wgtCfgMainSpeed;
@@ -35,45 +36,55 @@ void MainScreenInit(void)
   wgtCfgMainSpeed.Speed = 0.0;
   wgtCfgMainSpeed.Units = config.SpeedUnits;
 
-  wgtMainSpeed.Id = 0;
-  wgtMainSpeed.Config = &wgtCfgMainSpeed;
-  wgtMainSpeed.InitCallback = WgtMainSpeedCb; /// EMPTY !!!!!!!!!
+  mainWidgets[0].Id = 7;
+  mainWidgets[0].Screen = &screenMain;
+  mainWidgets[0].Config = &wgtCfgMainSpeed;
+  mainWidgets[0].PosX = 0;
+  mainWidgets[0].PosY = 0;
+  mainWidgets[0].Width = 16;
+  mainWidgets[0].Height = 16;
+  mainWidgets[0].InitCallback = WgtMainSpeedCb;
+  mainWidgets[0].UpdateCallback = NULL;
 
   ////
   ///  Widget: Tacho
   //
-  omWidgetT wgtMainTacho;
+//  omWidgetT wgtMainTacho;
+//
+//  struct WgtCfgMainTacho { uint16_t RPM; } wgtCfgMainTacho;
+//  wgtCfgMainTacho.RPM = 0;
+//
+//  wgtMainTacho.Id = 1;
+//  wgtMainTacho.Config = &wgtCfgMainTacho;
+//  wgtMainTacho.InitCallback = WgtMainTachoCb;
+//
+//  ////
+//  ///  Widget: Volt
+//  //
+//  omWidgetT wgtMainVolt;
+//
+//  struct WgtCfgMainVolt { float Volt; } wgtCfgMainVolt;
+//  wgtCfgMainVolt.Volt = 0.0;
+//
+//  wgtMainVolt.Id = 2;
+//  wgtMainVolt.Config = &wgtCfgMainVolt;
+//  wgtMainVolt.InitCallback = WgtMainVoltCb;
+//
+//  ////
+//  ///  Widget: Odo
+//  //
+//  omWidgetT wgtMainOdo;
+//
+//  struct WgtCfgMainOdo { uint32_t Kilos; } wgtCfgMainOdo;
+//  wgtCfgMainOdo.Kilos = 0;
+//
+//  wgtMainOdo.Id = 3;
+//  wgtMainOdo.Config = &wgtCfgMainOdo;
+//  wgtMainOdo.InitCallback = WgtMainOdoCb;
 
-  struct WgtCfgMainTacho { uint16_t Tacho; } wgtCfgMainTacho;
-  wgtMainTacho.Id = 1;
-  wgtMainTacho.Config = &wgtCfgMainTacho;
-  wgtMainTacho.InitCallback = WgtMainTachoCb; /// EMPTY !!!!!!!!!
+  screenMain.Widgets = &mainWidgets;
 
-  ////
-  ///  Widget: Volt
-  //
-  omWidgetT wgtMainVolt;
-
-  struct WgtCfgMainVolt { float Volt; } wgtCfgMainVolt;
-  wgtMainVolt.Id = 2;
-  wgtMainVolt.Config = &wgtCfgMainVolt;
-  wgtMainVolt.InitCallback = WgtMainVoltCb; /// EMPTY !!!!!!!!!
-
-  ////
-  ///  Widget: Odo
-  //
-  omWidgetT wgtMainOdo;
-
-  struct WgtCfgMainOdo { uint32_t Odo; } wgtCfgMainOdo;
-  wgtMainOdo.Id = 3;
-  wgtMainOdo.Config = &wgtCfgMainOdo;
-  wgtMainOdo.InitCallback = WgtMainOdoCb; /// EMPTY !!!!!!!!!
-
-
-  mainWidgets[0] = wgtMainSpeed;
-  mainWidgets[1] = wgtMainTacho;
-  mainWidgets[2] = wgtMainVolt;
-  mainWidgets[3] = wgtMainOdo;
+  int id=screenMain.Widgets[0].Id;
 }
 
 void ScreenMainShowCb(omScreenT *screen)

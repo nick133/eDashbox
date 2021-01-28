@@ -129,33 +129,33 @@ int main(void)
   /* USER CODE BEGIN 2 */
   OLED_GUI_Init();
 
-  ssd1306_SetCursor(0, 0);
-  ssd1306_WriteString("Test: FreeRTOS", Font_7x10, White);
-  ssd1306_UpdateScreen();
+//  ssd1306_SetCursor(0, 0);
+//  ssd1306_WriteString("Test: FreeRTOS", Font_7x10, White);
+//  ssd1306_UpdateScreen();
 
 //  ssd1306_DrawPixel(12, 30, White);
 
 //  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
 
-  BaseType_t xReturned;
-  TaskHandle_t xHandle = NULL;
+//  BaseType_t xReturned;
+//  TaskHandle_t xHandle = NULL;
+//
+//  /* Create the task, storing the handle. */
+//  xReturned = xTaskCreate(
+//    vTaskCode,       /* Function that implements the task. */
+//    "NAME",          /* Text name for the task. */
+//    configMINIMAL_STACK_SIZE,      /* Stack size in words, not bytes. */
+//    ( void * ) 1,    /* Parameter passed into the task. */
+//    configMAX_PRIORITIES / 2,/* Priority at which the task is created. */
+//    &xHandle );      /* Used to pass out the created task's handle. */
+//
+//  if( xReturned == pdPASS )
+//  {
+//    /* The task was created.  Use the task's handle to delete the task. */
+//    vTaskDelete( xHandle );
+//  }
 
-  /* Create the task, storing the handle. */
-  xReturned = xTaskCreate(
-    vTaskCode,       /* Function that implements the task. */
-    "NAME",          /* Text name for the task. */
-    configMINIMAL_STACK_SIZE,      /* Stack size in words, not bytes. */
-    ( void * ) 1,    /* Parameter passed into the task. */
-    configMAX_PRIORITIES / 2,/* Priority at which the task is created. */
-    &xHandle );      /* Used to pass out the created task's handle. */
-
-  if( xReturned == pdPASS )
-  {
-    /* The task was created.  Use the task's handle to delete the task. */
-    vTaskDelete( xHandle );
-  }
-
-  vTaskStartScheduler();
+//  vTaskStartScheduler();
 
   /* USER CODE END 2 */
 

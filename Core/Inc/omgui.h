@@ -35,11 +35,11 @@ struct omDisplay {
 struct omScreen {
   uint16_t Id;
   omDisplayT *Display;
-  omWidgetT *Widgets;
   uint16_t WidgetsNumOf;
 
   void (*ShowCallback)(omScreenT *);
   void (*HideCallback)(omScreenT *);
+  omWidgetT *Widgets;
 };
 
 struct omWidget {

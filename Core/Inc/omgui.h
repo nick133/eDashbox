@@ -12,6 +12,8 @@
 
 #include "stm32l4xx_hal.h"
 
+#define OMGUI_MAX_WIDGETS 16
+
 #ifndef CAMELCASE_BOOL_T
 #define CAMELCASE_BOOL_T
 typedef enum { False, True } Bool;
@@ -31,17 +33,6 @@ struct omDisplay {
   void (*DeInitCallback)(omDisplayT *);
 };
 
-// NOTE: Init is done by setting a struct, no Init func is needed
-struct omScreen {
-  uint16_t Id;
-  omDisplayT *Display;
-  uint16_t WidgetsNumOf;
-
-  void (*ShowCallback)(omScreenT *);
-  void (*HideCallback)(omScreenT *);
-  omWidgetT *Widgets;
-};
-
 struct omWidget {
   uint16_t Id;
   omScreenT *Screen;
@@ -51,6 +42,17 @@ struct omWidget {
 
   void (*InitCallback)(omWidgetT *); // Init and show widget (first time)
   void (*UpdateCallback)(omWidgetT *, void *); // Update only changed parts of widget
+};
+
+// NOTE: Init is done by setting a struct, no Init func is needed
+struct omScreen {
+  uint16_t Id;
+  omDisplayT *Display;
+  uint16_t WidgetsNumOf;
+  omWidgetT Widgets[OMGUI_MAX_WIDGETS];
+
+  void (*ShowCallback)(omScreenT *);
+  void (*HideCallback)(omScreenT *);
 };
 
 struct omBitmap {

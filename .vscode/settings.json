@@ -1,0 +1,5 @@
+{
+    "mesonbuild.configureOnOpen": true,
+    "editor.fontSize": 16,
+    "typescript.suggest.paths": false
+}

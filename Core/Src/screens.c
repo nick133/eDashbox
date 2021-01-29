@@ -4,7 +4,7 @@
 #include "main.h"
 
 #include "ssd1306.h"
-#include "stm32l4xx_hal.h"
+/*#include "stm32l4xx_hal.h"*/
 #include "tim.h"
 
 

@@ -1,6 +1,8 @@
-**/TrueSTUDIO/NucleoSpeedo/Debug
-**/TrueSTUDIO/NucleoSpeedo/Release
-**/TrueSTUDIO/NucleoSpeedo/Tools/pgm2c/bin
+build/release
+build/debug
+Tools/pgm2c/bin
+Toold/WorkingFirmwareForTest
+*.bak
 *.bin
 *.hex
 *.elf

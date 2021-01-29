@@ -62,11 +62,10 @@ void _omScreenInit(omScreenT *screen)
 
     // array[1] is equal to *(array + 1)
     // https://stackoverflow.com/questions/16201607/c-pointer-to-array-of-structs
-    omWidgetT *w = screen->Widgets;
-    int id1 = w->Id;
-    int id2 = w[0].Id;
-    (screen->Widgets + i)->InitCallback(screen->Widgets + i);
-//    screen->Widgets[i].InitCallback(screen->Widgets + i);
+    screen->Widgets[i].InitCallback(screen->Widgets + i);
+//    omWidgetT (*wgts)[OMGUI_MAX_WIDGETS] = &screen->Widgets;
+//    int id = wgts[i]->Id;
+//    wgts[i]->InitCallback(wgts + i);
   }
 
   screen->Display->Screen = screen;

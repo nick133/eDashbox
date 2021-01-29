@@ -15,11 +15,10 @@ void WgtMainOdoCb(omWidgetT *);
 void MainScreenInit(void)
 {
   const uint8_t MainWidgetsNumOf = 1;
-  omWidgetT mainWidgets[MainWidgetsNumOf];
+//  omWidgetT mainWidgets[MainWidgetsNumOf];
 
   screenMain.Id = IdScreenMain;
   screenMain.Display = &oled1;
-//  screenMain.Widgets = malloc(sizeof(omWidgetT) * 1);
   screenMain.WidgetsNumOf = MainWidgetsNumOf;
   screenMain.ShowCallback = ScreenMainShowCb;
   screenMain.HideCallback = NULL;
@@ -36,15 +35,15 @@ void MainScreenInit(void)
   wgtCfgMainSpeed.Speed = 0.0;
   wgtCfgMainSpeed.Units = config.SpeedUnits;
 
-  mainWidgets[0].Id = 7;
-  mainWidgets[0].Screen = &screenMain;
-  mainWidgets[0].Config = &wgtCfgMainSpeed;
-  mainWidgets[0].PosX = 0;
-  mainWidgets[0].PosY = 0;
-  mainWidgets[0].Width = 16;
-  mainWidgets[0].Height = 16;
-  mainWidgets[0].InitCallback = WgtMainSpeedCb;
-  mainWidgets[0].UpdateCallback = NULL;
+  screenMain.Widgets[0].Id = 7;
+  screenMain.Widgets[0].Screen = &screenMain;
+  screenMain.Widgets[0].Config = &wgtCfgMainSpeed;
+  screenMain.Widgets[0].PosX = 0;
+  screenMain.Widgets[0].PosY = 0;
+  screenMain.Widgets[0].Width = 16;
+  screenMain.Widgets[0].Height = 16;
+  screenMain.Widgets[0].InitCallback = WgtMainVoltCb;
+  screenMain.Widgets[0].UpdateCallback =WgtMainSpeedCb;
 
   ////
   ///  Widget: Tacho
@@ -81,8 +80,6 @@ void MainScreenInit(void)
 //  wgtMainOdo.Id = 3;
 //  wgtMainOdo.Config = &wgtCfgMainOdo;
 //  wgtMainOdo.InitCallback = WgtMainOdoCb;
-
-  screenMain.Widgets = &mainWidgets;
 
   int id=screenMain.Widgets[0].Id;
 }

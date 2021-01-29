@@ -37,7 +37,6 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-int HallSpeed_RPSecCounter;
 
 typedef enum { UnitsSpeedKph, UnitsSpeedMph } UnitsSpeedT;
 typedef enum { UnitsTempCelsius, UnitsTempFahrenheit } UnitsTempT;

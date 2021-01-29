@@ -1,6 +1,8 @@
 # NucleoSpeedo
 Speedometer/Tachometer firmware for STM32-Nucleo32 board.
 
+This is learning project in early stage, use it at your own risk.
+
 ## Build
 Run 'make'
 

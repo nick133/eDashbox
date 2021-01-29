@@ -64,7 +64,10 @@ SZ = $(PREFIX)size
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
- 
+
+PGM2C_PATH = Tools/pgm2c
+PGM2C = $(PGM2C_PATH)/bin/pgm2c
+
 #######################################
 # CFLAGS
 #######################################
@@ -89,7 +92,6 @@ C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32L432xx
 
-
 # AS includes
 AS_INCLUDES =  \
 -ICore/Inc
@@ -106,7 +108,6 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
 -IDrivers/CMSIS/Include
 
-
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
@@ -116,10 +117,8 @@ ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
 endif
 
-
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
-
 
 #######################################
 # LDFLAGS
@@ -134,7 +133,6 @@ LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BU
 
 # default action: build all
 all: pre-build $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin post-build
-
 
 #######################################
 # build the application
@@ -176,8 +174,13 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
-pre-build:
-	@Tools/pre-build.sh
+#######################################
+# pre/post-build actions
+#######################################
+pre-build: $(PGM2C)
+
+$(PGM2C): $(PGM2C_PATH)/src/pgm2c.nim
+    nimble build
 
 post-build:
 	@stat -c "%n: %s bytes" $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
@@ -185,4 +188,3 @@ post-build:
 a:
 	@echo "$(C_SOURCES)" | sed 's/ \+/\n/g'
 	@echo "$(OBJECTS)" | sed 's/ \+/\n/g'
-

@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-/*#include "cmsis_os.h"*/
+/* #include "cmsis_os.h" */
 #include "i2c.h"
 #include "rtc.h"
 #include "tim.h"
@@ -28,10 +28,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-//
-// ^^^^^^^^  REMOVE cmsis_os.h from regenerated include!!!
-// \/\/\/\/  REMOVE all FreeRTOS-CMSIS funcs from section 'Private function prototypes' below and main()
-
 #include <FreeRTOS.h>
 #include <task.h>
 #include <timers.h>
@@ -77,7 +73,7 @@ volatile uint32_t u32_RPM_Freq = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/*void MX_FREERTOS_Init(void);*/
+/* void MX_FREERTOS_Init(void); */
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 void vTaskCode(void *pvParameters);
@@ -160,10 +156,10 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Init scheduler */
-  /*osKernelInitialize();  [> Call init function for freertos objects (in freertos.c) <]*/
-  /*MX_FREERTOS_Init();*/
-  /*[> Start scheduler <]*/
-  /*osKernelStart();*/
+/*   osKernelInitialize(); */  /* Call init function for freertos objects (in freertos.c) */
+/*   MX_FREERTOS_Init(); */
+  /* Start scheduler */
+/*   osKernelStart(); */
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */

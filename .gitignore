@@ -1,5 +1,5 @@
-build/release
-build/debug
+TrueSTUDIO
+build
 Tools/pgm2c/bin
 Toold/WorkingFirmwareForTest
 *.bak

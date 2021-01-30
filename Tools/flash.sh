@@ -18,7 +18,7 @@ r\n\
 go\n\
 qc\n"
 
-build_target=$([[ "Debug/$firmware" -nt "Release/$firmware" ]] && printf Debug || printf Release)
+build_target=$([[ "build/debug/$firmware" -nt "build/release/$firmware" ]] && printf Debug || printf Release)
 
 cd $build_target
 

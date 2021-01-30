@@ -37,6 +37,9 @@ Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 Core/Src/system_stm32l4xx.c
 
+#$(wildcard Drivers/SH1122_Driver/Src/*.c)
+#$(wildcard Drivers/DS18B20_HAL_Driver/Src/*.c)
+
 C_SOURCES := $(sort $(filter-out $(C_SRC_EXCLUDE),$(C_SOURCES)))
 
 # ASM sources
@@ -98,6 +101,7 @@ AS_INCLUDES =  \
 C_INCLUDES =  \
 -ICore/Inc \
 -IDrivers/SSD1306_Driver/Inc \
+-IDrivers/DS18B20_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \
 -IMiddlewares/Third_Party/FreeRTOS/Source/include \

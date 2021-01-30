@@ -28,15 +28,22 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "FreeRTOS.h"
-#include <task.h>
-#include <timers.h>
-
-#include "ssd1306.h"
+/* <<<< System >>>> */
 #include <stdio.h> // for sprintf()
 //#include "stdlib.h" // for itoa()
 //#include "string.h" // for strcpy()
 
+/* <<<< FreeRTOS >>>> */
+#include "FreeRTOS.h"
+#include <task.h>
+#include <timers.h>
+
+/* <<<< Drivers >>>> */
+//#include "onewire.h"
+//#include "ds18b20.h"
+#include "ssd1306.h"
+
+/* <<<< GUI >>>> */
 #include "omgui.h"
 #include "screens.h"
 /* USER CODE END Includes */
@@ -123,6 +130,8 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+  //DS18B20_Init(DS18B20_Resolution_12bits);
+
   OLED_GUI_Init();
 
 //  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
@@ -163,6 +172,28 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  //DS18B20_ReadAll();
+	  //???HAL_GPIO_WritePin(TEST_GPIO_Port, TEST_Pin, 1);
+    //DS18B20_StartAll();
+    //???HAL_GPIO_WritePin(TEST_GPIO_Port, TEST_Pin, 0);
+
+/* 		uint8_t ROM_tmp[8];
+		uint8_t i;
+  	for (i = 0; i < DS18B20_Quantity(); i++)
+		{
+			if (DS18B20_GetTemperature(i, &temperature))
+			{
+				DS18B20_GetROM(i, ROM_tmp);
+				memset(message, 0, sizeof(message));
+				sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
+//				HAL_UART_Transmit(&huart2, (uint8_t*)message, sizeof(message), 100);
+			}
+		}
+		HAL_UART_Transmit(&huart2, (uint8_t*)"\n\r", sizeof("\n\r"), 100);
+		HAL_Delay(1000);
+		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin); */
+
   }
   /* USER CODE END 3 */
 }

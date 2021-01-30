@@ -1,4 +1,5 @@
 TrueSTUDIO
+Core/Src/freertos.c
 build
 Tools/pgm2c/bin
 Toold/WorkingFirmwareForTest

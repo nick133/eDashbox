@@ -44,14 +44,19 @@ while fd_in.readLine(line):
     color_mark = false
 
   else:
-    var not_1st_ln = ", " & line
+    var num = line
+
+    if num.len < 3: num = ' '.repeat(3 - num.len) & num
+
+    var not_1st_ln = ", " & num
+
     if cnt == pix_in_row:
-      not_1st_ln = ",\n" & line
+      not_1st_ln = ",\n" & num
       cnt = 0
 
     cnt.inc
 
-    im_data &= (if data_sem: not_1st_ln else: line)
+    im_data &= (if data_sem: not_1st_ln else: num)
 
     data_sem = true
 

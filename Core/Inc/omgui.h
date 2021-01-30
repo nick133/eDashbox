@@ -12,7 +12,10 @@
 
 #include "stm32l4xx_hal.h"
 
+
+#ifndef OMGUI_MAX_WIDGETS
 #define OMGUI_MAX_WIDGETS 16
+#endif
 
 #ifndef CAMELCASE_BOOL_T
 #define CAMELCASE_BOOL_T
@@ -25,15 +28,19 @@ typedef struct omWidget omWidgetT;
 typedef struct omBitmap omBitmapT;
 
 // NOTE: No need to keep array of all screens, just set active screen!!!
-struct omDisplay {
+struct omDisplay
+{
   uint16_t Id;
   omScreenT *Screen;
 
   void (*InitCallback)(omDisplayT *);
   void (*DeInitCallback)(omDisplayT *);
+  void (*PutPixel)(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
+//  void (*PutPixel)(omDisplayT *, uint32_t, uint32_t);
 };
 
-struct omWidget {
+struct omWidget
+{
   uint16_t Id;
   omScreenT *Screen;
   void *Config;
@@ -45,7 +52,8 @@ struct omWidget {
 };
 
 // NOTE: Init is done by setting a struct, no Init func is needed
-struct omScreen {
+struct omScreen
+{
   uint16_t Id;
   omDisplayT *Display;
   uint16_t WidgetsNumOf;
@@ -55,7 +63,8 @@ struct omScreen {
   void (*HideCallback)(omScreenT *);
 };
 
-struct omBitmap {
+struct omBitmap
+{
   uint16_t Width, Height;
   uint32_t *RawData;
   uint16_t ColorsNumOf;
@@ -68,5 +77,6 @@ void omDisplayInit(omDisplayT *);
 void omDisplayDeInit(omDisplayT *);
 Bool omScreenSelect(omScreenT *);
 Bool omScreenIsActive(omScreenT *);
+void omBitmapShow(omBitmapT *);
 
 #endif /* _OMGUI_H_ */

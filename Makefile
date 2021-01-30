@@ -190,7 +190,7 @@ pre-build: $(PGM2C)
 	@rm -rf TrueSTUDIO 
 
 $(PGM2C): $(PGM2C_PATH)/src/pgm2c.nim
-	@nimble build
+	@cd $(PGM2C_PATH) && nimble build
 
 post-build:
 

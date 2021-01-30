@@ -8,13 +8,12 @@
  */
 
 
-
 #include "omgui.h"
 #include "main.h"
 
 
 // Private methods
-void _omScreenInit(omScreenT *screen);
+static void _omScreenInit(omScreenT *);
 
 
 void omDisplayInit(omDisplayT *displ)
@@ -49,7 +48,7 @@ Bool omScreenSelect(omScreenT *screen)
 }
 
 
-void _omScreenInit(omScreenT *screen)
+static void _omScreenInit(omScreenT *screen)
 {
   if (screen->ShowCallback != NULL)
   {
@@ -58,16 +57,9 @@ void _omScreenInit(omScreenT *screen)
 
   for (uint16_t i = 0; i < screen->WidgetsNumOf; i++)
   {
-    //
-    // FROM HERE screen.Widgets corrupted!!!!!!!!!!
-    //
-
-    // array[1] is equal to *(array + 1)
+    // array[1] equals to *(array + 1)
     // https://stackoverflow.com/questions/16201607/c-pointer-to-array-of-structs
     screen->Widgets[i].InitCallback(screen->Widgets + i);
-//    omWidgetT (*wgts)[OMGUI_MAX_WIDGETS] = &screen->Widgets;
-//    int id = wgts[i]->Id;
-//    wgts[i]->InitCallback(wgts + i);
   }
 
   screen->Display->Screen = screen;
@@ -80,7 +72,13 @@ Bool omScreenIsActive(omScreenT *screen)
 }
 
 
-void omBitmapLoad(omBitmapT *bitmap)
+void omBitmapShow(omBitmapT *bitmap)
 {
+  for (uint32_t y = 0; y < bitmap->Height; y++)
+    for (uint32_t x = 0; x < bitmap->Width; x++)
+    {
+
+    }
+
   return;
 }

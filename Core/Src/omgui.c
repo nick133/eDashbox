@@ -7,8 +7,9 @@
  *      Author: nick
  */
 
-#include "main.h"
+
 #include "omgui.h"
+#include "main.h"
 
 
 // Private methods

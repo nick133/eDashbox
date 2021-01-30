@@ -1,5 +1,9 @@
 {
-    "mesonbuild.configureOnOpen": true,
     "editor.fontSize": 16,
-    "typescript.suggest.paths": false
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**"
+    ],
+    "C_Cpp.intelliSenseEngine": "Tag Parser",
+    "C_Cpp.intelliSenseEngineFallback": "Enabled",
+    "path-autocomplete.triggerOutsideStrings": true
 }

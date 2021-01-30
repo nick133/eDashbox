@@ -3,9 +3,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/Core/Inc/**",
+                "${workspaceFolder}/Core/**",
                 "${workspaceFolder}/Drivers/**",
-                "${workspaceFolder}/Middlewares/Third_Party/FreeRTOS/**"
+                "${workspaceFolder}/Middlewares/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -15,7 +15,14 @@
             "compilerPath": "/usr/bin/arm-none-eabi-gcc",
             "cStandard": "c17",
             "cppStandard": "c++14",
-            "intelliSenseMode": "linux-gcc-arm"
+            "intelliSenseMode": "linux-gcc-arm",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
         }
     ],
     "version": 4

@@ -68,7 +68,7 @@
 
 /* USER CODE BEGIN PV */
 ConfigSettingsT config;
-SensorsDataT sensdata;
+SensorsDataT sensor;
 
 volatile uint8_t u8_RPM_State = IDLE;
 volatile uint32_t u32_RPM_T1 = 0;
@@ -175,7 +175,6 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  float temperature;
   char message[64];
 
   while (1)
@@ -191,20 +190,20 @@ int main(void)
 
   	for (i = 0; i < DS18B20_Quantity(); i++)
 		{
-			if (DS18B20_GetTemperature(i, &temperature))
+			if (DS18B20_GetTemperature(i, &sensor.Temperature1))
 			{
 				DS18B20_GetROM(i, ROM_tmp);
 				memset(message, 0, sizeof(message));
 				//sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
-        sprintf(message, "T: %.2f", temperature);
+        sprintf(message, "T: %.2f", sensor.Temperature1);
         ssd1306_SetCursor(0, 0);
         ssd1306_Fill(Black);
         ssd1306_WriteString(message, Font_7x10, White);
-        ssd1306_UpdateScreen();
+
+        omDisplayUpdate(&oled1);
 			}
 		}
 
-		//HAL_UART_Transmit(&huart2, (uint8_t*)"\n\r", sizeof("\n\r"), 100);
 		HAL_Delay(1000);
 		//HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 

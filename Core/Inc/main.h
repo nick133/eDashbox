@@ -57,8 +57,8 @@ typedef struct SensorsData {
   uint32_t DistanceRide;
   uint32_t Trip1, Trip2;
   uint32_t Power;
-  float Temp1C;
-  float Temp2C;
+  float Temperature1; // Celsius degree
+  float Temperature2;
   float BattVoltage;
   float BattCurrent;
 

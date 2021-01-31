@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-/* #include "cmsis_os.h" */
+#include "cmsis_os.h"
 #include "i2c.h"
 #include "rtc.h"
 #include "tim.h"
@@ -29,8 +29,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* <<<< System >>>> */
+
 /* https://github.com/mpaland/printf
- * Tiny sprintf for embedded systems. Stdlib sprintf corrupts the stack if used
+ * Tiny printf for embedded systems. Stdlib sprintf corrupts the stack if used
  * inside of FreeRTOS vTask
  */
 #include "printf.h"
@@ -86,7 +87,7 @@ static volatile uint16_t u16_TIM2_OVC = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* void MX_FREERTOS_Init(void); */
+void MX_FREERTOS_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 void vTaskTemperaturePoll(void *pvParameters);
@@ -186,10 +187,10 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Init scheduler */
-/*   osKernelInitialize(); */  /* Call init function for freertos objects (in freertos.c) */
-/*   MX_FREERTOS_Init(); */
+  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
   /* Start scheduler */
-/*   osKernelStart(); */
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
@@ -300,7 +301,7 @@ void vTaskTemperaturePoll(void *pvParameters)
 				DS18B20_GetROM(i, ROM_tmp);
 //				memset(message, 0, sizeof(message));
 				//sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
-        sprintf(message, "T: %.2f", sensor.Temperature1);
+        snprintf(message, 64, "T: %.2f", sensor.Temperature1);
         //gcvt(sensor.Temperature1, 5, &message);
         ssd1306_SetCursor(0, 0);
         ssd1306_Fill(Black);

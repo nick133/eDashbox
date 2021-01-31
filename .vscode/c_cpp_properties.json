@@ -18,7 +18,9 @@
             "intelliSenseMode": "linux-gcc-arm",
             "browse": {
                 "path": [
-                    "${workspaceFolder}/**"
+                    "${workspaceFolder}/Core/**",
+                    "${workspaceFolder}/Drivers/**",
+                    "${workspaceFolder}/Middlewares/**"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

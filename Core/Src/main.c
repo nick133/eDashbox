@@ -287,15 +287,30 @@ static void MX_NVIC_Init(void)
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 }
 
+
 /* USER CODE BEGIN 4 */
 void vTaskCode(void *pvParameters)
 {
   return;
 }
 
+
 /*
  * Callbacks for Interupts
  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin == BTN1_Pin)
+  {
+
+  }
+  else if (GPIO_Pin == BTN2_Pin)
+  {
+
+  }
+}
+
+
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
   if (u8_RPM_State == IDLE)
@@ -318,12 +333,9 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     u8_RPM_State = IDLE;
 
     char buf0[16];
-//    char buf1[16];
-//    char buf2[16];
     sprintf(buf0, "Freq: %d", (int)u32_RPM_Freq);
 //    sprintf(buf1, "Tick: %d", (int)u32_RPM_Ticks);
 //    sprintf(buf2, "OVC: %d", (int)u16_TIM2_OVC);
-    //dbg_print((char*)&buf0);
   }
 }
 

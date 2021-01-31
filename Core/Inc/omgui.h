@@ -12,6 +12,11 @@
 
 #include "stm32l4xx_hal.h"
 
+#ifdef INC_FREERTOS_H
+#define SYS_SLEEP(ms) vTaskDelay(ms / portTICK_PERIOD_MS)
+#else
+#define SYS_SLEEP(ms) HAL_Delay(ms)
+#endif
 
 #ifndef OMGUI_MAX_WIDGETS
 #define OMGUI_MAX_WIDGETS 16
@@ -78,7 +83,8 @@ struct omBitmap
 struct omAnimation
 {
   omBitmapT *Bitmaps;
-  uint16_t IntervalMs;
+  uint16_t FramesNumOf;
+  uint16_t Interval; // msec
   omDisplayT *Display;
 };
 

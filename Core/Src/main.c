@@ -326,9 +326,8 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     {
       u32_RPM_T2 = TIM2->CCR1;
       u32_RPM_Ticks = (u32_RPM_T2 + (u16_TIM2_OVC * 20000)) - u32_RPM_T1;
-      /*
-      * T sec = (Prescaler * Preload) / Frequency MHz
-      * Preload = Frequency MHz * T sec / Prescaler
+      /* T sec = (Prescaler * Preload) / Frequency MHz
+       * Preload = Frequency MHz * T sec / Prescaler
        */
       sensor.MotorRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / u32_RPM_Ticks);
       sensor.SpeedKph = ((sensor.MotorRpm * 60) / config.GearRatio) * config.WheelCirc;
@@ -362,7 +361,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
       u8_RPM_State = IDLE;
       u16_TIM2_OVC = 0;
-      u32_RPM_Freq = 0;
+      sensor.MotorRpm = 0;
+      sensor.SpeedKph = 0;
     }
     else
       u16_TIM2_OVC++;

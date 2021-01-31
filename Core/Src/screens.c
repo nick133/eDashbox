@@ -11,9 +11,9 @@
 omDisplayT oled1;
 omScreenT screenLogo, screenMain, screenData, screenTemp, screenSetup;
 
-void DisplayInitCb(omDisplayT *);
-void DisplayUpdateCb(omDisplayT *);
-void DisplayDrawPixelCb(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
+static void DisplayInitCb(omDisplayT *);
+static void DisplayUpdateCb(omDisplayT *);
+static void DisplayDrawPixelCb(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
 
 
 void OLED_GUI_Init(void)
@@ -71,20 +71,20 @@ uint32_t image_data[256] = {
 }
 
 
-void DisplayInitCb(omDisplayT *displ)
+static void DisplayInitCb(omDisplayT *displ)
 {
   ssd1306_Init();
   return;
 }
 
 
-void DisplayUpdateCb(omDisplayT *displ)
+static void DisplayUpdateCb(omDisplayT *displ)
 {
   ssd1306_UpdateScreen();
 }
 
 
-void DisplayDrawPixelCb(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
+static void DisplayDrawPixelCb(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
 {
   ssd1306_DrawPixel(x, y, color);
   return;

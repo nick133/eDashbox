@@ -108,5 +108,14 @@ void omDrawBitmap(omBitmapT *bitmap)
 
 void omAnimationStart(omAnimationT *anim)
 {
+  for (uint16_t i = 0; i < anim->FramesNumOf; i++)
+  {
+    omDrawBitmap(anim->Bitmaps);
+    omDisplayUpdate(anim->Display);
+    SYS_SLEEP(anim->Interval);
+
+    anim->Bitmaps++;
+  }
+
   return;
 }

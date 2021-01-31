@@ -105,3 +105,8 @@ void omDrawBitmap(omBitmapT *bitmap)
 
   return;
 }
+
+void omAnimationStart(omAnimationT *anim)
+{
+  return;
+}

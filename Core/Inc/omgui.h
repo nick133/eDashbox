@@ -26,6 +26,8 @@ typedef struct omDisplay omDisplayT;
 typedef struct omScreen omScreenT;
 typedef struct omWidget omWidgetT;
 typedef struct omBitmap omBitmapT;
+typedef struct omAnimation omAnimationT;
+
 
 // NOTE: No need to keep array of all screens, just set active screen!!!
 struct omDisplay
@@ -73,6 +75,14 @@ struct omBitmap
   omDisplayT *Display;
 };
 
+struct omAnimation
+{
+  omBitmapT *Bitmaps;
+  uint16_t IntervalMs;
+  omDisplayT *Display;
+};
+
+
 // Public methods
 void omDisplayInit(omDisplayT *);
 void omDisplayDeInit(omDisplayT *);
@@ -81,5 +91,6 @@ Bool omScreenSelect(omScreenT *);
 Bool omScreenIsActive(omScreenT *);
 void omDrawPixel(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
 void omDrawBitmap(omBitmapT *);
+void omAnimationStart(omAnimationT *);
 
 #endif /* _OMGUI_H_ */

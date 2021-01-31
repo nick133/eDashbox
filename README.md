@@ -12,3 +12,8 @@ Run 'make'
 ## IDE
 Fix not found includes in VS code:
 https://stackoverflow.com/questions/37522462/visual-studio-code-includepath
+
+## Hardware
+### DS18B20 temperature sensor
+* Use 4.7 kOhm resistor from Vdd to Data pin, accordig to specs
+* Tested with 3.3V Vdd

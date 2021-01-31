@@ -29,9 +29,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* <<<< System >>>> */
-#include <stdio.h> // for sprintf()
-//#include "stdlib.h" // for itoa()
-//#include "string.h" // for strcpy()
+#include <stdio.h> // sprintf()
+#include "stdlib.h" // itoa(), gcvt()
+#include "string.h" // strcpy(), memset()
 
 /* <<<< FreeRTOS >>>> */
 #include "FreeRTOS.h"
@@ -39,8 +39,8 @@
 #include <timers.h>
 
 /* <<<< Drivers >>>> */
-//#include "onewire.h"
-//#include "ds18b20.h"
+#include "onewire.h"
+#include "ds18b20.h"
 #include "ssd1306.h"
 
 /* <<<< GUI >>>> */
@@ -126,11 +126,12 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM2_Init();
   MX_RTC_Init();
+  MX_TIM1_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-  //DS18B20_Init(DS18B20_Resolution_12bits);
+  DS18B20_Init(DS18B20_Resolution_12bits);
 
   OLED_GUI_Init();
 
@@ -167,32 +168,41 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  float temperature;
+  char message[64];
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  DS18B20_ReadAll();
+    DS18B20_StartAll();
 
-	  //DS18B20_ReadAll();
-	  //???HAL_GPIO_WritePin(TEST_GPIO_Port, TEST_Pin, 1);
-    //DS18B20_StartAll();
-    //???HAL_GPIO_WritePin(TEST_GPIO_Port, TEST_Pin, 0);
-
-/* 		uint8_t ROM_tmp[8];
+ 		uint8_t ROM_tmp[8];
 		uint8_t i;
+    char buf[6];
   	for (i = 0; i < DS18B20_Quantity(); i++)
 		{
 			if (DS18B20_GetTemperature(i, &temperature))
 			{
 				DS18B20_GetROM(i, ROM_tmp);
 				memset(message, 0, sizeof(message));
-				sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
-//				HAL_UART_Transmit(&huart2, (uint8_t*)message, sizeof(message), 100);
+				//sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
+        // gcvt(t, 5, &buf); -> 1.2345 | 12.345 | 123.45
+        gcvt(temperature, 5, &buf);
+        sprintf(message, "T: %s", buf);
+        //sprintf(message, "T: %.2f", temperature);
+        ssd1306_SetCursor(0, 0);
+        ssd1306_Fill(Black);
+        ssd1306_WriteString(message, Font_7x10, White);
+        ssd1306_UpdateScreen();
 			}
 		}
-		HAL_UART_Transmit(&huart2, (uint8_t*)"\n\r", sizeof("\n\r"), 100);
+
+		//HAL_UART_Transmit(&huart2, (uint8_t*)"\n\r", sizeof("\n\r"), 100);
 		HAL_Delay(1000);
-		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin); */
+		//HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 
   }
   /* USER CODE END 3 */

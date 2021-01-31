@@ -30,9 +30,6 @@ void OLED_GUI_Init(void)
 
 //  omScreenSelect(&screenMain);
 
-  ssd1306_WriteString(" Test: x=7", Font_7x10, White);
-  ssd1306_UpdateScreen();
-
 /* This DOES NOT WORK: uint32_t image_data[] = { ... }
  * Array size is a MUST!
  * Display_Color = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};

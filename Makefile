@@ -24,13 +24,11 @@ endif
 # source
 ######################################
 # C sources
-C_SRC_EXCLUDE = \
-Core/Src/freertos.c
-
 C_SOURCES = \
 $(wildcard Core/Src/*.c) \
 $(wildcard Drivers/STM32L4xx_HAL_Driver/Src/*.c) \
 $(wildcard Drivers/SSD1306_Driver/Src/*.c) \
+$(wildcard Drivers/DS18B20_HAL_Driver/Src/*.c) \
 $(wildcard Middlewares/Third_Party/FreeRTOS/Source/*.c) \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
@@ -38,8 +36,10 @@ Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 Core/Src/system_stm32l4xx.c
 
 #$(wildcard Drivers/SH1122_Driver/Src/*.c)
-#$(wildcard Drivers/DS18B20_HAL_Driver/Src/*.c)
 
+# Exclude
+C_SRC_EXCLUDE = \
+Core/Src/freertos.c
 C_SOURCES := $(sort $(filter-out $(C_SRC_EXCLUDE),$(C_SOURCES)))
 
 # ASM sources
@@ -132,6 +132,8 @@ LDSCRIPT = STM32L432KCUx_FLASH.ld
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+# Adds float support for sprintf, also adds ~2Kb to firmware size, better use gcvt()
+#LDFLAGS += -u _printf_float
 
 # default action: build all
 all: pre-build $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).bin post-build

@@ -36,6 +36,7 @@ struct omDisplay
   void (*InitCallback)(omDisplayT *);
   void (*DeInitCallback)(omDisplayT *);
   void (*PutPixel)(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
+  void (*Update)(omDisplayT *);
 //  void (*PutPixel)(omDisplayT *, uint32_t, uint32_t);
 };
 

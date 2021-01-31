@@ -54,40 +54,21 @@ uint32_t image_data[256] = {
   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
+
   omBitmapT bmp;
   bmp.Width = 16;
   bmp.Height = 16;
   bmp.ColorsNumOf = 16;
   bmp.IsAlpha = False;
   bmp.RawData = &image_data[0];
+  bmp.Display = &oled1;
 
-  for (uint32_t y = 0; y < bmp.Height; y++)
-    for (uint32_t x = 0; x < bmp.Width; x++)
-    {
-      if (*bmp.RawData > 0)
-      {
-        ssd1306_DrawPixel(x, y, White);
-      }
-      else
-      {
-        ssd1306_DrawPixel(x, y, Black);
-      }
-
-      bmp.RawData++;
-    }
-
-  ssd1306_UpdateScreen();
+  omDrawBitmap(&bmp);
+  omDisplayUpdate(&oled1);
 }
 
 void DisplayInitCb(omDisplayT *displ)
 {
-  /* HAL_TIM_IC_Start_IT is not enabling HAL_TIM_PeriodElapsedCallback,
-   * so we need to manually enable it. See:
-   * https://community.st.com/s/question/0D50X00009hpBdlSAE/timer3-update-event-interrupt-not-working-properly
-   */
-  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
-  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
-
   ssd1306_Init();
   return;
 }

@@ -72,12 +72,35 @@ Bool omScreenIsActive(omScreenT *screen)
 }
 
 
-void omBitmapShow(omBitmapT *bitmap)
+void omDisplayUpdate(omDisplayT *displ)
+{
+  displ->UpdateCallback(displ);
+  return;
+}
+
+
+void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
+{
+  displ->DrawPixelCallback(displ, x, y, color);
+  return;
+}
+
+
+void omDrawBitmap(omBitmapT *bitmap)
 {
   for (uint32_t y = 0; y < bitmap->Height; y++)
     for (uint32_t x = 0; x < bitmap->Width; x++)
     {
+      if (*(bitmap->RawData) > 0)
+      {
+        omDrawPixel(bitmap->Display, x, y, 1); // White
+      }
+      else
+      {
+        omDrawPixel(bitmap->Display, x, y, 0); // Black
+      }
 
+      bitmap->RawData++;
     }
 
   return;

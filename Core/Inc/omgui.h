@@ -35,9 +35,8 @@ struct omDisplay
 
   void (*InitCallback)(omDisplayT *);
   void (*DeInitCallback)(omDisplayT *);
-  void (*PutPixel)(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
-  void (*Update)(omDisplayT *);
-//  void (*PutPixel)(omDisplayT *, uint32_t, uint32_t);
+  void (*UpdateCallback)(omDisplayT *);
+  void (*DrawPixelCallback)(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
 };
 
 struct omWidget
@@ -71,13 +70,16 @@ struct omBitmap
   uint16_t ColorsNumOf;
   Bool IsAlpha;
   uint32_t AlphaColor;
+  omDisplayT *Display;
 };
 
 // Public methods
 void omDisplayInit(omDisplayT *);
 void omDisplayDeInit(omDisplayT *);
+void omDisplayUpdate(omDisplayT *);
 Bool omScreenSelect(omScreenT *);
 Bool omScreenIsActive(omScreenT *);
-void omBitmapShow(omBitmapT *);
+void omDrawPixel(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
+void omDrawBitmap(omBitmapT *);
 
 #endif /* _OMGUI_H_ */

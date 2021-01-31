@@ -133,6 +133,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
   DS18B20_Init(DS18B20_Resolution_12bits);
 
+  /* HAL_TIM_IC_Start_IT is not enabling HAL_TIM_PeriodElapsedCallback,
+   * so we need to manually enable it. See:
+   * https://community.st.com/s/question/0D50X00009hpBdlSAE/timer3-update-event-interrupt-not-working-properly
+   */
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+
   OLED_GUI_Init();
 
 //  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
@@ -181,7 +188,7 @@ int main(void)
 
  		uint8_t ROM_tmp[8];
 		uint8_t i;
-    char buf[6];
+
   	for (i = 0; i < DS18B20_Quantity(); i++)
 		{
 			if (DS18B20_GetTemperature(i, &temperature))
@@ -189,10 +196,7 @@ int main(void)
 				DS18B20_GetROM(i, ROM_tmp);
 				memset(message, 0, sizeof(message));
 				//sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
-        // gcvt(t, 5, &buf); -> 1.2345 | 12.345 | 123.45
-        gcvt(temperature, 5, &buf);
-        sprintf(message, "T: %s", buf);
-        //sprintf(message, "T: %.2f", temperature);
+        sprintf(message, "T: %.2f", temperature);
         ssd1306_SetCursor(0, 0);
         ssd1306_Fill(Black);
         ssd1306_WriteString(message, Font_7x10, White);

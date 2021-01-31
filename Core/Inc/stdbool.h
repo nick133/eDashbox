@@ -1,4 +1,3 @@
-#ifndef _GL_STDBOOL_H
 /* Copyright (C) 2001-2003, 2006-2017 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
@@ -15,8 +14,8 @@
    You should have received a copy of the GNU Lesser General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _UNISTRING_STDBOOL_H
-#define _UNISTRING_STDBOOL_H
+#ifndef _STDBOOL_H
+#define _STDBOOL_H
 
 /* ISO C 99 <stdbool.h> for platforms that lack it.  */
 
@@ -37,4 +36,3 @@
 #define __bool_true_false_are_defined 1
 
 #endif /* _UNISTRING_STDBOOL_H */
-#endif

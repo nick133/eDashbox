@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
+/* #include "cmsis_os.h" */
 #include "i2c.h"
 #include "rtc.h"
 #include "tim.h"
@@ -31,9 +31,8 @@
 /* <<<< System >>>> */
 
 /* https://github.com/mpaland/printf
- * Tiny printf for embedded systems. Stdlib sprintf corrupts the stack if used
- * inside of FreeRTOS vTask
- */
+   Tiny printf for embedded systems. Stdlib sprintf corrupts the stack if used
+   inside of FreeRTOS vTask */
 #include "printf.h"
 
 //#include <stdio.h> // sprintf()
@@ -87,10 +86,10 @@ static volatile uint16_t u16_TIM2_OVC = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void MX_FREERTOS_Init(void);
+/* void MX_FREERTOS_Init(void); */
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-void vTaskTemperaturePoll(void *pvParameters);
+void TaskTemperaturePoll(void *);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -164,33 +163,33 @@ int main(void)
  TaskHandle_t taskTempPoll = NULL;
 
  BaseType_t taskTempPollRet = xTaskCreate(
-   vTaskTemperaturePoll,
+   TaskTemperaturePoll,
    "temp-sensor-poll",        /* Text name for the task. */
    configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
    (void *) 1,                /* Parameter passed into the task. */
    configMAX_PRIORITIES / 2,  /* Priority of the task created. */
    &taskTempPoll );
 
-  if (taskTempPollRet == pdPASS)
-  {
-    ssd1306_WriteString("Task ok!", Font_7x10, White);
-    omDisplayUpdate(&oled1);
-  }
-  else if (taskTempPollRet == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY)
-  {
-    ssd1306_WriteString("Task FAILED!", Font_7x10, White);
-    omDisplayUpdate(&oled1);
-  }
+  // if (taskTempPollRet == pdPASS)
+  // {
+  //   ssd1306_WriteString("Task ok!", Font_7x10, White);
+  //   omDisplayUpdate(&oled1);
+  // }
+  // else if (taskTempPollRet == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY)
+  // {
+  //   ssd1306_WriteString("Task FAILED!", Font_7x10, White);
+  //   omDisplayUpdate(&oled1);
+  // }
 
   vTaskStartScheduler();
 
   /* USER CODE END 2 */
 
   /* Init scheduler */
-  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
+/*   osKernelInitialize(); */  /* Call init function for freertos objects (in freertos.c) */
+/*   MX_FREERTOS_Init(); */
   /* Start scheduler */
-  osKernelStart();
+/*   osKernelStart(); */
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
@@ -281,7 +280,7 @@ static void MX_NVIC_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void vTaskTemperaturePoll(void *pvParameters)
+void TaskTemperaturePoll(void *pvParams)
 {
   //configASSERT( ( ( uint32_t ) pvParameters ) == 1 );
   char message[64];

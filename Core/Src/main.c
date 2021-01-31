@@ -29,7 +29,13 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* <<<< System >>>> */
-#include <stdio.h> // sprintf()
+/* https://github.com/mpaland/printf
+ * Tiny sprintf for embedded systems. Stdlib sprintf corrupts the stack if used
+ * inside of FreeRTOS vTask
+ */
+#include "printf.h"
+
+//#include <stdio.h> // sprintf()
 #include "stdlib.h" // itoa(), gcvt()
 #include "string.h" // strcpy(), memset()
 
@@ -88,6 +94,15 @@ void vTaskTemperaturePoll(void *pvParameters);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void *malloc( size_t xBytes )
+{
+     return pvPortMalloc( xBytes );
+}
+
+void free( void *pvBuffer )
+{
+     vPortFree( pvBuffer );
+}
 /* USER CODE END 0 */
 
 /**
@@ -151,15 +166,20 @@ int main(void)
    vTaskTemperaturePoll,
    "temp-sensor-poll",        /* Text name for the task. */
    configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
-   ( void * ) 1,              /* Parameter passed into the task. */
+   (void *) 1,                /* Parameter passed into the task. */
    configMAX_PRIORITIES / 2,  /* Priority of the task created. */
    &taskTempPoll );
 
-//  if( taskTempPollRet == pdPASS )
-//  {
-//    /* The task was created.  Use the task's handle to delete the task. */
-//    vTaskDelete( xHandle );
-//  }
+  if (taskTempPollRet == pdPASS)
+  {
+    ssd1306_WriteString("Task ok!", Font_7x10, White);
+    omDisplayUpdate(&oled1);
+  }
+  else if (taskTempPollRet == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY)
+  {
+    ssd1306_WriteString("Task FAILED!", Font_7x10, White);
+    omDisplayUpdate(&oled1);
+  }
 
   vTaskStartScheduler();
 
@@ -259,10 +279,10 @@ static void MX_NVIC_Init(void)
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 }
 
-
 /* USER CODE BEGIN 4 */
 void vTaskTemperaturePoll(void *pvParameters)
 {
+  //configASSERT( ( ( uint32_t ) pvParameters ) == 1 );
   char message[64];
 
   while (1)
@@ -278,9 +298,10 @@ void vTaskTemperaturePoll(void *pvParameters)
 			if (DS18B20_GetTemperature(i, &sensor.Temperature1))
 			{
 				DS18B20_GetROM(i, ROM_tmp);
-				memset(message, 0, sizeof(message));
+//				memset(message, 0, sizeof(message));
 				//sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
         sprintf(message, "T: %.2f", sensor.Temperature1);
+        //gcvt(sensor.Temperature1, 5, &message);
         ssd1306_SetCursor(0, 0);
         ssd1306_Fill(Black);
         ssd1306_WriteString(message, Font_7x10, White);

@@ -23,6 +23,7 @@ void OLED_GUI_Init(void)
   oled1.ResY = 96;
   oled1.Screen = &screenMain;
   oled1.InitCallback = DisplayInitCb;
+  oled1.DeInitCallback = NULL;
   oled1.UpdateCallback = DisplayUpdateCb;
   oled1.DrawPixelCallback = DisplayDrawPixelCb;
 

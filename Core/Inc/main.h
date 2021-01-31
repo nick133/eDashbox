@@ -93,6 +93,9 @@ void Error_Handler(void);
 #define BTN1_Pin GPIO_PIN_3
 #define BTN1_GPIO_Port GPIOA
 #define BTN1_EXTI_IRQn EXTI3_IRQn
+#define BTN2_Pin GPIO_PIN_4
+#define BTN2_GPIO_Port GPIOA
+#define BTN2_EXTI_IRQn EXTI4_IRQn
 #define DS18B20_Pin GPIO_PIN_7
 #define DS18B20_GPIO_Port GPIOA
 #define SWDIO_Pin GPIO_PIN_13

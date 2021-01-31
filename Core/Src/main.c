@@ -314,24 +314,27 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-  if (u8_RPM_State == IDLE)
+  if (htim->Instance == TIM2)
   {
-    u32_RPM_T1 = TIM2->CCR1;
-    u16_TIM2_OVC = 0;
-    u8_RPM_State = DONE;
-  }
-  else if (u8_RPM_State == DONE)
-  {
-    u32_RPM_T2 = TIM2->CCR1;
-    u32_RPM_Ticks = (u32_RPM_T2 + (u16_TIM2_OVC * 20000)) - u32_RPM_T1;
-    /*
-     * T sec = (Prescaler * Preload) / Frequency MHz
-     * Preload = Frequency MHz * T sec / Prescaler
-     */
-    sensor.MotorRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / u32_RPM_Ticks);
-    sensor.SpeedKph = ((sensor.MotorRpm * 60) / config.GearRatio) * config.WheelCirc;
+    if (u8_RPM_State == IDLE)
+    {
+      u32_RPM_T1 = TIM2->CCR1;
+      u16_TIM2_OVC = 0;
+      u8_RPM_State = DONE;
+    }
+    else if (u8_RPM_State == DONE)
+    {
+      u32_RPM_T2 = TIM2->CCR1;
+      u32_RPM_Ticks = (u32_RPM_T2 + (u16_TIM2_OVC * 20000)) - u32_RPM_T1;
+      /*
+      * T sec = (Prescaler * Preload) / Frequency MHz
+      * Preload = Frequency MHz * T sec / Prescaler
+       */
+      sensor.MotorRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / u32_RPM_Ticks);
+      sensor.SpeedKph = ((sensor.MotorRpm * 60) / config.GearRatio) * config.WheelCirc;
 
-    u8_RPM_State = IDLE;
+      u8_RPM_State = IDLE;
+    }
   }
 }
 

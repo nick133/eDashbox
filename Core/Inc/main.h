@@ -46,6 +46,7 @@ typedef struct ConfigSettings {
   UnitsSpeedT SpeedUnits;
   UnitsTempT TempUnits;
   uint16_t WheelCirc; // millimeters
+  uint16_t GearRatio; // millimeters
   Bool ShowLogo;
 
 } ConfigSettingsT;
@@ -53,7 +54,7 @@ typedef struct ConfigSettings {
 typedef struct SensorsData {
   volatile uint16_t MotorRpm;
   volatile float SpeedKph;
-  uint32_t calcDistanceOdo;
+  uint32_t DistanceOdo;
   uint32_t DistanceRide;
   uint32_t Trip1, Trip2;
   uint32_t Power;

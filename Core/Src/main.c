@@ -70,12 +70,12 @@
 ConfigSettingsT config;
 SensorsDataT sensor;
 
-volatile uint8_t u8_RPM_State = IDLE;
-volatile uint32_t u32_RPM_T1 = 0;
-volatile uint32_t u32_RPM_T2 = 0;
-volatile uint32_t u32_RPM_Ticks = 0;
-volatile uint16_t u16_TIM2_OVC = 0;
-volatile uint32_t u32_RPM_Freq = 0;
+static volatile uint8_t u8_RPM_State = IDLE;
+static volatile uint32_t u32_RPM_T1 = 0;
+static volatile uint32_t u32_RPM_T2 = 0;
+static volatile uint32_t u32_RPM_Ticks = 0;
+static volatile uint16_t u16_TIM2_OVC = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,6 +101,7 @@ int main(void)
   config.SpeedUnits = UnitsSpeedKph;
   config.ShowLogo = False;
   config.WheelCirc = 1285;
+  config.GearRatio = 6;
 
   /* USER CODE END 1 */
 
@@ -326,16 +327,11 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     /*
      * T sec = (Prescaler * Preload) / Frequency MHz
      * Preload = Frequency MHz * T sec / Prescaler
-     * 80000000*0.25
      */
-    // RPM
-    u32_RPM_Freq = (uint32_t)(60 * ((FREQ_CLK/htim->Init.Prescaler) / u32_RPM_Ticks));
-    u8_RPM_State = IDLE;
+    sensor.MotorRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / u32_RPM_Ticks);
+    sensor.SpeedKph = ((sensor.MotorRpm * 60) / config.GearRatio) * config.WheelCirc;
 
-    char buf0[16];
-    sprintf(buf0, "Freq: %d", (int)u32_RPM_Freq);
-//    sprintf(buf1, "Tick: %d", (int)u32_RPM_Ticks);
-//    sprintf(buf2, "OVC: %d", (int)u16_TIM2_OVC);
+    u8_RPM_State = IDLE;
   }
 }
 

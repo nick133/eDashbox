@@ -89,10 +89,14 @@ void omDrawBitmap(omBitmapT *bitmap)
 {
   uint32_t *data = bitmap->RawData; // Don't increment original pointer
 
-  for (uint32_t y = 0; y < bitmap->Height; y++)
-    for (uint32_t x = 0; x < bitmap->Width; x++)
+  for (uint32_t y = bitmap->PosY; y < bitmap->PosY+bitmap->Height; y++)
+    for (uint32_t x = bitmap->PosX; x < bitmap->PosX+bitmap->Width; x++)
     {
-      if (*data > 0)
+      if (x >= bitmap->Display->ResX || y >= bitmap->Display->ResY)
+      {
+        continue;
+      }
+      else if (*data > 0)
       {
         omDrawPixel(bitmap->Display, x, y, 1); // White
       }

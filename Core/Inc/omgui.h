@@ -42,6 +42,8 @@ typedef struct omAnimation omAnimationT;
 struct omDisplay
 {
   uint16_t Id;
+  uint16_t ResX;
+  uint16_t ResY;
   omScreenT *Screen;
 
   void (*InitCallback)(omDisplayT *);

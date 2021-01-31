@@ -19,6 +19,8 @@ static void DisplayDrawPixelCb(omDisplayT *, uint32_t x, uint32_t y, uint32_t co
 void OLED_GUI_Init(void)
 {
   oled1.Id = 0;
+  oled1.ResX = 96;
+  oled1.ResY = 96;
   oled1.Screen = &screenMain;
   oled1.InitCallback = DisplayInitCb;
   oled1.UpdateCallback = DisplayUpdateCb;

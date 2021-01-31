@@ -85,24 +85,20 @@ void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
 }
 
 
-void omDrawBitmap(omBitmapT *bitmap)
+void omDrawBitmap(omBitmapT *bitmap, uint32_t x, uint32_t y)
 {
   uint32_t *data = bitmap->RawData; // Don't increment original pointer
 
-  for (uint32_t y = bitmap->PosY; y < bitmap->PosY+bitmap->Height; y++)
-    for (uint32_t x = bitmap->PosX; x < bitmap->PosX+bitmap->Width; x++)
+  for (uint32_t yto = y; yto < bitmap->Height + y; yto++)
+    for (uint32_t xto = x; xto < bitmap->Width + x; xto++)
     {
-      if (x >= bitmap->Display->ResX || y >= bitmap->Display->ResY)
+      if (*data > 0)
       {
-        continue;
-      }
-      else if (*data > 0)
-      {
-        omDrawPixel(bitmap->Display, x, y, 1); // White
+        omDrawPixel(bitmap->Display, xto, yto, 1); // White
       }
       else
       {
-        omDrawPixel(bitmap->Display, x, y, 0); // Black
+        omDrawPixel(bitmap->Display, xto, yto, 0); // Black
       }
 
       data++;
@@ -117,7 +113,7 @@ void omAnimationStart(omAnimationT *anim)
 
   for (uint16_t i = 0; i < anim->FramesNumOf; i++)
   {
-    omDrawBitmap(bitmap);
+    omDrawBitmap(bitmap, anim->PosX, anim->PosY);
     omDisplayUpdate(anim->Display);
     SYS_SLEEP(anim->Interval);
 

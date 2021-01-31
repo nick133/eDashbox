@@ -88,10 +88,11 @@ struct omBitmap
 
 struct omAnimation
 {
-  omBitmapT *Bitmaps;
+  uint16_t PosX, PosY;
   uint16_t FramesNumOf;
   uint16_t Interval; // msec
   omDisplayT *Display;
+  omBitmapT *Bitmaps;
 };
 
 
@@ -102,7 +103,7 @@ void omDisplayUpdate(omDisplayT *);
 Bool omScreenSelect(omScreenT *);
 Bool omScreenIsActive(omScreenT *);
 void omDrawPixel(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
-void omDrawBitmap(omBitmapT *);
+void omDrawBitmap(omBitmapT *, uint32_t x, uint32_t y);
 void omAnimationStart(omAnimationT *);
 
 #endif /* _OMGUI_H_ */

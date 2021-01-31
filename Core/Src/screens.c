@@ -60,15 +60,16 @@ uint32_t image_data[256] = {
   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
 
-  omBitmapT bmp;
-  bmp.Width = 16;
-  bmp.Height = 16;
-  bmp.ColorsNumOf = 16;
-  bmp.IsAlpha = False;
-  bmp.RawData = &image_data[0];
-  bmp.Display = &oled1;
+  omBitmapT bmp = {
+    .Width = 16,
+    .Height = 16,
+    .ColorsNumOf = 16,
+    .IsAlpha = False,
+    .RawData = &image_data[0],
+    .Display = &oled1
+  };
 
-  omDrawBitmap(&bmp);
+  omDrawBitmap(&bmp, 16, 6);
   omDisplayUpdate(&oled1);
 }
 

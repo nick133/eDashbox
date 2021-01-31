@@ -7,12 +7,11 @@
  *      Author: nick
  */
 
-
 #include "omgui.h"
 #include "main.h"
 
 
-// Private methods
+/* Private methods */
 static void _omScreenInit(omScreenT *);
 
 
@@ -88,10 +87,12 @@ void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
 
 void omDrawBitmap(omBitmapT *bitmap)
 {
+  uint32_t *data = bitmap->RawData; // Don't increment original pointer
+
   for (uint32_t y = 0; y < bitmap->Height; y++)
     for (uint32_t x = 0; x < bitmap->Width; x++)
     {
-      if (*(bitmap->RawData) > 0)
+      if (*data > 0)
       {
         omDrawPixel(bitmap->Display, x, y, 1); // White
       }
@@ -100,7 +101,7 @@ void omDrawBitmap(omBitmapT *bitmap)
         omDrawPixel(bitmap->Display, x, y, 0); // Black
       }
 
-      bitmap->RawData++;
+      data++;
     }
 
   return;
@@ -108,13 +109,15 @@ void omDrawBitmap(omBitmapT *bitmap)
 
 void omAnimationStart(omAnimationT *anim)
 {
+  omBitmapT *bitmap = anim->Bitmaps; // Don't increment original pointer
+
   for (uint16_t i = 0; i < anim->FramesNumOf; i++)
   {
-    omDrawBitmap(anim->Bitmaps);
+    omDrawBitmap(bitmap);
     omDisplayUpdate(anim->Display);
     SYS_SLEEP(anim->Interval);
 
-    anim->Bitmaps++;
+    bitmap++;
   }
 
   return;

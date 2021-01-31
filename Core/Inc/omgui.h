@@ -11,12 +11,16 @@
 #define _OMGUI_H_
 
 #include "stm32l4xx_hal.h"
+//#include "omgui_conf.h"
 
-#ifdef INC_FREERTOS_H
+#define OMGUI_USE_FREERTOS // should go to omgui_conf.h
+
+#ifdef OMGUI_USE_FREERTOS
+#include "FreeRTOS.h"
 #define SYS_SLEEP(ms) vTaskDelay(ms / portTICK_PERIOD_MS)
 #else
 #define SYS_SLEEP(ms) HAL_Delay(ms)
-#endif
+#endif // OMGUI_USE_FREERTOS
 
 #ifndef OMGUI_MAX_WIDGETS
 #define OMGUI_MAX_WIDGETS 16

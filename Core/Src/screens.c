@@ -21,6 +21,7 @@ void OLED_GUI_Init(void)
   oled1.Id = 0;
   oled1.Screen = &screenMain;
   oled1.InitCallback = DisplayInitCb;
+  oled1.UpdateCallback = DisplayUpdateCb;
   oled1.DrawPixelCallback = DisplayDrawPixelCb;
 
 //  LogoScreenInit();

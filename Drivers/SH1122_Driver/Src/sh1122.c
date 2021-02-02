@@ -369,10 +369,10 @@ void Frame_DrawCircle(int16_t x0, int16_t y0, int16_t radius, uint8_t color)
 // Draw symbol
 uint8_t Frame_DrawChar(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t Char, uint8_t color)
 {
-    // Указатель на подтабличку конкретного символа шрифта
+    // РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РїРѕРґС‚Р°Р±Р»РёС‡РєСѓ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ СЃРёРјРІРѕР»Р° С€СЂРёС„С‚Р°
     uint8_t *pCharTable = font_GetFontStruct(FontID, Char);
-    uint8_t CharWidth = font_GetCharWidth(pCharTable);   // Ширина символа
-    uint8_t CharHeight = font_GetCharHeight(pCharTable); // Высота символа
+    uint8_t CharWidth = font_GetCharWidth(pCharTable);   // РЁРёСЂРёРЅР° СЃРёРјРІРѕР»Р°
+    uint8_t CharHeight = font_GetCharHeight(pCharTable); // Р’С‹СЃРѕС‚Р° СЃРёРјРІРѕР»Р°
     pCharTable += 2;
 
     if (FontID == FONTID_6X8M)
@@ -411,21 +411,21 @@ uint8_t Frame_DrawChar(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t Char, uin
 
 int16_t Frame_getFullStrWidth(uint8_t FontID, char *Str)
 {
-    uint8_t done = 0;     // Флаг окончания вывода
-    int16_t StrWidth = 0; // Ширина строки в пикселях
+    uint8_t done = 0;     // Р¤Р»Р°Рі РѕРєРѕРЅС‡Р°РЅРёСЏ РІС‹РІРѕРґР°
+    int16_t StrWidth = 0; // РЁРёСЂРёРЅР° СЃС‚СЂРѕРєРё РІ РїРёРєСЃРµР»СЏС…
 
-    // Вывод строки
+    // Р’С‹РІРѕРґ СЃС‚СЂРѕРєРё
     while (!done)
     {
         switch (*Str)
         {
-        case '\0': // Конец строки
+        case '\0': // РљРѕРЅРµС† СЃС‚СЂРѕРєРё
             done = 1;
             break;
-        case '\n': // Переход на следующую строку
-        case '\r': // Переход в начало строки
+        case '\n': // РџРµСЂРµС…РѕРґ РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ СЃС‚СЂРѕРєСѓ
+        case '\r': // РџРµСЂРµС…РѕРґ РІ РЅР°С‡Р°Р»Рѕ СЃС‚СЂРѕРєРё
             break;
-        default: // Отображаемый символ
+        default: // РћС‚РѕР±СЂР°Р¶Р°РµРјС‹Р№ СЃРёРјРІРѕР»
             StrWidth += font_GetCharWidth(font_GetFontStruct(FontID, *Str));
             break;
         }
@@ -437,32 +437,32 @@ int16_t Frame_getFullStrWidth(uint8_t FontID, char *Str)
 
 int16_t Frame_getStrWidth(uint8_t FontID, char *Str)
 {
-    uint8_t done = 0;     // Флаг окончания вывода
-    int16_t StrWidth = 0; // Ширина строки в пикселях
+    uint8_t done = 0;     // Р¤Р»Р°Рі РѕРєРѕРЅС‡Р°РЅРёСЏ РІС‹РІРѕРґР°
+    int16_t StrWidth = 0; // РЁРёСЂРёРЅР° СЃС‚СЂРѕРєРё РІ РїРёРєСЃРµР»СЏС…
     int16_t StrMaxWidth = 0;
-    uint8_t CarryFlag = 0; // Флаг переноса
+    uint8_t CarryFlag = 0; // Р¤Р»Р°Рі РїРµСЂРµРЅРѕСЃР°
 
-    // Вывод строки
+    // Р’С‹РІРѕРґ СЃС‚СЂРѕРєРё
     while (!done)
     {
         switch (*Str)
         {
-            case '\0': // Конец строки
+            case '\0': // РљРѕРЅРµС† СЃС‚СЂРѕРєРё
                 if (!CarryFlag)
                     StrWidth = StrMaxWidth; //
                 done = 1;
                 break;
-            case '\n': // Переход на следующую строку
-            case '\r': // Переход в начало строки
+            case '\n': // РџРµСЂРµС…РѕРґ РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ СЃС‚СЂРѕРєСѓ
+            case '\r': // РџРµСЂРµС…РѕРґ РІ РЅР°С‡Р°Р»Рѕ СЃС‚СЂРѕРєРё
                 CarryFlag = 1;
                 if (StrMaxWidth > StrWidth)
                 {
-                    // Нашли кусок строки длиннее
+                    // РќР°С€Р»Рё РєСѓСЃРѕРє СЃС‚СЂРѕРєРё РґР»РёРЅРЅРµРµ
                     StrWidth = StrMaxWidth;
                     StrMaxWidth = 0;
                 }
                 break;
-            default: // Отображаемый символ
+            default: // РћС‚РѕР±СЂР°Р¶Р°РµРјС‹Р№ СЃРёРјРІРѕР»
                 StrMaxWidth += font_GetCharWidth(font_GetFontStruct(FontID, *Str));
                 break;
         }
@@ -487,27 +487,27 @@ int16_t Frame_getFormatStrWidth(uint8_t FontID, const char *args, ...)
 // Draw string
 int16_t Frame_DrawString(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t *Str, uint8_t hAlign, uint8_t color)
 {
-    uint8_t done = 0;      // Флаг окончания вывода
-    uint8_t StrHeight = 8; // Высота символов в пикселях для перехода на следующую строку
-    uint8_t *SubStr = Str; // Определяем начало подстроки
-    uint8_t SubStrWidth = 0; // Ширина подстроки
-    int16_t Xstart = X;    // Куда будем переводить каретку при переходе на новую строку
+    uint8_t done = 0;      // Р¤Р»Р°Рі РѕРєРѕРЅС‡Р°РЅРёСЏ РІС‹РІРѕРґР°
+    uint8_t StrHeight = 8; // Р’С‹СЃРѕС‚Р° СЃРёРјРІРѕР»РѕРІ РІ РїРёРєСЃРµР»СЏС… РґР»СЏ РїРµСЂРµС…РѕРґР° РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ СЃС‚СЂРѕРєСѓ
+    uint8_t *SubStr = Str; // РћРїСЂРµРґРµР»СЏРµРј РЅР°С‡Р°Р»Рѕ РїРѕРґСЃС‚СЂРѕРєРё
+    uint8_t SubStrWidth = 0; // РЁРёСЂРёРЅР° РїРѕРґСЃС‚СЂРѕРєРё
+    int16_t Xstart = X;    // РљСѓРґР° Р±СѓРґРµРј РїРµСЂРµРІРѕРґРёС‚СЊ РєР°СЂРµС‚РєСѓ РїСЂРё РїРµСЂРµС…РѕРґРµ РЅР° РЅРѕРІСѓСЋ СЃС‚СЂРѕРєСѓ
 
-    // Подсчет максимальной ширины подстроки
+    // РџРѕРґСЃС‡РµС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕР№ С€РёСЂРёРЅС‹ РїРѕРґСЃС‚СЂРѕРєРё
     while (!done)
     {
         switch (*SubStr)
         {
-            case '\0': // Конец строки
+            case '\0': // РљРѕРЅРµС† СЃС‚СЂРѕРєРё
                 done = 1;
                 break;
-            case '\n': // Переход на следующую строку
-                // Нашли перенос!
+            case '\n': // РџРµСЂРµС…РѕРґ РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ СЃС‚СЂРѕРєСѓ
+                // РќР°С€Р»Рё РїРµСЂРµРЅРѕСЃ!
                 done = 1;
                 break;
-            case '\r': // Переход в начало строки
+            case '\r': // РџРµСЂРµС…РѕРґ РІ РЅР°С‡Р°Р»Рѕ СЃС‚СЂРѕРєРё
                 break;
-            default: // Отображаемый символ
+            default: // РћС‚РѕР±СЂР°Р¶Р°РµРјС‹Р№ СЃРёРјРІРѕР»
                 SubStrWidth += font_GetCharWidth(font_GetFontStruct(FontID, *SubStr));
                 break;
         }
@@ -524,22 +524,22 @@ int16_t Frame_DrawString(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t *Str, u
         X -= SubStrWidth / 2;
     }
 
-    // Вывод строки
+    // Р’С‹РІРѕРґ СЃС‚СЂРѕРєРё
     while (!done)
     {
         switch (*Str)
         {
-            case '\0': // Конец строки
+            case '\0': // РљРѕРЅРµС† СЃС‚СЂРѕРєРё
                 done = 1;
                 break;
-            case '\n': // Переход на следующую строку
+            case '\n': // РџРµСЂРµС…РѕРґ РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ СЃС‚СЂРѕРєСѓ
                 Y += StrHeight;
                 Frame_DrawString(Xstart, Y, FontID, Str + 1, hAlign, color);
                 done = 1;
                 break;
-            case '\r': // Переход в начало строки
+            case '\r': // РџРµСЂРµС…РѕРґ РІ РЅР°С‡Р°Р»Рѕ СЃС‚СЂРѕРєРё
                 break;
-            default: // Отображаемый символ
+            default: // РћС‚РѕР±СЂР°Р¶Р°РµРјС‹Р№ СЃРёРјРІРѕР»
                 X += Frame_DrawChar(X, Y, FontID, *Str, color);
                 StrHeight = font_GetCharHeight(font_GetFontStruct(FontID, *Str));
                 break;
@@ -560,24 +560,24 @@ int16_t Frame_printf(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t color, uint
     vsnprintf(StrBuff, sizeof(StrBuff), args, ap);
     va_end(ap);
 
-    // Подсчет количества переносов
-    uint8_t done = 0; // Флаг окончания 
+    // РџРѕРґСЃС‡РµС‚ РєРѕР»РёС‡РµСЃС‚РІР° РїРµСЂРµРЅРѕСЃРѕРІ
+    uint8_t done = 0; // Р¤Р»Р°Рі РѕРєРѕРЅС‡Р°РЅРёСЏ 
     uint8_t *TempStr = StrBuff;
     uint8_t carries = 0;
     while (!done)
     {
         switch (*TempStr)
         {
-        case '\0': // Конец строки
+        case '\0': // РљРѕРЅРµС† СЃС‚СЂРѕРєРё
             done = 1;
             break;
-        case '\n': // Переход на следующую строку
-            // Нашли перенос!
+        case '\n': // РџРµСЂРµС…РѕРґ РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ СЃС‚СЂРѕРєСѓ
+            // РќР°С€Р»Рё РїРµСЂРµРЅРѕСЃ!
             carries++;
             break;
-        case '\r': // Переход в начало строки
+        case '\r': // РџРµСЂРµС…РѕРґ РІ РЅР°С‡Р°Р»Рѕ СЃС‚СЂРѕРєРё
             break;
-        default: // Отображаемый символ
+        default: // РћС‚РѕР±СЂР°Р¶Р°РµРјС‹Р№ СЃРёРјРІРѕР»
             break;
         }
         TempStr++;

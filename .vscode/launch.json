@@ -9,7 +9,7 @@
   "request": "launch",
   "name": "Debug J-Link",
   "cwd": "${workspaceFolder}",
-  "executable": "${workspaceFolder}/build/debug/xevdo.elf",
+  "executable": "${workspaceFolder}/build/debug/evAnalyst.elf",
   "servertype": "jlink",
   "serverpath": "/opt/SEGGER/JLink/JLinkGDBServerCLExe",
   "device": "STM32L432KC",

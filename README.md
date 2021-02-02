@@ -1,5 +1,5 @@
-# XEVDO
-eXtended Electric Vehicle Datalogger, Opensource.
+# evAnalyst
+Opensource electric motor vehicle analyst and datalogger.
 Firmware for STM32-Nucleo32 board.
 
 This is learning project in early stage, use it at your own risk.

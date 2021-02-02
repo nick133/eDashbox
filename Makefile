@@ -26,16 +26,15 @@ endif
 # C sources
 C_SOURCES = \
 $(wildcard Core/Src/*.c) \
-$(wildcard Drivers/STM32L4xx_HAL_Driver/Src/*.c) \
-$(wildcard Drivers/SSD1306_Driver/Src/*.c) \
+Drivers/SH1122_Driver/Src/sh1122.c \
+$(wildcard Drivers/SH1122_Driver/Src/fonts/*.c) \
 $(wildcard Drivers/DS18B20_HAL_Driver/Src/*.c) \
 $(wildcard Middlewares/Third_Party/FreeRTOS/Source/*.c) \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+$(wildcard Drivers/STM32L4xx_HAL_Driver/Src/*.c) \
 Core/Src/system_stm32l4xx.c
-
-#$(wildcard Drivers/SH1122_Driver/Src/*.c)
 
 # Exclude
 C_SRC_EXCLUDE = \
@@ -100,7 +99,8 @@ AS_INCLUDES =  \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
--IDrivers/SSD1306_Driver/Inc \
+-IDrivers/SH1122_Driver/Inc \
+-IDrivers/SH1122_Driver/Inc/fonts \
 -IDrivers/DS18B20_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \

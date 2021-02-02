@@ -3,7 +3,7 @@
 #include "screens.h"
 #include "main.h"
 
-#include "ssd1306.h"
+#include "sh1122.h"
 //#include "stm32l4xx_hal.h"
 #include "tim.h"
 
@@ -77,19 +77,22 @@ uint32_t image_data[256] = {
 
 static void DisplayInitCb(omDisplayT *displ)
 {
-  ssd1306_Init();
+  //ssd1306_Init();
+  Display_Init();
   return;
 }
 
 
 static void DisplayUpdateCb(omDisplayT *displ)
 {
-  ssd1306_UpdateScreen();
+  //ssd1306_UpdateScreen();
+  Display_SendFrame();
 }
 
 
 static void DisplayDrawPixelCb(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
 {
-  ssd1306_DrawPixel(x, y, color);
+  //ssd1306_DrawPixel(x, y, color);
+  Frame_DrawPixel(x, y, color);
   return;
 }

@@ -97,8 +97,14 @@ void Error_Handler(void);
 #define BTN2_Pin GPIO_PIN_4
 #define BTN2_GPIO_Port GPIOA
 #define BTN2_EXTI_IRQn EXTI4_IRQn
+#define OLED_RES_Pin GPIO_PIN_5
+#define OLED_RES_GPIO_Port GPIOA
 #define DS18B20_Pin GPIO_PIN_7
 #define DS18B20_GPIO_Port GPIOA
+#define OLED_nCS_Pin GPIO_PIN_8
+#define OLED_nCS_GPIO_Port GPIOA
+#define OLED_DC_Pin GPIO_PIN_11
+#define OLED_DC_GPIO_Port GPIOA
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14

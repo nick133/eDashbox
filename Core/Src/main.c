@@ -20,8 +20,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 /* #include "cmsis_os.h" */
-#include "i2c.h"
 #include "rtc.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -47,7 +47,9 @@
 /* <<<< Drivers >>>> */
 #include "onewire.h"
 #include "ds18b20.h"
-#include "ssd1306.h"
+#include "sh1122.h"
+#include "font.h"
+#include "f10x16f.h"
 
 /* <<<< GUI >>>> */
 #include "omgui.h"
@@ -96,12 +98,12 @@ void TaskTemperaturePoll(void *);
 /* USER CODE BEGIN 0 */
 void *malloc( size_t xBytes )
 {
-     return pvPortMalloc( xBytes );
+  return pvPortMalloc( xBytes );
 }
 
 void free( void *pvBuffer )
 {
-     vPortFree( pvBuffer );
+  vPortFree( pvBuffer );
 }
 /* USER CODE END 0 */
 
@@ -139,10 +141,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_I2C1_Init();
   MX_TIM2_Init();
   MX_RTC_Init();
   MX_TIM1_Init();
+  MX_SPI1_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
@@ -155,6 +157,17 @@ int main(void)
    */
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+
+Display_Init();
+//Display_SetOrienation(OLED_DISP_ROTATE180);
+Frame_DrawPixel(10,10,Display_Color.Gray_01);
+Frame_DrawPixel(10,15,Display_Color.Gray_02);
+Frame_DrawPixel(10,20,Display_Color.Gray_03);
+Frame_DrawRectangle(0, 0, OLED_WIDTH-1, OLED_HEIGHT-1, Display_Color.Gray_08);
+//Frame_printf(0,0, FONTID_10X16F, Display_Color.Gray_11, LEFT, TOP, (uint8_t*)"Hello!");
+Display_SendFrame();
+HAL_Delay(15000);
+
 
   OLED_GUI_Init();
 
@@ -245,10 +258,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2
-                              |RCC_PERIPHCLK_I2C1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
@@ -302,9 +313,9 @@ void TaskTemperaturePoll(void *pvParams)
 				//sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
         snprintf(message, 64, "T: %.2f", sensor.Temperature1);
         //gcvt(sensor.Temperature1, 5, &message);
-        ssd1306_SetCursor(0, 0);
-        ssd1306_Fill(Black);
-        ssd1306_WriteString(message, Font_7x10, White);
+        // Frame_printf(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t color,
+        //     uint8_t hAlign, uint8_t vAlign, const char *args, ...)
+        Frame_printf(0,0, FONTID_10X16F, Display_Color.Gray_11, LEFT, TOP, message);
 
         omDisplayUpdate(&oled1);
 			}

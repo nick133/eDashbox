@@ -196,8 +196,12 @@ clean:
 # pre/post-build actions
 #######################################
 
-# Comment CMSIS-RTOS related code as we prefer raw FreeRTOS
+# 1. Comment CMSIS-RTOS related code as we prefer raw FreeRTOS
+# 2. Preserve files we don't want to be overwrited by CubeMX
 pre-build: MAIN_C := Core/Src/main.c
+pre-build: FFCONF_H := FATFS/Target/ffconf.h
+pre-build: FFCONF_H_PRESERVE := FATFS/Target/preserve/ffconf.h
+
 pre-build: $(PGM2C)
 	@grep -q '^#include "cmsis_os.h"' $(MAIN_C) && sed -i \
 		-e 's@^#include "cmsis_os.h"@/* & */@;' \
@@ -205,6 +209,7 @@ pre-build: $(PGM2C)
 		-e 's@^ \+osKernelStart();@/* & */@' \
 		-e 's@^ \+osKernelInitialize();@/* & */@' \
 		-e 's@^void MX_FREERTOS_Init(void);@/* & */@' $(MAIN_C) || true
+	@cmp -s $(FFCONF_H_PRESERVE) $(FFCONF_H) || cp -f $(FFCONF_H_PRESERVE) $(FFCONF_H)
 
 $(PGM2C): $(PGM2C_PATH)/src/pgm2c.nim
 	@cd $(PGM2C_PATH) && nimble build
@@ -217,5 +222,6 @@ gflash:
 flash:
 	@jflash build/release/evAnalyst.bin
 
-a:
-	@echo $(C_SOURCES)|most
+forceupdate=$(shell
+x: # For testing
+	@echo $(C_SOURCES) | most

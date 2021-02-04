@@ -173,7 +173,7 @@ HAL_Delay(1000);
   }
     
        /* Open file to write */
-        if(f_open(&fil, "1.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE) != FR_OK)
+        if(f_open(&fil, "Hello_Mootherfucker-static.v11.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE) != FR_OK)
   {
     ErrorError = 2;
   }
@@ -194,8 +194,7 @@ HAL_Delay(1000);
   }
 
         /* Writing text */
-        f_puts("11222333444555666777888999000", &fil);
-        //f_puts("Save the world!!!", &fil);
+        f_puts("Save the world!!! Some test text - 0000000000000 veeery long!", &fil);
 
         /* Close file */
         if(f_close(&fil) != FR_OK)
@@ -203,31 +202,38 @@ HAL_Delay(1000);
     ErrorError = 5;
   }
 
-        /* Open file to read */
-        if(f_open(&fil, "1.txt", FA_READ) != FR_OK)
-     {
-    ErrorError = 6;
-  }
+  f_open(&fil, "Another-test-file-very-loong-fn.v12.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+  f_puts("Version 2. Save the world!!! Some test text - 0000000000000 veeery long!", &fil);
+  f_close(&fil);
 
-  f_gets(buffer, sizeof(buffer), &fil);
-  //      while(f_gets(buffer, sizeof(buffer), &fil))
-        // {
-        //         /* SWV output */
-        //         sprintf("%s", buffer);
-        //         fflush(stdout);
-        // }
 
-        /* Close file */
-        if(f_close(&fil) != FR_OK)
-     {
-ErrorError = 7;
-  }
 
-        /* Unmount SDCARD */
-        if(f_mount(NULL, "", 1) != FR_OK)
-        {
-ErrorError = 8;
-  }
+
+//         /* Open file to read */
+//         if(f_open(&fil, "Hello_Mootherfucker-static.v11.txt", FA_READ) != FR_OK)
+//      {
+//     ErrorError = 6;
+//   }
+
+//   f_gets(buffer, sizeof(buffer), &fil);
+//   //      while(f_gets(buffer, sizeof(buffer), &fil))
+//         // {
+//         //         /* SWV output */
+//         //         sprintf("%s", buffer);
+//         //         fflush(stdout);
+//         // }
+
+//         /* Close file */
+//         if(f_close(&fil) != FR_OK)
+//      {
+// ErrorError = 7;
+//   }
+
+//         /* Unmount SDCARD */
+//         if(f_mount(NULL, "", 1) != FR_OK)
+//         {
+// ErrorError = 8;
+//   }
 
 
 

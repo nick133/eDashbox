@@ -12,12 +12,13 @@ TARGET = evAnalyst
 DEBUG = 1
 
 # optimization, build path
+BUILD_ROOT = build
 ifeq ($(DEBUG),1)
 OPT = -Og
-BUILD_DIR = build/debug
+BUILD_DIR = $(BUILD_ROOT)/debug
 else
-BUILD_DIR = build/release
-OPT = -O2
+BUILD_DIR = $(BUILD_ROOT)/release
+OPT = -Ofast
 endif
 
 ######################################
@@ -47,7 +48,7 @@ Core/Src/freertos.c
 C_SOURCES := $(sort $(filter-out $(C_SRC_EXCLUDE),$(C_SOURCES)))
 
 # ASM sources
-ASM_SOURCES = startup_stm32l432xx.s
+ASM_SOURCES = startup/startup_stm32l432xx.s
 
 
 #######################################
@@ -152,11 +153,12 @@ all: pre-build $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).bin post-build
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
+
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
+$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
@@ -167,7 +169,7 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile $(LDSCRIPT)
 	$(SZ) $@
 
 $(LDSCRIPT): TrueSTUDIO/$(TARGET)/STM32L432KC_FLASH.ld
-	@cp -f $< $@
+	cp -f $< $@
 
 $(BUILD_DIR):
 	mkdir -p $@
@@ -185,7 +187,7 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)
+	-rm -fR $(BUILD_ROOT)
 
 #######################################
 # dependencies
@@ -216,12 +218,11 @@ $(PGM2C): $(PGM2C_PATH)/src/pgm2c.nim
 
 post-build:
 
-gflash:
-	@jflash build/debug/evAnalyst.bin
+gflash:	@jflash build/debug/evAnalyst.bin
 
-flash:
-	@jflash build/release/evAnalyst.bin
+flash: @jflash build/release/evAnalyst.bin
 
-forceupdate=$(shell
+.PHONY: all clean pre-build post-build flash gflash
+
 x: # For testing
-	@echo $(C_SOURCES) | most
+	@echo $(dir $(BUILD_DIR))

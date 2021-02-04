@@ -94,7 +94,7 @@ void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y)
     {
       if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == *data))
       {
-        bitmap->Display->DrawPixelCallback(bitmap->Display, xto, yto, *data);
+        omDrawPixel(displ, xto, yto, *data);
       }
 
       data++;

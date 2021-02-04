@@ -2,6 +2,7 @@
 #include "omgui.h"
 #include "screens.h"
 #include "main.h"
+#include "bitmaps.h"
 
 #include "sh1122.h"
 //#include "stm32l4xx_hal.h"
@@ -19,8 +20,8 @@ static void DisplayDrawPixelCb(omDisplayT *, uint32_t x, uint32_t y, uint32_t co
 void OLED_GUI_Init(void)
 {
   oled1.Id = 0;
-  oled1.ResX = 96;
-  oled1.ResY = 96;
+  oled1.ResX = 256;
+  oled1.ResY = 64;
   oled1.Screen = &screenMain;
   oled1.InitCallback = DisplayInitCb;
   oled1.DeInitCallback = NULL;
@@ -60,7 +61,7 @@ uint32_t image_data[256] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-  omBitmapT bmp = {
+  omBitmapT bitmap_logo = {
     .Width = 16,
     .Height = 16,
     .ColorsNumOf = 16,
@@ -69,7 +70,7 @@ uint32_t image_data[256] = {
     .Display = &oled1
   };
 
-  omDrawBitmap(&bmp, 16, 6);
+  omDrawBitmap(&oled1, &bitmap_logo, 16, 6);
   omDisplayUpdate(&oled1);
 }
 
@@ -77,6 +78,10 @@ uint32_t image_data[256] = {
 static void DisplayInitCb(omDisplayT *displ)
 {
   Display_Init();
+  // Show logo
+  omDrawBitmap(displ, &bitmap_logo, 256, 64);
+  omDisplayUpdate(displ);
+  Sleep(1000);
   return;
 }
 

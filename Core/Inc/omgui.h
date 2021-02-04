@@ -11,16 +11,6 @@
 #define _OMGUI_H_
 
 #include "stm32l4xx_hal.h"
-//#include "omgui_conf.h"
-
-#define OMGUI_USE_FREERTOS // should go to omgui_conf.h
-
-#ifdef OMGUI_USE_FREERTOS
-#include "FreeRTOS.h"
-#define SYS_SLEEP(ms) vTaskDelay(ms / portTICK_PERIOD_MS)
-#else
-#define SYS_SLEEP(ms) HAL_Delay(ms)
-#endif // OMGUI_USE_FREERTOS
 
 #ifndef OMGUI_MAX_WIDGETS
 #define OMGUI_MAX_WIDGETS 16
@@ -42,8 +32,7 @@ typedef struct omAnimation omAnimationT;
 struct omDisplay
 {
   uint16_t Id;
-  uint16_t ResX;
-  uint16_t ResY;
+  uint16_t ResX, ResY;
   omScreenT *Screen;
 
   void (*InitCallback)(omDisplayT *);

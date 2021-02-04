@@ -77,7 +77,7 @@ extern ConfigSettingsT config;
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+#define Sleep(ms) vTaskDelay(ms / portTICK_PERIOD_MS)
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

@@ -85,18 +85,14 @@ void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
 }
 
 
-void omDrawBitmap(omBitmapT *bitmap, uint32_t x, uint32_t y)
+void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y)
 {
   uint32_t *data = bitmap->RawData; // Don't increment original pointer
 
   for (uint32_t yto = y; yto < bitmap->Height + y; yto++)
     for (uint32_t xto = x; xto < bitmap->Width + x; xto++)
     {
-      if (*data > 0)
-      {
-        bitmap->Display->DrawPixelCallback(bitmap->Display, xto, yto, *data);
-      }
-      else
+      if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == *data))
       {
         bitmap->Display->DrawPixelCallback(bitmap->Display, xto, yto, *data);
       }
@@ -107,7 +103,7 @@ void omDrawBitmap(omBitmapT *bitmap, uint32_t x, uint32_t y)
   return;
 }
 
-void omAnimationStart(omAnimationT *anim)
+/* void omAnimationStart(omAnimationT *anim)
 {
   omBitmapT *bitmap = anim->Bitmaps; // Don't increment original pointer
 
@@ -121,4 +117,4 @@ void omAnimationStart(omAnimationT *anim)
   }
 
   return;
-}
+} */

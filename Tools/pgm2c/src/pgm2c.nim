@@ -24,16 +24,16 @@ proc cvt_file(filename: string) =
 
   var
     fd_in = filename.open()
-    line : string
+    line: string
 
-    im_width : uint
-    im_height : uint
-    im_colors : uint
+    im_width: uint
+    im_height: uint
+    im_colors: uint
     im_data = "uint32_t bitmap_" & name & "_data[] = {\n"
 
-    color_mark : bool
-    data_sem : bool
-    cnt = 0
+    color_mark: bool
+    data_sem: bool
+    cnt: uint = 0
 
   while fd_in.readLine(line):
     if line[0] == '#' or line == "P2": # header
@@ -52,7 +52,7 @@ proc cvt_file(filename: string) =
         num = dtohex_color line
         not_1st_ln = ", " & num
 
-      if cnt == pix_in_row:
+      if cnt == im_width:
         not_1st_ln = ",\n" & num
         cnt = 0
 

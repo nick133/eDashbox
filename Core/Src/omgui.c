@@ -94,11 +94,11 @@ void omDrawBitmap(omBitmapT *bitmap, uint32_t x, uint32_t y)
     {
       if (*data > 0)
       {
-        omDrawPixel(bitmap->Display, xto, yto, 1); // White
+        bitmap->Display->DrawPixelCallback(bitmap->Display, xto, yto, *data);
       }
       else
       {
-        omDrawPixel(bitmap->Display, xto, yto, 0); // Black
+        bitmap->Display->DrawPixelCallback(bitmap->Display, xto, yto, *data);
       }
 
       data++;

@@ -20,10 +20,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 /* #include "cmsis_os.h" */
+#include "fatfs.h"
 #include "rtc.h"
 #include "spi.h"
 #include "tim.h"
-#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -45,6 +45,7 @@
 #include <timers.h>
 
 /* <<<< Drivers >>>> */
+//#include "sd.h"
 #include "onewire.h"
 #include "ds18b20.h"
 #include "sh1122.h"
@@ -84,6 +85,15 @@ static volatile uint32_t u32_RPM_T2 = 0;
 static volatile uint32_t u32_RPM_Ticks = 0;
 static volatile uint16_t u16_TIM2_OVC = 0;
 
+
+ FATFS fs;
+ FATFS *pfs;
+ FIL fil;
+ FRESULT fres;
+ DWORD fre_clust;
+ uint32_t totalSpace, freeSpace;
+ char buffer[100];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -114,6 +124,7 @@ void free( void *pvBuffer )
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+ 
 //  config.TempUnits = TEMP_CELSIUS;
   config.SpeedUnits = UnitsSpeedKph;
   config.ShowLogo = False;
@@ -140,16 +151,87 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
   MX_TIM2_Init();
   MX_RTC_Init();
   MX_TIM1_Init();
   MX_SPI1_Init();
+  MX_SPI3_Init();
+  MX_FATFS_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
   DS18B20_Init(DS18B20_Resolution_12bits);
+
+uint32_t ErrorError=0;
+
+HAL_Delay(1000);
+
+  if(f_mount(&fs, "", 1) != FR_OK)
+  {
+    ErrorError = 1;
+  }
+    
+       /* Open file to write */
+        if(f_open(&fil, "1.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE) != FR_OK)
+  {
+    ErrorError = 2;
+  }
+
+        /* Check freeSpace space */
+        if(f_getfree("", &fre_clust, &pfs) != FR_OK)
+     {
+    ErrorError = 3;
+  }
+
+        totalSpace = (uint32_t)((pfs->n_fatent - 2) * pfs->csize * 0.5);
+        freeSpace = (uint32_t)(fre_clust * pfs->csize * 0.5);
+
+        /* free space is less than 1kb */
+        if(freeSpace < 1)
+  {
+    ErrorError = 4;
+  }
+
+        /* Writing text */
+        f_puts("11222333444555666777888999000", &fil);
+        //f_puts("Save the world!!!", &fil);
+
+        /* Close file */
+        if(f_close(&fil) != FR_OK)
+     {
+    ErrorError = 5;
+  }
+
+        /* Open file to read */
+        if(f_open(&fil, "1.txt", FA_READ) != FR_OK)
+     {
+    ErrorError = 6;
+  }
+
+  f_gets(buffer, sizeof(buffer), &fil);
+  //      while(f_gets(buffer, sizeof(buffer), &fil))
+        // {
+        //         /* SWV output */
+        //         sprintf("%s", buffer);
+        //         fflush(stdout);
+        // }
+
+        /* Close file */
+        if(f_close(&fil) != FR_OK)
+     {
+ErrorError = 7;
+  }
+
+        /* Unmount SDCARD */
+        if(f_mount(NULL, "", 1) != FR_OK)
+        {
+ErrorError = 8;
+  }
+
+
+
+
 
   /* HAL_TIM_IC_Start_IT is not enabling HAL_TIM_PeriodElapsedCallback,
    * so we need to manually enable it. See:
@@ -158,15 +240,30 @@ int main(void)
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 
-Display_Init();
-//Display_SetOrienation(OLED_DISP_ROTATE180);
-Frame_DrawPixel(10,10,Display_Color.Gray_01);
-Frame_DrawPixel(10,15,Display_Color.Gray_02);
-Frame_DrawPixel(10,20,Display_Color.Gray_03);
-Frame_DrawRectangle(0, 0, OLED_WIDTH-1, OLED_HEIGHT-1, Display_Color.Gray_08);
-//Frame_printf(0,0, FONTID_10X16F, Display_Color.Gray_11, LEFT, TOP, (uint8_t*)"Hello!");
-Display_SendFrame();
-HAL_Delay(15000);
+/*
+  SH1122_Display_T {
+    SpiInstance
+    SpiPinDC
+    SpiPinCS
+    SpiPinSCL
+    SpiPinRST
+    SpiPinSDA
+  }
+
+  SH1122_DisplayInit(SH1122_Display_T)
+  SH1122_DisplayUpdate
+
+ */
+
+// Display_Init();
+// //Display_SetOrienation(OLED_DISP_ROTATE180);
+// Frame_DrawPixel(10,10,Display_Color.Gray_01);
+// Frame_DrawPixel(10,15,Display_Color.Gray_02);
+// Frame_DrawPixel(10,20,Display_Color.Gray_03);
+// Frame_DrawRectangle(0, 0, OLED_WIDTH-1, OLED_HEIGHT-1, Display_Color.Gray_08);
+// Frame_printf(20,20, FONTID_10X16F, Display_Color.Gray_15, LEFT, TOP, "evAnalyst v0.1");
+// Display_SendFrame();
+// HAL_Delay(15000);
 
 
   OLED_GUI_Init();
@@ -258,8 +355,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2;
-  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
@@ -311,11 +407,11 @@ void TaskTemperaturePoll(void *pvParams)
 				DS18B20_GetROM(i, ROM_tmp);
 //				memset(message, 0, sizeof(message));
 				//sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
-        snprintf(message, 64, "T: %.2f", sensor.Temperature1);
+        snprintf(message, 64, "Temp: %.2f", sensor.Temperature1);
         //gcvt(sensor.Temperature1, 5, &message);
         // Frame_printf(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t color,
         //     uint8_t hAlign, uint8_t vAlign, const char *args, ...)
-        Frame_printf(0,0, FONTID_10X16F, Display_Color.Gray_11, LEFT, TOP, message);
+        Frame_printf(0,30, FONTID_10X16F, Display_Color.Gray_11, LEFT, TOP, message);
 
         omDisplayUpdate(&oled1);
 			}

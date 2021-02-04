@@ -111,8 +111,8 @@ void Error_Handler(void);
 #define SWCLK_GPIO_Port GPIOA
 #define VCP_RX_Pin GPIO_PIN_15
 #define VCP_RX_GPIO_Port GPIOA
-#define GREEN_LED_Pin GPIO_PIN_3
-#define GREEN_LED_GPIO_Port GPIOB
+#define SD_CS_Pin GPIO_PIN_6
+#define SD_CS_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 #define FREQ_CLK 80000000UL
 /* USER CODE END Private defines */

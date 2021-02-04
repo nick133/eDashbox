@@ -9,6 +9,7 @@ import
 const pix_in_row = 16
 
 proc cvt_file(filename: string)
+proc dtohex_color(code: string): string
 
 
 proc main() =
@@ -35,23 +36,21 @@ proc cvt_file(filename: string) =
     cnt = 0
 
   while fd_in.readLine(line):
-    if line[0] == '#' or line == "P2":
+    if line[0] == '#' or line == "P2": # header
       continue
 
-    elif line =~ re"^(\d+)\s+(\d+)$":
+    elif line =~ re"^(\d+)\s+(\d+)$": # width height
       (im_width, im_height) = (matches[0].parseUInt, matches[1].parseUInt)
       color_mark = true
 
-    elif color_mark:
+    elif color_mark: # colors
       im_colors = line.parseUInt
       color_mark = false
 
-    else:
-      var num = line
-
-      if num.len < 3: num = ' '.repeat(3 - num.len) & num
-
-      var not_1st_ln = ", " & num
+    else: # data pixels
+      var
+        num = dtohex_color line
+        not_1st_ln = ", " & num
 
       if cnt == pix_in_row:
         not_1st_ln = ",\n" & num
@@ -75,6 +74,27 @@ proc cvt_file(filename: string) =
     &"bitmap_{name}.RawData = bitmap_{name}_data;\n"
 
   echo im_data
+
+
+proc dtohex_color(code: string): string =
+  result = case code
+    of "0": &"0x00"
+    of "15": &"0x11"
+    of "30": &"0x22"
+    of "45": &"0x33"
+    of "60": &"0x44"
+    of "75": &"0x55"
+    of "90": &"0x66"
+    of "105": &"0x77"
+    of "120": &"0x88"
+    of "135": &"0x99"
+    of "150": &"0xAA"
+    of "165": &"0xBB"
+    of "180": &"0xCC"
+    of "195": &"0xDD"
+    of "210": &"0xEE"
+    of "225": &"0xFF"
+    else: "!!!__FIXME_ERROR_FIXME__!!!"
 
 
 main()

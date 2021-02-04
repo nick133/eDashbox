@@ -23,7 +23,7 @@ https://stackoverflow.com/questions/37522462/visual-studio-code-includepath
 ### SH1122 2.08" 256x64 16 colors OLED Display
 https://www.aliexpress.com/item/4000866935030.html
 
-## Integrated projects
+## Credits
 * Tiny printf() for embedded systems:
 https://github.com/mpaland/printf
 

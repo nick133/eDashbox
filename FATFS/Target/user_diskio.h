@@ -1,8 +1,9 @@
+/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    usart.h
-  * @brief   This file contains all the function prototypes for
-  *          the usart.c file
+ ******************************************************************************
+  * @file    user_diskio.h
+  * @brief   This file contains the common defines and functions prototypes for
+  *          the user_diskio driver.
   ******************************************************************************
   * @attention
   *
@@ -16,37 +17,30 @@
   *
   ******************************************************************************
   */
+ /* USER CODE END Header */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USART_H__
-#define __USART_H__
+#ifndef __USER_DISKIO_H
+#define __USER_DISKIO_H
 
 #ifdef __cplusplus
-extern "C" {
+ extern "C" {
 #endif
 
+/* USER CODE BEGIN 0 */
+
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+/* Exported types ------------------------------------------------------------*/
+/* Exported constants --------------------------------------------------------*/
+/* Exported functions ------------------------------------------------------- */
+extern Diskio_drvTypeDef  USER_Driver;
 
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-extern UART_HandleTypeDef huart2;
-
-/* USER CODE BEGIN Private defines */
-
-/* USER CODE END Private defines */
-
-void MX_USART2_UART_Init(void);
-
-/* USER CODE BEGIN Prototypes */
-
-/* USER CODE END Prototypes */
+/* USER CODE END 0 */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __USART_H__ */
+#endif /* __USER_DISKIO_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

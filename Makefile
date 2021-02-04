@@ -29,6 +29,11 @@ $(wildcard Core/Src/*.c) \
 Drivers/SH1122_Driver/Src/sh1122.c \
 $(wildcard Drivers/SH1122_Driver/Src/fonts/*.c) \
 $(wildcard Drivers/DS18B20_HAL_Driver/Src/*.c) \
+FATFS/App/fatfs.c \
+FATFS/Target/user_diskio.c \
+FATFS/Target/fatfs_sd.c \
+$(wildcard Middlewares/Third_Party/FatFs/src/*.c) \
+$(wildcard Middlewares/Third_Party/FatFs/src/option/*.c) \
 $(wildcard Middlewares/Third_Party/FreeRTOS/Source/*.c) \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
@@ -104,6 +109,9 @@ C_INCLUDES =  \
 -IDrivers/DS18B20_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \
+-IFATFS/App \
+-IFATFS/Target \
+-IMiddlewares/Third_Party/FatFs/src \
 -IMiddlewares/Third_Party/FreeRTOS/Source/include \
 -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
 -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
@@ -158,6 +166,13 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile $(LDSCRIPT)
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 
+$(LDSCRIPT): TrueSTUDIO/$(TARGET)/STM32L432KC_FLASH.ld
+	@cp -f $< $@
+
+$(BUILD_DIR):
+	mkdir -p $@
+
+# After build
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	@$(HEX) $< $@
 	@stat -c "%n: %s bytes" $(BUILD_DIR)/$(TARGET).hex
@@ -165,9 +180,6 @@ $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	@$(BIN) $< $@	
 	@stat -c "%n: %s bytes" $(BUILD_DIR)/$(TARGET).bin
-	
-$(BUILD_DIR):
-	mkdir -p $@
 
 #######################################
 # clean up
@@ -193,12 +205,17 @@ pre-build: $(PGM2C)
 		-e 's@^ \+osKernelStart();@/* & */@' \
 		-e 's@^ \+osKernelInitialize();@/* & */@' \
 		-e 's@^void MX_FREERTOS_Init(void);@/* & */@' $(MAIN_C) || true
-	@rm -rf TrueSTUDIO 
 
 $(PGM2C): $(PGM2C_PATH)/src/pgm2c.nim
 	@cd $(PGM2C_PATH) && nimble build
 
 post-build:
 
+gflash:
+	@jflash build/debug/evAnalyst.bin
+
+flash:
+	@jflash build/release/evAnalyst.bin
+
 a:
-	@$(MAKE) --version
+	@echo $(C_SOURCES)|most

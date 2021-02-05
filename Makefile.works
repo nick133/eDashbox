@@ -1,3 +1,5 @@
+#.ONESHELL:
+
 ######################################
 # target
 ######################################
@@ -17,25 +19,37 @@ BUILD_DIR = $(BUILD_ROOT)/debug
 else
 BUILD_DIR = $(BUILD_ROOT)/release
 OPT = -Ofast
-#OPT = -O3
 endif
-
-#######################################
-# dependencies
-#######################################
--include $(shell find $(BUILD_DIR) -name "*.d")
 
 ######################################
 # source
 ######################################
 # C sources
-SOURCE_DIRS :=  Core Drivers FATFS Middlewares
-C_SOURCE_EXCLUDE := Core/Src/freertos.c
+C_SOURCES = \
+$(wildcard Core/Src/*.c) \
+Drivers/SH1122_Driver/Src/sh1122.c \
+$(wildcard Drivers/SH1122_Driver/Src/fonts/*.c) \
+$(wildcard Drivers/DS18B20_HAL_Driver/Src/*.c) \
+FATFS/App/fatfs.c \
+FATFS/Target/user_diskio.c \
+FATFS/Target/fatfs_sd.c \
+$(wildcard Middlewares/Third_Party/FatFs/src/*.c) \
+$(wildcard Middlewares/Third_Party/FatFs/src/option/*.c) \
+$(wildcard Middlewares/Third_Party/FreeRTOS/Source/*.c) \
+Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
+Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
+Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+$(wildcard Drivers/STM32L4xx_HAL_Driver/Src/*.c) \
+Core/Src/system_stm32l4xx.c
 
-C_SOURCES := $(filter-out $(C_SOURCE_EXCLUDE),$(shell find $(SOURCE_DIRS) -name "*.c"))
+# Exclude
+C_SRC_EXCLUDE = \
+Core/Src/freertos.c
+C_SOURCES := $(sort $(filter-out $(C_SRC_EXCLUDE),$(C_SOURCES)))
 
 # ASM sources
-ASM_SOURCES := startup/startup_stm32l432xx.s
+ASM_SOURCES = startup/startup_stm32l432xx.s
+
 
 #######################################
 # binaries
@@ -63,22 +77,47 @@ PGM2C = $(PGM2C_PATH)/bin/pgm2c
 #######################################
 # CFLAGS
 #######################################
-# mcu
-MCU := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+# cpu
+CPU = -mcpu=cortex-m4
 
+# fpu
+FPU = -mfpu=fpv4-sp-d16
+
+# float-abi
+FLOAT-ABI = -mfloat-abi=hard
+
+# mcu
+MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
+
+# macros for gcc
 # AS defines
 AS_DEFS = 
 
 # C defines
-C_DEFS = -DUSE_HAL_DRIVER -DSTM32L432xx
+C_DEFS =  \
+-DUSE_HAL_DRIVER \
+-DSTM32L432xx
 
 # AS includes
-AS_INCLUDES := -ICore/Inc
+AS_INCLUDES =  \
+-ICore/Inc
 
-# C includes (remove trailing slash)
-C_INCLUDES := $(addprefix -I,\
-	$(subst $(PWD)/,,$(realpath $(sort $(dir \
-	$(shell find $(SOURCE_DIRS) -name "*.h"))))))
+# C includes
+C_INCLUDES =  \
+-ICore/Inc \
+-IDrivers/SH1122_Driver/Inc \
+-IDrivers/SH1122_Driver/Inc/fonts \
+-IDrivers/DS18B20_HAL_Driver/Inc \
+-IDrivers/STM32L4xx_HAL_Driver/Inc \
+-IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \
+-IFATFS/App \
+-IFATFS/Target \
+-IMiddlewares/Third_Party/FatFs/src \
+-IMiddlewares/Third_Party/FreeRTOS/Source/include \
+-IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
+-IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
+-IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
+-IDrivers/CMSIS/Include
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -96,7 +135,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT := STM32L432KCUx_FLASH.ld
+LDSCRIPT = STM32L432KCUx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
@@ -112,19 +151,17 @@ all: pre-build $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).bin post-build
 # build the application
 #######################################
 # list of objects
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(C_SOURCES:.c=.o))
+OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-OBJECTS_PATTERN := $(addsuffix %.o,$(dir $(OBJECTS)))
+$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
+	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
-$(OBJECTS_PATTERN): %.c Makefile | $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(<:.c=.lst) $< -o $@
-
-$(OBJECTS_PATTERN): %.s Makefile | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile $(LDSCRIPT)
@@ -132,10 +169,10 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile $(LDSCRIPT)
 	$(SZ) $@
 
 $(LDSCRIPT): TrueSTUDIO/$(TARGET)/STM32L432KC_FLASH.ld
-	@cp -f $< $@
+	cp -f $< $@
 
 $(BUILD_DIR):
-	@mkdir -p $(sort $(dir $(OBJECTS)))
+	mkdir -p $@
 
 # After build
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
@@ -146,13 +183,16 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	@$(BIN) $< $@	
 	@stat -c "%n: %s bytes" $(BUILD_DIR)/$(TARGET).bin
 
-rebuild: clean all
-
 #######################################
 # clean up
 #######################################
 clean:
 	-rm -fR $(BUILD_ROOT)
+
+#######################################
+# dependencies
+#######################################
+-include $(wildcard $(BUILD_DIR)/*.d)
 
 #######################################
 # pre/post-build actions
@@ -162,7 +202,7 @@ clean:
 # 2. Preserve files we don't want to be overwrited by CubeMX
 pre-build: MAIN_C := Core/Src/main.c
 pre-build: FFCONF_H := FATFS/Target/ffconf.h
-pre-build: FFCONF_H_OVERRIDE := FATFS/Target/override-ffconf.h
+pre-build: FFCONF_H_PRESERVE := FATFS/Target/preserve/ffconf.h
 
 pre-build: $(PGM2C)
 	@grep -q '^#include "cmsis_os.h"' $(MAIN_C) && sed -i \
@@ -171,24 +211,29 @@ pre-build: $(PGM2C)
 		-e 's@^ \+osKernelStart();@/* & */@' \
 		-e 's@^ \+osKernelInitialize();@/* & */@' \
 		-e 's@^void MX_FREERTOS_Init(void);@/* & */@' $(MAIN_C) || true
-	@cmp -s $(FFCONF_H_OVERRIDE) $(FFCONF_H) || cp -f $(FFCONF_H_OVERRIDE) $(FFCONF_H)
+	@cmp -s $(FFCONF_H_PRESERVE) $(FFCONF_H) || cp -f $(FFCONF_H_PRESERVE) $(FFCONF_H)
 
 $(PGM2C): $(PGM2C_PATH)/src/pgm2c.nim
 	@cd $(PGM2C_PATH) && nimble build
 
 post-build:
 
-gflash:	all
-	@jflash $(BUILD_ROOT)/debug/$(TARGET).bin
+gflash:	@jflash build/debug/evAnalyst.bin
 
-flash: DEBUG := 0
-flash: all
-	@jflash $(BUILD_ROOT)/release/$(TARGET).bin
+flash: @jflash build/release/evAnalyst.bin
 
-.PHONY: all clean pre-build post-build flash gflash rebuild
-#.ONESHELL:
+.PHONY: all clean pre-build post-build flash gflash
 
-# Testing zone
-x:
-	@echo $(C_INCLUDES)
-	@echo $(OBJECTS)
+BUILD_C_SOURCES := $(addprefix $(BUILD_DIR)/,$(C_SOURCES))
+BUILD_C_RULES := $(addsuffix %.c,$(sort $(dir $(BUILD_C_SOURCES))))
+
+$(BUILD_C_RULES): %.c
+	@echo 111 $@
+	@echo 222 $<
+
+SOURCE_DIRS := Middlewares Core FATFS
+AUTO_C_SOURCES := $(shell find Middlewares Core FATFS -name "*.c")
+
+x: $(BUILD_C_SOURCES)
+x: # For testing
+	@echo $(AUTO_C_SOURCES)

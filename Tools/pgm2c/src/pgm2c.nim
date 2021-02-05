@@ -68,8 +68,6 @@ proc cvt_file(filename: string) =
     &"bitmap_{name}.Width = {im_width};\n" &
     &"bitmap_{name}.Height = {im_height};\n" &
     &"bitmap_{name}.ColorsNumOf = {im_colors};\n" &
-    &"bitmap_{name}.Display = &oled1;\n" &
-    &"uint16_t image_colors = {im_colors};\n" &
     im_data & "\n};\n" &
     &"bitmap_{name}.RawData = bitmap_{name}_data;\n"
 

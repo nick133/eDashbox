@@ -30,9 +30,11 @@ endif
 ######################################
 # C sources
 SOURCE_DIRS :=  Core Drivers FATFS Middlewares
-C_SOURCE_EXCLUDE := Core/Src/freertos.c
+C_SOURCES_EXCLUDE := Core/Src/freertos.c
+# Preserve files not to be overwriten by CubeMX
+OVERRIDE_C_SOURCES := FATFS/Target/ffconf.h
 
-C_SOURCES := $(filter-out $(C_SOURCE_EXCLUDE),$(shell find $(SOURCE_DIRS) -name "*.c"))
+C_SOURCES := $(filter-out $(C_SOURCES_EXCLUDE),$(shell find $(SOURCE_DIRS) -name "*.c"))
 
 # ASM sources
 ASM_SOURCES := startup/startup_stm32l432xx.s
@@ -159,11 +161,8 @@ clean:
 #######################################
 
 # 1. Comment CMSIS-RTOS related code as we prefer raw FreeRTOS
-# 2. Preserve files we don't want to be overwrited by CubeMX
+# 2. Preserve files not to be overwriten by CubeMX
 pre-build: MAIN_C := Core/Src/main.c
-pre-build: FFCONF_H := FATFS/Target/ffconf.h
-pre-build: FFCONF_H_OVERRIDE := FATFS/Target/override-ffconf.h
-
 pre-build: $(PGM2C)
 	@grep -q '^#include "cmsis_os.h"' $(MAIN_C) && sed -i \
 		-e 's@^#include "cmsis_os.h"@/* & */@;' \
@@ -171,7 +170,9 @@ pre-build: $(PGM2C)
 		-e 's@^ \+osKernelStart();@/* & */@' \
 		-e 's@^ \+osKernelInitialize();@/* & */@' \
 		-e 's@^void MX_FREERTOS_Init(void);@/* & */@' $(MAIN_C) || true
-	@cmp -s $(FFCONF_H_OVERRIDE) $(FFCONF_H) || cp -f $(FFCONF_H_OVERRIDE) $(FFCONF_H)
+	@for to in $(OVERRIDE_C_SOURCES); do \
+		from="`dirname $$to`/override-`basename $$to`";\
+		cmp -s $$from $$to || cp -f $$from $$to; done
 
 $(PGM2C): $(PGM2C_PATH)/src/pgm2c.nim
 	@cd $(PGM2C_PATH) && nimble build
@@ -188,7 +189,3 @@ flash: all
 .PHONY: all clean pre-build post-build flash gflash rebuild
 #.ONESHELL:
 
-# Testing zone
-x:
-	@echo $(C_INCLUDES)
-	@echo $(OBJECTS)

@@ -18,8 +18,7 @@ static void _omScreenInit(omScreenT *);
 void omDisplayInit(omDisplayT *displ)
 {
   displ->InitCallback(displ); // OLED Driver's Init code goes here
-
-  _omScreenInit(displ->Screen);
+  displ->ActiveScreen=NULL; // Discarded if set, use omScreenSelect()
 }
 
 
@@ -36,19 +35,11 @@ Bool omScreenSelect(omScreenT *screen)
     return False;
   }
 
-  if (screen->Display->Screen->HideCallback != NULL)
+  if (screen->Display->ActiveScreen != NULL && screen->Display->ActiveScreen->HideCallback != NULL)
   {
-    screen->Display->Screen->HideCallback(screen);
+    screen->Display->ActiveScreen->HideCallback(screen);
   }
 
-  _omScreenInit(screen);
-
-  return True;
-}
-
-
-static void _omScreenInit(omScreenT *screen)
-{
   if (screen->ShowCallback != NULL)
   {
     screen->ShowCallback(screen);
@@ -58,16 +49,18 @@ static void _omScreenInit(omScreenT *screen)
   {
     // array[1] equals to *(array + 1)
     // https://stackoverflow.com/questions/16201607/c-pointer-to-array-of-structs
-    screen->Widgets[i].InitCallback(screen->Widgets + i);
+    screen->Widgets[i].ShowCallback(screen->Widgets + i);
   }
 
-  screen->Display->Screen = screen;
+  screen->Display->ActiveScreen = screen;
+
+  return True;
 }
 
 
 Bool omScreenIsActive(omScreenT *screen)
 {
-  return (screen->Display->Screen->Id == screen->Id) ? True : False;
+  return (screen->Display->ActiveScreen == NULL || screen->Display->ActiveScreen->Id != screen->Id) ? False : True;
 }
 
 

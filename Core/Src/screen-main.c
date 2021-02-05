@@ -46,7 +46,7 @@ void MainScreenInit(void)
   screenMain.Widgets[IdWgtSpeed].PosY = 0;
   screenMain.Widgets[IdWgtSpeed].Width = 16;
   screenMain.Widgets[IdWgtSpeed].Height = 16;
-  screenMain.Widgets[IdWgtSpeed].InitCallback = WgtMainSpeedCb;
+  screenMain.Widgets[IdWgtSpeed].ShowCallback = WgtMainSpeedCb;
   screenMain.Widgets[IdWgtSpeed].UpdateCallback = NULL;
 
   ////
@@ -62,7 +62,7 @@ void MainScreenInit(void)
   screenMain.Widgets[IdWgtTacho].PosY = 0;
   screenMain.Widgets[IdWgtTacho].Width = 16;
   screenMain.Widgets[IdWgtTacho].Height = 16;
-  screenMain.Widgets[IdWgtTacho].InitCallback = WgtMainTachoCb;
+  screenMain.Widgets[IdWgtTacho].ShowCallback = WgtMainTachoCb;
   screenMain.Widgets[IdWgtTacho].UpdateCallback = NULL;
 
   ////
@@ -78,7 +78,7 @@ void MainScreenInit(void)
   screenMain.Widgets[IdWgtVolt].PosY = 0;
   screenMain.Widgets[IdWgtVolt].Width = 16;
   screenMain.Widgets[IdWgtVolt].Height = 16;
-  screenMain.Widgets[IdWgtVolt].InitCallback = WgtMainVoltCb;
+  screenMain.Widgets[IdWgtVolt].ShowCallback = WgtMainVoltCb;
   screenMain.Widgets[IdWgtVolt].UpdateCallback = NULL;
 
   ////
@@ -94,7 +94,7 @@ void MainScreenInit(void)
   screenMain.Widgets[IdWgtOdo].PosY = 0;
   screenMain.Widgets[IdWgtOdo].Width = 16;
   screenMain.Widgets[IdWgtOdo].Height = 16;
-  screenMain.Widgets[IdWgtOdo].InitCallback = WgtMainOdoCb;
+  screenMain.Widgets[IdWgtOdo].ShowCallback = WgtMainOdoCb;
   screenMain.Widgets[IdWgtOdo].UpdateCallback = NULL;
 }
 

@@ -12,6 +12,7 @@
 
 #include "stm32l4xx_hal.h"
 
+
 #ifndef OMGUI_MAX_WIDGETS
 #define OMGUI_MAX_WIDGETS 16
 #endif
@@ -33,7 +34,7 @@ struct omDisplay
 {
   uint16_t Id;
   uint16_t ResX, ResY;
-  omScreenT *Screen;
+  omScreenT *ActiveScreen;
 
   void (*InitCallback)(omDisplayT *);
   void (*DeInitCallback)(omDisplayT *);
@@ -49,7 +50,7 @@ struct omWidget
   uint16_t PosX, PosY;
   uint16_t Width, Height;
 
-  void (*InitCallback)(omWidgetT *); // Init and show widget (first time)
+  void (*ShowCallback)(omWidgetT *); // Init and show widget (first time)
   void (*UpdateCallback)(omWidgetT *, void *); // Update only changed parts of widget
 };
 
@@ -82,7 +83,6 @@ struct omAnimation
   omDisplayT *Display;
   omBitmapT *Bitmaps;
 };
-
 
 // Public methods
 void omDisplayInit(omDisplayT *);

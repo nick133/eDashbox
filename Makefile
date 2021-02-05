@@ -20,10 +20,11 @@ OPT = -Ofast
 #OPT = -O3
 endif
 
-#######################################
-# dependencies
-#######################################
--include $(shell find $(BUILD_DIR) -name "*.d")
+BUILD_OBJDIR := $(BUILD_DIR)/obj
+# Directory for auto-generated sources
+BUILD_SRCDIR := $(BUILD_DIR)/src
+
+PGM_DIR := Bitmaps/PGM
 
 ######################################
 # source
@@ -31,10 +32,14 @@ endif
 # C sources
 SOURCE_DIRS :=  Core Drivers FATFS Middlewares
 C_SOURCES_EXCLUDE := Core/Src/freertos.c
+
 # Preserve files not to be overwriten by CubeMX
 OVERRIDE_C_SOURCES := FATFS/Target/ffconf.h
 
-C_SOURCES := $(filter-out $(C_SOURCES_EXCLUDE),$(shell find $(SOURCE_DIRS) -name "*.c"))
+C_SOURCES = $(filter-out $(C_SOURCES_EXCLUDE),$(shell find $(SOURCE_DIRS) -name "*.c"))
+
+# Auto generated sources
+C_SOURCES += $(BUILD_SRCDIR)/bitmaps.c
 
 # ASM sources
 ASM_SOURCES := startup/startup_stm32l432xx.s
@@ -59,8 +64,8 @@ endif
 HEX = $(CP) -v -O ihex
 BIN = $(CP) -v -O binary -S
 
-PGM2C_PATH = Tools/pgm2c
-PGM2C = $(PGM2C_PATH)/bin/pgm2c
+PGM2C_SRCDIR = Tools/pgm2c
+PGM2C = $(PGM2C_SRCDIR)/bin/pgm2c
 
 #######################################
 # CFLAGS
@@ -78,9 +83,12 @@ C_DEFS = -DUSE_HAL_DRIVER -DSTM32L432xx
 AS_INCLUDES := -ICore/Inc
 
 # C includes (remove trailing slash)
-C_INCLUDES := $(addprefix -I,\
+C_INCLUDES = $(addprefix -I,\
 	$(subst $(PWD)/,,$(realpath $(sort $(dir \
 	$(shell find $(SOURCE_DIRS) -name "*.h"))))))
+
+# Auto generated headers
+C_INCLUDES += -I$(BUILD_SRCDIR)
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -113,23 +121,26 @@ all: pre-build $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).bin post-build
 #######################################
 # build the application
 #######################################
+# auto-generated sources and headers
+$(BUILD_SRCDIR)/bitmaps.c: $(PGM2C) $(BUILD_DIR)
+	$(PGM2C) -h:$(@:.c=.h) -c:$@ -p:$(PGM_DIR)
+
 # list of objects
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(C_SOURCES:.c=.o))
+OBJECTS = $(addprefix $(BUILD_OBJDIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 
 # list of ASM program objects
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
+OBJECTS += $(addprefix $(BUILD_OBJDIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-OBJECTS_PATTERN := $(addsuffix %.o,$(dir $(OBJECTS)))
+$(BUILD_OBJDIR)/%.o: %.c %d Makefile | $(BUILD_DIR)
+	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_OBJDIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
-$(OBJECTS_PATTERN): %.c Makefile | $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(<:.c=.lst) $< -o $@
-
-$(OBJECTS_PATTERN): %.s Makefile | $(BUILD_DIR)
+$(BUILD_OBJDIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile $(LDSCRIPT)
+# $(LDSCRIPT)
+$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 
@@ -137,7 +148,7 @@ $(LDSCRIPT): TrueSTUDIO/$(TARGET)/STM32L432KC_FLASH.ld
 	@cp -f $< $@
 
 $(BUILD_DIR):
-	@mkdir -p $(sort $(dir $(OBJECTS)))
+	@mkdir -p $(BUILD_OBJDIR) $(BUILD_SRCDIR)
 
 # After build
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
@@ -163,7 +174,7 @@ clean:
 # 1. Comment CMSIS-RTOS related code as we prefer raw FreeRTOS
 # 2. Preserve files not to be overwriten by CubeMX
 pre-build: MAIN_C := Core/Src/main.c
-pre-build: $(PGM2C)
+pre-build: $(BUILD_SRCDIR)/bitmaps.c
 	@grep -q '^#include "cmsis_os.h"' $(MAIN_C) && sed -i \
 		-e 's@^#include "cmsis_os.h"@/* & */@;' \
 		-e 's@^ \+MX_FREERTOS_Init();@/* & */@' \
@@ -174,8 +185,8 @@ pre-build: $(PGM2C)
 		from="`dirname $$to`/override-`basename $$to`";\
 		cmp -s $$from $$to || cp -f $$from $$to; done
 
-$(PGM2C): $(PGM2C_PATH)/src/pgm2c.nim
-	@cd $(PGM2C_PATH) && nimble build
+$(PGM2C): $(PGM2C_SRCDIR)/src/pgm2c.nim
+	@cd $(PGM2C_SRCDIR) && nimble build
 
 post-build:
 
@@ -188,4 +199,12 @@ flash: all
 
 .PHONY: all clean pre-build post-build flash gflash rebuild
 #.ONESHELL:
+#$(BUILD_DIR)/Core/Src/bitmaps.c $(BUILD_DIR)/Core/Src/bitmaps.h
 
+
+aa:
+	@echo $(OBJECTS)
+#######################################
+# dependencies
+#######################################
+include $(wildcard $(BUILD_OBJDIR)/*.d)

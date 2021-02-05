@@ -33,6 +33,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "omgui.h"
+#include "FreeRTOS.h"
+#include "task.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -84,6 +86,8 @@ extern ConfigSettingsT config;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void *malloc(size_t xBytes);
+void free(void *pvBuffer);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

@@ -12,7 +12,6 @@
 
 
 /* Private methods */
-static void _omScreenInit(omScreenT *);
 
 
 void omDisplayInit(omDisplayT *displ)

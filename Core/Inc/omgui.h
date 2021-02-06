@@ -92,6 +92,6 @@ Bool omScreenSelect(omScreenT *);
 Bool omScreenIsActive(omScreenT *);
 void omDrawPixel(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
 void omDrawBitmap(omDisplayT *, omBitmapT *, uint32_t x, uint32_t y);
-void omAnimationStart(omAnimationT *);
+//void omAnimationStart(omAnimationT *);
 
 #endif /* _OMGUI_H_ */

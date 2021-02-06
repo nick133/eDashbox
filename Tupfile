@@ -1,18 +1,80 @@
-include_rules
+# srcs, incs
+include Auto.tup
 
-asm_srcs = startup/*.s
-objdir = objs
+################################################################################
+# Variables
+################################################################################
 
+PROJECT = evAnalyst
+
+ifdef DEBUG
+OPT = -Og
+else
+OPT = -Ofast
+#OPT = -O3
+endif
+
+PREFIX = arm-none-eabi-
+CC = $(PREFIX)gcc
+AS = $(PREFIX)gcc -x assembler-with-cpp
+CP = $(PREFIX)objcopy
+SZ = $(PREFIX)size
+
+ST = stat -c "==> %n: %s bytes"
+HEX = $(CP) -v -O ihex
+BIN = $(CP) -v -O binary -S
+
+MCU = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+C_DEFS = -DUSE_HAL_DRIVER -DSTM32L432xx
+# from Auto.tup
+C_INCLUDES = $(incs) -IAutoSrc
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+ASFLAGS = $(CFLAGS)
+
+ifdef DEBUG
+CFLAGS += -g -gdwarf-2
+endif
+
+# Generate dependency information
+CFLAGS += -MMD -MP
+# -MF"$(@:%.o=%.d)"
+
+LDSCRIPT = STM32L432KCUx_FLASH.ld
+
+LIBS = -lc -lm -lnosys 
+LIBDIR = 
+# Fix linker errors with nosys.specs
+# https://stackoverflow.com/questions/5764414/undefined-reference-to-sbrk
+LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(PROJECT).map,--cref -Wl,--gc-sections
+
+################################################################################
+# Rules
+################################################################################
+# %-flags not work after variable expansion
+!cc = |> ^ cc %b^ $(CC) $(CFLAGS) -Wa,-a,-ad,-alms=%O.lst -c %f -o %o |>
+!as = |> ^ as %b^ $(AS) $(ASFLAGS) -c %f -o %o |>
+!ld = |> ^ ld %O^ $(CC) $(LDFLAGS) %f -o %o && $(SZ) %o |>
+
+!bin = |> ^ bin %O^ $(BIN) %f %o && $(ST) %o |> %B.bin
+!hex = |> ^ hex %O^ $(HEX) %f %o && $(ST) %o |> %B.hex
+
+################################################################################
+# Build
+################################################################################
 PGM2C_DIR = Tools/pgm2c
 PGM2C = $(PGM2C_DIR)/bin/pgm2c
 PGM_DIR = Bitmaps/PGM
 
-bitmaps_c = AutoSrc/bitmaps.h
-bitmaps_h = AutoSrc/bitmaps.c
+asm_srcs = startup/*.s
+objdir = objs
+
+bitmaps_c = AutoSrc/bitmaps.c
+bitmaps_h = AutoSrc/bitmaps.h
 
 : $(PGM_DIR)/*.pgm |> $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(PGM_DIR) |> $(bitmaps_c) $(bitmaps_h)
 
-: foreach $(srcs) | $(bitmaps_c) |> !cc |> objs/%B.o | %O.d %O.lst {objs}
-: foreach $(asm_srcs) |> !as |> objs/%B.o {asobjs}
+: foreach $(srcs) $(bitmaps_c) | $(bitmaps_h) |> !cc |> $(objdir)/%B.o | %O.d %O.lst {objs}
+: foreach $(asm_srcs) |> !as |> $(objdir)/%B.o {asobjs}
 : {objs} {asobjs} |> !ld |> $(PROJECT).elf | $(PROJECT).map
 : $(PROJECT).elf |> !bin |>
+

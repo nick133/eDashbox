@@ -1,3 +1,18 @@
-PROJECT=evAnalyst
+include_rules
 
-: TrueSTUDIO/$(PROJECT)/STM32L432KC_FLASH.ld |> cp -f %f %o |> STM32L432KCUx_FLASH.ld
+asm_srcs = startup/*.s
+objdir = objs
+
+PGM2C_DIR = Tools/pgm2c
+PGM2C = $(PGM2C_DIR)/bin/pgm2c
+PGM_DIR = Bitmaps/PGM
+
+bitmaps_c = AutoSrc/bitmaps.h
+bitmaps_h = AutoSrc/bitmaps.c
+
+: $(PGM_DIR)/*.pgm |> $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(PGM_DIR) |> $(bitmaps_c) $(bitmaps_h)
+
+: foreach $(srcs) | $(bitmaps_c) |> !cc |> objs/%B.o | %O.d %O.lst {objs}
+: foreach $(asm_srcs) |> !as |> objs/%B.o {asobjs}
+: {objs} {asobjs} |> !ld |> $(PROJECT).elf | $(PROJECT).map
+: $(PROJECT).elf |> !bin |>

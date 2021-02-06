@@ -1,10 +1,14 @@
-TrueSTUDIO
+.tup/
+/.work
 Core/Src/freertos.c
-build
+/build-*
 Tools/pgm2c/bin
-Toold/WorkingFirmwareForTest
+Tools/WorkingFirmwareForTest
+*.map
+*.lst
 *.bak
 *.bin
 *.hex
 *.elf
+*.d
 *.o

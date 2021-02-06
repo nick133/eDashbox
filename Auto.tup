@@ -1,0 +1,30 @@
+# build.sh auto-generated TUP-file, do not edit!
+
+srcs += Core/Src/*.c
+srcs += Drivers/DS18B20_HAL_Driver/Src/*.c
+srcs += Drivers/SH1122_Driver/Src/*.c
+srcs += Drivers/SH1122_Driver/Src/fonts/*.c
+srcs += Drivers/STM32L4xx_HAL_Driver/Src/*.c
+srcs += FATFS/App/*.c
+srcs += FATFS/Target/*.c
+srcs += Middlewares/Third_Party/FatFs/src/*.c
+srcs += Middlewares/Third_Party/FatFs/src/option/*.c
+srcs += Middlewares/Third_Party/FreeRTOS/Source/*.c
+srcs += Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/*.c
+srcs += Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/*.c
+srcs += Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/*.c
+
+incs += -ICore/Inc
+incs += -IDrivers/CMSIS/Device/ST/STM32L4xx/Include
+incs += -IDrivers/CMSIS/Include
+incs += -IDrivers/DS18B20_HAL_Driver/Inc
+incs += -IDrivers/SH1122_Driver/Inc
+incs += -IDrivers/SH1122_Driver/Inc/fonts
+incs += -IDrivers/STM32L4xx_HAL_Driver/Inc
+incs += -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy
+incs += -IFATFS/App
+incs += -IFATFS/Target
+incs += -IMiddlewares/Third_Party/FatFs/src
+incs += -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
+incs += -IMiddlewares/Third_Party/FreeRTOS/Source/include
+incs += -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F

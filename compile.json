@@ -1,7 +1,0 @@
-[
-    {
-        "directory": "${workspaceFolder}",
-        "command": "make",
-        "file": "${workspaceFolder}/Core/Src/main.c"
-    }
-]

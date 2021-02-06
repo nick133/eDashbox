@@ -7,7 +7,7 @@ This is learning project in early stage, use it at your own risk.
 
 ## Build
 * First time build after 'git clone' or after CubeMX code generation run:
-_./pre-build.sh_
+_Tools/pre-build.sh_
 _tup_
 
 * Regular builds - just run:

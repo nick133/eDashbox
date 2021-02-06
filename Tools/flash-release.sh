@@ -1,7 +1,9 @@
 #!/bin/env bash
 #
 
-firmware="$1"
+project=evAnalyst
+firmware=${project}.bin
+build_dir="$(realpath $(dirname $0)/../build-release)"
 mcu=STM32L432KC
 jlinkexe="/opt/SEGGER/JLink/JLinkExe"
 jscript_file="/tmp/firmware-flash.jlink"
@@ -15,15 +17,13 @@ r\n\
 go\n\
 qc\n"
 
-if [[ -z "$firmware" ]]
+if [[ ! -r "$build_dir/$firmware" ]]
 then
-    echo "Usage: $(basename $0) [firmware.bin]"
-    exit 0
-elif [[ ! -r "$firmware" ]]
-then
-    echo "ERROR: Can not read firmware file '$firmware'"
+    echo "Error: Can not read firmware '$build_dir/$firmware', build it first."
     exit 1
 fi
+
+cd $build_dir
 
 echo -e "$jscript_data" > $jscript_file
 

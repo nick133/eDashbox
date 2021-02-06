@@ -2,17 +2,23 @@
 ################################################################################
 # pre-build.sh - Run before the first build or after CubeMX code generation
 ################################################################################
-
-TUPOUT=Auto.tup
+###
+##  Config
+#
+TUPOUT=configs/Auto.tup
 PGM2C_DIR=Tools/pgm2c
 PGM2C=$PGM2C_DIR/bin/pgm2c
 SRC_TOPDIRS="Core Drivers FATFS Middlewares"
 UNUSED_FILES="Core/Src/freertos.c Makefile startup_stm32l432xx.s"
-BUILD_TARGETS="debug"
-#BUILD_TARGETS="release debug"
+#BUILD_TARGETS="debug"
+BUILD_TARGETS="release debug"
 
 # Preserve custom FatFs config from overwriting by CubeMX code generation
 OVERRIDE_SOURCES=FATFS/Target/ffconf.h
+
+################################################################################
+
+cd $(dirname $0)/..
 
 MAIN_C=Core/Src/main.c
 if grep -q '^#include "cmsis_os.h"' ${MAIN_C}
@@ -50,8 +56,8 @@ for t in $BUILD_TARGETS
 do
     if [[ ! -d "build-$t" ]]
     then
-        echo -n "==> Creating build target: $t"
-        tup variant targets/${t}.tup
+        echo "==> Creating build target: $t"
+        tup variant configs/${t}.config
     fi
 done
 

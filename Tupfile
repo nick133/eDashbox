@@ -1,5 +1,5 @@
 # srcs, incs
-include Auto.tup
+include configs/Auto.tup
 
 ################################################################################
 # Variables
@@ -29,15 +29,21 @@ C_DEFS = -DUSE_HAL_DRIVER -DSTM32L432xx
 # from Auto.tup
 C_INCLUDES = $(incs) -IAutoSrc
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
-ASFLAGS = $(CFLAGS)
 
 ifdef DEBUG
 CFLAGS += -g -gdwarf-2
 endif
 
+ASFLAGS = $(CFLAGS)
+
 # Generate dependency information
 CFLAGS += -MMD -MP
-# -MF"$(@:%.o=%.d)"
+
+# Disable warnings
+#CFLAGS += -Wno-unused-function
+#CFLAGS += -Wno-unused-variable
+CFLAGS += -Wno-maybe-uninitialized
+CFLAGS += -Wno-misleading-indentation
 
 LDSCRIPT = STM32L432KCUx_FLASH.ld
 
@@ -52,6 +58,7 @@ NIMFLAGS = --opt:speed -d:release -d:strip
 ################################################################################
 # Rules macros
 ################################################################################
+# https://christine.website/blog/nim-and-tup-2015-06-10
 !nimc = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f && rm -rf .nimcache |>
 
 # %-flags not work after variable expansion

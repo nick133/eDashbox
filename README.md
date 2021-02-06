@@ -46,6 +46,12 @@ https://github.com/lamik/DS18B20_STM32_HAL
 * SPI MicroSD FatFs code:
 https://github.com/eziya/STM32_SPI_SDCARD
 
+* Tup build system:
+http://gittup.org/tup/manual.html
+
 
 ## TODO
 * Test FatFs for MicroSD formatted with mkfs.vfat
+* GPS
+* 2nd and 3rd temperature sensor
+* current/voltage sensor

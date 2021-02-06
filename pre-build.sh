@@ -1,9 +1,8 @@
 #!/bin/env bash
-#
+################################################################################
+# pre-build.sh - Run before the first build or after CubeMX code generation
+################################################################################
 
-###
-##  Config
-#
 TUPOUT=Auto.tup
 PGM2C_DIR=Tools/pgm2c
 PGM2C=$PGM2C_DIR/bin/pgm2c
@@ -46,14 +45,6 @@ echo -e "# build.sh auto-generated TUP-file, do not edit!\n" > $TUPOUT
 find $SRC_TOPDIRS -type f -name "*.c" -printf 'srcs += %h/*.c\n' | sort -u >> $TUPOUT
 echo >> $TUPOUT
 find $SRC_TOPDIRS -type f -name "*.h" -printf 'incs += -I%h\n' | sort -u >> $TUPOUT
-
-if [[ "$PGM2C_DIR/src/pgm2c.nim" -nt "$PGM2C" ]]
-then
-    pushd $PGM2C_DIR
-    echo "==> Building pgm2c"
-    nimble build
-    popd
-fi
 
 for t in $BUILD_TARGETS
 do

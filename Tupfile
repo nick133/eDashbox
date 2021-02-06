@@ -47,9 +47,13 @@ LIBDIR =
 # https://stackoverflow.com/questions/5764414/undefined-reference-to-sbrk
 LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(PROJECT).map,--cref -Wl,--gc-sections
 
+NIMFLAGS = --opt:speed -d:release -d:strip
+
 ################################################################################
-# Rules
+# Rules macros
 ################################################################################
+!nimc = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f && rm -rf .nimcache |>
+
 # %-flags not work after variable expansion
 !cc = |> ^ cc %b^ $(CC) $(CFLAGS) -Wa,-a,-ad,-alms=%O.lst -c %f -o %o |>
 !as = |> ^ as %b^ $(AS) $(ASFLAGS) -c %f -o %o |>
@@ -61,8 +65,7 @@ LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(
 ################################################################################
 # Build
 ################################################################################
-PGM2C_DIR = Tools/pgm2c
-PGM2C = $(PGM2C_DIR)/bin/pgm2c
+PGM2C = Tools/pgm2c/pgm2c
 PGM_DIR = Bitmaps/PGM
 
 asm_srcs = startup/*.s
@@ -71,7 +74,8 @@ objdir = objs
 bitmaps_c = AutoSrc/bitmaps.c
 bitmaps_h = AutoSrc/bitmaps.h
 
-: $(PGM_DIR)/*.pgm |> $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(PGM_DIR) |> $(bitmaps_c) $(bitmaps_h)
+: $(PGM2C).nim |> !nimc |> $(PGM2C) {pgm2c}
+: $(PGM_DIR)/*.pgm | {pgm2c} |> ^ pgm2c %O^ $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(PGM_DIR) |> $(bitmaps_c) | $(bitmaps_h)
 
 : foreach $(srcs) $(bitmaps_c) | $(bitmaps_h) |> !cc |> $(objdir)/%B.o | %O.d %O.lst {objs}
 : foreach $(asm_srcs) |> !as |> $(objdir)/%B.o {asobjs}

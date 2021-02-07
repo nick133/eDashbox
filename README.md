@@ -6,22 +6,34 @@ This is learning project in early stage, use it at your own risk.
 
 
 ## Build
+### Prerequisities
+* tup build system
+* Nim language compiler
+* SEGGER JLink debugger and software
+* Microsoft VS code (optional)
+* STM32 CubeMX (optional)
+
+### Process
 * First time build after 'git clone' or after CubeMX code generation run:
-_Tools/pre-build.sh_
-_tup_
+```
+Tools/pre-build.sh
+tup
+```
 
 * Regular builds - just run:
-_tup_
+```
+tup
+```
 
 
 ## Debug
-* JLink debugger setup for VSCode https://wiki.segger.com/J-Link_Visual_Studio_Code
+* JLink debugger setup for VSCode <https://wiki.segger.com/J-Link_Visual_Studio_Code>
 
 
 ## IDE
 VS code - it is fast and stable, especially with debugging.
 Fix not found includes in VS code:
-https://stackoverflow.com/questions/37522462/visual-studio-code-includepath
+<https://stackoverflow.com/questions/37522462/visual-studio-code-includepath>
 
 
 ## Hardware
@@ -30,24 +42,24 @@ https://stackoverflow.com/questions/37522462/visual-studio-code-includepath
 * Tested with 3.3V Vdd
 
 ### SH1122 2.08" 256x64 16 colors OLED Display
-https://www.aliexpress.com/item/4000866935030.html
+<https://www.aliexpress.com/item/4000866935030.html>
 
 
 ## Credits
 * Tiny printf() for embedded systems:
-https://github.com/mpaland/printf
+<https://github.com/mpaland/printf>
 
 * SH1122 OLED Display HAL driver:
-https://github.com/mikhail-tsaryov/SH1122-STM32-HAL-Driver
+<https://github.com/mikhail-tsaryov/SH1122-STM32-HAL-Driver>
 
 * DS18B20 temperature sensor onewire HAL driver:
-https://github.com/lamik/DS18B20_STM32_HAL
+<https://github.com/lamik/DS18B20_STM32_HAL>
 
 * SPI MicroSD FatFs code:
-https://github.com/eziya/STM32_SPI_SDCARD
+<https://github.com/eziya/STM32_SPI_SDCARD>
 
 * Tup build system:
-http://gittup.org/tup/manual.html
+<http://gittup.org/tup/manual.html>
 
 
 ## TODO

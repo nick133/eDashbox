@@ -2,15 +2,13 @@
 import
   os,
   re,
-  bitops,
   strutils,
   strformat,
   parseopt
 
 
 proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, out_c_str_g: var string)
-proc bytestohex_color(byte1, byte2: string): string
-proc color_code_256to16(byte: string): int
+proc dtohex_color(code: string): string
 
 
 proc main() =
@@ -75,9 +73,6 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
     color_mark: bool
     data_sem: bool
     cnt: uint = 0
-    nbytes = 0
-    is_byte1 = true
-    byte1, byte2: string
 
   while fd_in.readLine(line):
     if line[0] == '#' or line == "P2": # header
@@ -85,38 +80,30 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
 
     elif line =~ re"^(\d+)\s+(\d+)$": # width height
       (im_width, im_height) = (matches[0].parseUInt, matches[1].parseUInt)
-      outcbuf = &"  uint32_t bitmap_{name}_data[{(im_width*im_height).div(2}] = " & "{\n"
+      let npixels = im_width * im_height
+      outcbuf = &"  uint32_t bitmap_{name}_data[{npixels}] = " & "{\n"
       color_mark = true
 
     elif color_mark: # colors
       im_colors = line.parseUInt
       color_mark = false
 
-    elif is_byte1:
-        byte1 = line
-        is_byte1 = false
-        continue
-    else: # byte2
-      byte2 = line
-      let color8bit = bytestohex_color(byte1, byte2)
+    else: # data pixels
+      var
+        num = dtohex_color line
+        not_1st_ln = ", " & num
 
-      var not_1st_ln = "," & color8bit
-
-      if cnt == im_width.div(2):
-        not_1st_ln = ",\n" & color8bit
+      if cnt == im_width:
+        not_1st_ln = ",\n" & num
         cnt = 0
 
-      outcbuf &= (if data_sem: not_1st_ln else: color8bit)
-
       cnt.inc
-      nbytes.inc
+
+      outcbuf &= (if data_sem: not_1st_ln else: num)
 
       data_sem = true
-      is_byte1 = true
 
   fd_in.close()
-
-  echo &"{filename}: {nbytes} color bytes created"
 
   outcbuf = &"  bitmap_{name}.Width = {im_width};\n" &
     &"  bitmap_{name}.Height = {im_height};\n" &
@@ -130,37 +117,25 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
   out_c_str_g &= &"omBitmapT bitmap_{name};\n"
 
 
-proc bytestohex_color(byte1, byte2: string): string =
-  let
-    ibyte1 = color_code_256to16 byte1
-    ibyte2 = color_code_256to16 byte2
-    # merge two 4-bit colors to 1 byte (2222 1111)
-    icolor2x = ibyte2.shl(4).bitor(ibyte1)
-
-  result = (if icolor2x < 10: "0x0" else: "0x") & &"{icolor2x:x}"
-
-# Convert PGM's 8-bit 256 color code to 4-bit 16 colors (2 pixels/byte)
-proc color_code_256to16(byte: string): int =
-  result = case byte
-    of "0": 0 # "0x00"
-    of "15": 1 # "0x11"
-    of "30": 2 # "0x22"
-    of "45": 3 # "0x33"
-    of "60": 4 # "0x44"
-    of "75": 5 # "0x55"
-    of "90": 6 # "0x66"
-    of "105": 7 # "0x77"
-    of "120": 8 # "0x88"
-    of "135": 9 # "0x99"
-    of "150": 10 # "0xAA"
-    of "165": 11 # "0xBB"
-    of "180": 12 # "0xCC"
-    of "195": 13 # "0xDD"
-    of "210": 14 # "0xEE"
-    of "225": 15 # "0xFF"
-    else:
-      echo "Invalid color code: {byte}"
-      quit QuitFailure
+proc dtohex_color(code: string): string =
+  result = case code
+    of "0": &"0x00"
+    of "15": &"0x11"
+    of "30": &"0x22"
+    of "45": &"0x33"
+    of "60": &"0x44"
+    of "75": &"0x55"
+    of "90": &"0x66"
+    of "105": &"0x77"
+    of "120": &"0x88"
+    of "135": &"0x99"
+    of "150": &"0xAA"
+    of "165": &"0xBB"
+    of "180": &"0xCC"
+    of "195": &"0xDD"
+    of "210": &"0xEE"
+    of "225": &"0xFF"
+    else: "!!!__INVALID_COLOR_CODE__!!!"
 
 
 main()

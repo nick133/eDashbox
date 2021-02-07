@@ -53,7 +53,11 @@ LIBDIR =
 # https://stackoverflow.com/questions/5764414/undefined-reference-to-sbrk
 LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(PROJECT).map,--cref -Wl,--gc-sections
 
-NIMFLAGS = --opt:speed -d:release -d:strip
+NIMFLAGS += --opt:speed
+NIMFLAGS += -d:release -d:strip -d:threads -d:ssl
+NIMFLAGS += --nimcache:".nimcache"
+NIMFLAGS += --deadcodeElim:on
+NIMFLAGS += --verbosity:0
 
 ################################################################################
 # Rules macros
@@ -61,7 +65,6 @@ NIMFLAGS = --opt:speed -d:release -d:strip
 # https://christine.website/blog/nim-and-tup-2015-06-10
 !nimc = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f && rm -rf .nimcache |>
 
-# %-flags not work after variable expansion
 !cc = |> ^ cc %b^ $(CC) $(CFLAGS) -Wa,-a,-ad,-alms=%O.lst -c %f -o %o |>
 !as = |> ^ as %b^ $(AS) $(ASFLAGS) -c %f -o %o |>
 !ld = |> ^ ld %O^ $(CC) $(LDFLAGS) %f -o %o && $(SZ) %o |>

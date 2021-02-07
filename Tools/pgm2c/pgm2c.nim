@@ -85,7 +85,7 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
 
     elif line =~ re"^(\d+)\s+(\d+)$": # width height
       (im_width, im_height) = (matches[0].parseUInt, matches[1].parseUInt)
-      outcbuf = &"  uint32_t bitmap_{name}_data[{(im_width*im_height).div(2}] = " & "{\n"
+      outcbuf = &"  uint32_t bitmap_{name}_data[{(im_width*im_height).div(2)}] = " & "{\n"
       color_mark = true
 
     elif color_mark: # colors

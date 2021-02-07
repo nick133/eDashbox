@@ -79,18 +79,41 @@ void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
 
 void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y)
 {
-  uint32_t *data = bitmap->RawData; // Don't increment original pointer
+  // uint32_t *data = bitmap->RawData; // Don't increment original pointer
+
+  uint8_t byte1, byte2, is_byte1;
+  is_byte1 = 1;
 
   for (uint32_t yto = y; yto < bitmap->Height + y; yto++)
+  {
     for (uint32_t xto = x; xto < bitmap->Width + x; xto++)
     {
-      if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == *data))
+      if (is_byte1 == 1)
       {
-        omDrawPixel(displ, xto, yto, *data);
-      }
+        byte1 = *(bitmap->RawData) & 15;
 
-      data++;
+        if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == byte1))
+        {
+          omDrawPixel(displ, xto, yto, byte1);
+        }
+
+        is_byte1 = 0;
+        continue;
+      }
+      else
+      {
+        byte2 = *(bitmap->RawData) >> 4;
+
+        if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == byte2))
+        {
+          omDrawPixel(displ, xto, yto, byte2);
+        }
+
+        bitmap->RawData++;
+        is_byte1 = 1;
+      }
     }
+  }
 
   return;
 }

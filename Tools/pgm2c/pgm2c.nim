@@ -74,7 +74,7 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
 
     color_mark: bool
     data_sem: bool
-    cnt: uint = 0
+    bytes_in_row_cnt: uint = 0
     nbytes = 0
     is_byte1 = true
     byte1, byte2: string
@@ -102,13 +102,13 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
 
       var not_1st_ln = "," & color8bit
 
-      if cnt == im_width.div(2):
+      if bytes_in_row_cnt == im_width.div(2):
         not_1st_ln = ",\n" & color8bit
-        cnt = 0
+        bytes_in_row_cnt = 0
 
       outcbuf &= (if data_sem: not_1st_ln else: color8bit)
 
-      cnt.inc
+      bytes_in_row_cnt.inc
       nbytes.inc
 
       data_sem = true
@@ -116,7 +116,7 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
 
   fd_in.close()
 
-  echo &"{filename}: {nbytes} color bytes created"
+  echo &"{filename.extractFilename()}: {nbytes} color bytes created"
 
   outcbuf = &"  bitmap_{name}.Width = {im_width};\n" &
     &"  bitmap_{name}.Height = {im_height};\n" &

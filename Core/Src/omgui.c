@@ -10,9 +10,11 @@
 #include "omgui.h"
 #include "main.h"
 
-
-/* Private methods */
-
+/* Private */
+static const uint8_t colorMap8bit[16] = {
+  // As defined in sh1122.c
+  0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
+};
 
 void omDisplayInit(omDisplayT *displ)
 {
@@ -79,38 +81,38 @@ void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
 
 void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y)
 {
-  // uint32_t *data = bitmap->RawData; // Don't increment original pointer
+  // !!!!!!!TEST!!!!!! uint32_t *data = bitmap->RawData; // Don't increment original pointer
 
-  uint8_t byte1, byte2, is_byte1;
-  is_byte1 = 1;
+  uint8_t color1, color2, is_color1;
+  is_color1 = 1;
 
   for (uint32_t yto = y; yto < bitmap->Height + y; yto++)
   {
     for (uint32_t xto = x; xto < bitmap->Width + x; xto++)
     {
-      if (is_byte1 == 1)
+      if (is_color1 == 1)
       {
-        byte1 = *(bitmap->RawData) & 15;
+        color1 = colorMap8bit[*(bitmap->RawData) & 15];
 
-        if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == byte1))
+        if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color1))
         {
-          omDrawPixel(displ, xto, yto, byte1);
+          omDrawPixel(displ, xto, yto, color1);
         }
 
-        is_byte1 = 0;
+        is_color1 = 0;
         continue;
       }
       else
       {
-        byte2 = *(bitmap->RawData) >> 4;
+        color2 = colorMap8bit[*(bitmap->RawData) >> 4];
 
-        if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == byte2))
+        if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color2))
         {
-          omDrawPixel(displ, xto, yto, byte2);
+          omDrawPixel(displ, xto, yto, color2);
         }
 
         bitmap->RawData++;
-        is_byte1 = 1;
+        is_color1 = 1;
       }
     }
   }

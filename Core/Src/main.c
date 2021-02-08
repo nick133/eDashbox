@@ -34,10 +34,14 @@
    Tiny printf for embedded systems. Stdlib sprintf corrupts the stack if used
    inside of FreeRTOS vTask */
 #include "printf.h"
+#ifdef DEBUG
+#include "SEGGER_RTT.h"
+#include "SEGGER_RTT_Conf.h"
+#endif
 
 //#include <stdio.h> // sprintf()
-#include "stdlib.h" // itoa(), gcvt()
-#include "string.h" // strcpy(), memset()
+//#include "stdlib.h" // itoa(), gcvt()
+//#include "string.h" // strcpy(), memset()
 
 /* <<<< FreeRTOS >>>> */
 #include "FreeRTOS.h"
@@ -163,128 +167,27 @@ int main(void)
   /* USER CODE BEGIN 2 */
   DS18B20_Init(DS18B20_Resolution_12bits);
 
-uint32_t ErrorError=0;
-
-HAL_Delay(1000);
-
-  if(f_mount(&fs, "", 1) != FR_OK)
-  {
-    ErrorError = 1;
-  }
-    
-       /* Open file to write */
-        if(f_open(&fil, "Hello_Mootherfucker-static.v11.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE) != FR_OK)
-  {
-    ErrorError = 2;
-  }
-
-        /* Check freeSpace space */
-        if(f_getfree("", &fre_clust, &pfs) != FR_OK)
-     {
-    ErrorError = 3;
-  }
-
-        totalSpace = (uint32_t)((pfs->n_fatent - 2) * pfs->csize * 0.5);
-        freeSpace = (uint32_t)(fre_clust * pfs->csize * 0.5);
-
-        /* free space is less than 1kb */
-        if(freeSpace < 1)
-  {
-    ErrorError = 4;
-  }
-
-        /* Writing text */
-        f_puts("Save the world!!! Some test text - 0000000000000 veeery long!", &fil);
-
-        /* Close file */
-        if(f_close(&fil) != FR_OK)
-     {
-    ErrorError = 5;
-  }
-
-  f_open(&fil, "Another-test-file-very-loong-fn.v12.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
-  f_puts("Version 2. Save the world!!! Some test text - 0000000000000 veeery long!", &fil);
-  f_close(&fil);
-
-
-
-
-//         /* Open file to read */
-//         if(f_open(&fil, "Hello_Mootherfucker-static.v11.txt", FA_READ) != FR_OK)
-//      {
-//     ErrorError = 6;
-//   }
-
-//   f_gets(buffer, sizeof(buffer), &fil);
-//   //      while(f_gets(buffer, sizeof(buffer), &fil))
-//         // {
-//         //         /* SWV output */
-//         //         sprintf("%s", buffer);
-//         //         fflush(stdout);
-//         // }
-
-//         /* Close file */
-//         if(f_close(&fil) != FR_OK)
-//      {
-// ErrorError = 7;
-//   }
-
-//         /* Unmount SDCARD */
-//         if(f_mount(NULL, "", 1) != FR_OK)
-//         {
-// ErrorError = 8;
-//   }
-
-
-
-
-
-  /* HAL_TIM_IC_Start_IT is not enabling HAL_TIM_PeriodElapsedCallback,
-   * so we need to manually enable it. See:
-   * https://community.st.com/s/question/0D50X00009hpBdlSAE/timer3-update-event-interrupt-not-working-properly
-   */
+//  f_mount(&fs, "", 1);
+  
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 
-/*
-  SH1122_Display_T {
-    SpiInstance
-    SpiPinDC
-    SpiPinCS
-    SpiPinSCL
-    SpiPinRST
-    SpiPinSDA
-  }
 
-  SH1122_DisplayInit(SH1122_Display_T)
-  SH1122_DisplayUpdate
+  SEGGER_RTT_printf(0, "==> evAnalyst RTT debug started.\r\n");
 
- */
-
-// Display_Init();
-// //Display_SetOrienation(OLED_DISP_ROTATE180);
-// Frame_DrawPixel(10,10,Display_Color.Gray_01);
-// Frame_DrawPixel(10,15,Display_Color.Gray_02);
-// Frame_DrawPixel(10,20,Display_Color.Gray_03);
-// Frame_DrawRectangle(0, 0, OLED_WIDTH-1, OLED_HEIGHT-1, Display_Color.Gray_08);
-// Frame_printf(20,20, FONTID_10X16F, Display_Color.Gray_15, LEFT, TOP, "evAnalyst v0.1");
-// Display_SendFrame();
-// HAL_Delay(15000);
-
-
-  OLED_GUI_Init();
+  GUI_Init();
 
 //  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
 
- TaskHandle_t taskTempPoll = NULL;
+  TaskHandle_t taskTempPoll = NULL;
 
- BaseType_t taskTempPollRet = xTaskCreate(
-   TaskTemperaturePoll,
-   "temp-sensor-poll",        /* Text name for the task. */
-   configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
-   (void *) 1,                /* Parameter passed into the task. */
-   configMAX_PRIORITIES / 2,  /* Priority of the task created. */
-   &taskTempPoll );
+  BaseType_t taskTempPollRet = xTaskCreate(
+    TaskTemperaturePoll,
+    "temp-sensor-poll",        /* Text name for the task. */
+    configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
+    (void *) 1,                /* Parameter passed into the task. */
+    configMAX_PRIORITIES / 2,  /* Priority of the task created. */
+    &taskTempPoll );
 
   // if (taskTempPollRet == pdPASS)
   // {
@@ -297,7 +200,7 @@ HAL_Delay(1000);
   //   omDisplayUpdate(&oled1);
   // }
 
-  vTaskStartScheduler();
+ // vTaskStartScheduler();
 
   /* USER CODE END 2 */
 
@@ -309,9 +212,8 @@ HAL_Delay(1000);
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
+  while (1) {
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -411,15 +313,10 @@ void TaskTemperaturePoll(void *pvParams)
 			if (DS18B20_GetTemperature(i, &sensor.Temperature1))
 			{
 				DS18B20_GetROM(i, ROM_tmp);
-//				memset(message, 0, sizeof(message));
-				//sprintf(message, "%d. ROM: %X%X%X%X%X%X%X%X Temp: %f\n\r",i, ROM_tmp[0], ROM_tmp[1], ROM_tmp[2], ROM_tmp[3], ROM_tmp[4], ROM_tmp[5], ROM_tmp[6], ROM_tmp[7], temperature);
-        snprintf(message, 64, "Temp: %.2f", sensor.Temperature1);
-        //gcvt(sensor.Temperature1, 5, &message);
-        // Frame_printf(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t color,
-        //     uint8_t hAlign, uint8_t vAlign, const char *args, ...)
-        Frame_printf(0,30, FONTID_10X16F, Display_Color.Gray_11, LEFT, TOP, message);
-
-        omDisplayUpdate(&oled1);
+//        snprintf(message, 64, "Temperature: %.2f C", sensor.Temperature1);
+        //  uint8_t hAlign, uint8_t vAlign, const char *args, ...)
+ //       Frame_printf(0,20, FONTID_10X16F, Display_Color.Gray_11, LEFT, TOP, message);
+  //      omDisplayUpdate(&oled1);
 			}
 		}
 

@@ -10,32 +10,31 @@
 
 
 omDisplayT oled1;
-omScreenT screenLogo, screenMain, screenData, screenTemp, screenSetup;
+omScreenT screenMain, screenData, screenTemp, screenSetup;
 
 static void DisplayInitCb(omDisplayT *);
 static void DisplayUpdateCb(omDisplayT *);
 static void DisplayDrawPixelCb(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
 
 
-void OLED_GUI_Init(void)
+void GUI_Init(void)
 {
   oled1.Id = 0;
-  oled1.ResX = 256;
-  oled1.ResY = 64;
+  oled1.ResX = OLED_WIDTH;
+  oled1.ResY = OLED_HEIGHT;
   oled1.InitCallback = DisplayInitCb;
   oled1.DeInitCallback = NULL;
   oled1.UpdateCallback = DisplayUpdateCb;
   oled1.DrawPixelCallback = DisplayDrawPixelCb;
 
-//  LogoScreenInit();
-  MainScreenInit();
-
   omDisplayInit(&oled1);
 
   Bitmaps_Init();
+  MainScreenInit();
+
   // Show logo
-  //omDrawBitmap(&oled1, &bitmap_logo, 0, 0);
-//
+  omDrawBitmap(&oled1, &bitmap_test80x25, 2, 22);
+  omDrawBitmap(&oled1, &bitmap_test80x25, 99, 34);
   Sleep(1000);
   omDisplayUpdate(&oled1);
 

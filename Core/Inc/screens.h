@@ -15,10 +15,10 @@ typedef enum {
 } omScreenIdT;
 
 extern omDisplayT oled1;
-extern omScreenT screenLogo, screenMain, screenData, screenTemp, screenSetup;
+extern omScreenT screenMain, screenData, screenTemp, screenSetup;
 
 void MainScreenInit(void);
-void LogoScreenInit(void);
-void OLED_GUI_Init(void);
+void DataScreenInit(void);
+void GUI_Init(void);
 
 #endif /* _SCREENS_H_ */

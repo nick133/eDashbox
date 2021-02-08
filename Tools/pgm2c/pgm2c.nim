@@ -85,7 +85,7 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
 
     elif line =~ re"^(\d+)\s+(\d+)$": # width height
       (im_width, im_height) = (matches[0].parseUInt, matches[1].parseUInt)
-      outcbuf = &"  uint32_t bitmap_{name}_data[{(im_width*im_height).div(2)}] = " & "{\n"
+      outcbuf = &"  uint8_t bitmap_{name}_data[{(im_width*im_height).div(2)}] = " & "{\n"
       color_mark = true
 
     elif color_mark: # colors
@@ -123,7 +123,7 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
     &"  bitmap_{name}.IsAlpha = False;\n" &
     &"  bitmap_{name}.ColorsNumOf = 16;\n" &
     outcbuf & "\n};\n" &
-    &"  bitmap_{name}.RawData = bitmap_{name}_data;\n\n"
+    &"  bitmap_{name}.RawData = &bitmap_{name}_data[0];\n\n"
 
   out_h_str &= &"extern omBitmapT bitmap_{name};\n"
   out_c_str &= outcbuf
@@ -137,7 +137,7 @@ proc bytestohex_color(byte1, byte2: string): string =
     # merge two 4-bit colors to 1 byte (2222 1111)
     icolor2x = ibyte2.shl(4).bitor(ibyte1)
 
-  result = (if icolor2x < 10: "0x0" else: "0x") & &"{icolor2x:x}"
+  result = (if icolor2x < 16: "0x0" else: "0x") & &"{icolor2x:x}"
 
 # Convert PGM's 8-bit 256 color code to 4-bit 16 colors (2 pixels/byte)
 proc color_code_256to16(byte: string): int =

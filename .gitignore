@@ -1,4 +1,4 @@
-.tup/**
+/.tup
 /.work
 Core/Src/freertos.c
 /build-*

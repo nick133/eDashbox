@@ -2,6 +2,7 @@
 
 srcs += Core/Src/*.c
 srcs += Drivers/DS18B20_HAL_Driver/Src/*.c
+srcs += Drivers/SEGGER_RTT/Src/*.c
 srcs += Drivers/SH1122_Driver/Src/*.c
 srcs += Drivers/SH1122_Driver/Src/fonts/*.c
 srcs += Drivers/STM32L4xx_HAL_Driver/Src/*.c
@@ -18,6 +19,7 @@ incs += -ICore/Inc
 incs += -IDrivers/CMSIS/Device/ST/STM32L4xx/Include
 incs += -IDrivers/CMSIS/Include
 incs += -IDrivers/DS18B20_HAL_Driver/Inc
+incs += -IDrivers/SEGGER_RTT/Inc
 incs += -IDrivers/SH1122_Driver/Inc
 incs += -IDrivers/SH1122_Driver/Inc/fonts
 incs += -IDrivers/STM32L4xx_HAL_Driver/Inc

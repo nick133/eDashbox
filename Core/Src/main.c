@@ -167,27 +167,26 @@ int main(void)
   /* USER CODE BEGIN 2 */
   DS18B20_Init(DS18B20_Resolution_12bits);
 
-//  f_mount(&fs, "", 1);
+  f_mount(&fs, "", 1);
   
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 
-
-  SEGGER_RTT_printf(0, "==> evAnalyst RTT debug started.\r\n");
+  SEGGER_RTT_printf(0, "==> Hello!\n");
 
   GUI_Init();
 
 //  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
 
-  TaskHandle_t taskTempPoll = NULL;
+  // TaskHandle_t taskTempPoll = NULL;
 
-  BaseType_t taskTempPollRet = xTaskCreate(
-    TaskTemperaturePoll,
-    "temp-sensor-poll",        /* Text name for the task. */
-    configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
-    (void *) 1,                /* Parameter passed into the task. */
-    configMAX_PRIORITIES / 2,  /* Priority of the task created. */
-    &taskTempPoll );
+  // BaseType_t taskTempPollRet = xTaskCreate(
+  //   TaskTemperaturePoll,
+  //   "temp-sensor-poll",        /* Text name for the task. */
+  //   configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
+  //   (void *) 1,                /* Parameter passed into the task. */
+  //   configMAX_PRIORITIES / 2,  /* Priority of the task created. */
+  //   &taskTempPoll );
 
   // if (taskTempPollRet == pdPASS)
   // {
@@ -200,7 +199,7 @@ int main(void)
   //   omDisplayUpdate(&oled1);
   // }
 
- // vTaskStartScheduler();
+  vTaskStartScheduler();
 
   /* USER CODE END 2 */
 

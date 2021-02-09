@@ -51,9 +51,6 @@ void Bitmaps_Init(void);
 #include "omgui.h"
 
 """ & out_c_buf_g & """
-
-void Bitmaps_Init(void)
-{
 """ & out_c_buf & "}\n"
 
   out_h.writeFile(out_h_buf)
@@ -80,12 +77,16 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
     byte1, byte2: string
 
   while fd_in.readLine(line):
-    if line[0] == '#' or line == "P2": # header
+    if line[0] == '#' or line[0] == 'P': # header
       continue
 
     elif line =~ re"^(\d+)\s+(\d+)$": # width height
       (im_width, im_height) = (matches[0].parseUInt, matches[1].parseUInt)
-      outcbuf = &"  uint8_t bitmap_{name}_data[{(im_width*im_height).div(2)}] = " & "{\n"
+      # Store images in FLASH memory, not RAM, image buffer is corrupted otherwise.
+      # Image data must be declared as global 'const'. Further readings:
+      # https://electronics.stackexchange.com/questions/74589/how-to-stock-variables-in-flash-memory
+      # https://forum.arduino.cc/index.php?topic=461487.0
+      outcbuf = &" static const uint8_t bitmap_{name}_data[{(im_width*im_height).div(2)}] = " & "{\n"
       color_mark = true
 
     elif color_mark: # colors
@@ -118,11 +119,13 @@ proc cvt_file(filename: string, out_h_str: var string, out_c_str: var string, ou
 
   echo &"{filename.extractFilename()}: {nbytes} color bytes created"
 
-  outcbuf = &"  bitmap_{name}.Width = {im_width};\n" &
+  outcbuf = outcbuf & """};
+  void Bitmaps_Init(void) {
+  """ & &"  bitmap_{name}.Width = {im_width};\n" &
     &"  bitmap_{name}.Height = {im_height};\n" &
     &"  bitmap_{name}.IsAlpha = False;\n" &
     &"  bitmap_{name}.ColorsNumOf = 16;\n" &
-    outcbuf & "\n};\n" &
+     "\n\n" &
     &"  bitmap_{name}.RawData = &bitmap_{name}_data[0];\n\n"
 
   out_h_str &= &"extern omBitmapT bitmap_{name};\n"
@@ -159,7 +162,7 @@ proc color_code_256to16(byte: string): int =
     of "210": 14 # "0xEE"
     of "225": 15 # "0xFF"
     else:
-      echo "Invalid color code: {byte}"
+      echo &"Invalid color code: {byte}"
       quit QuitFailure
 
 

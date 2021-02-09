@@ -39,7 +39,7 @@ struct omDisplay
   void (*InitCallback)(omDisplayT *);
   void (*DeInitCallback)(omDisplayT *);
   void (*UpdateCallback)(omDisplayT *);
-  void (*DrawPixelCallback)(omDisplayT *, uint32_t x, uint32_t y, uint32_t color);
+  void (*DrawPixelCallback)(omDisplayT *, uint32_t x, uint32_t y, uint8_t color);
 };
 
 struct omWidget
@@ -68,11 +68,11 @@ struct omScreen
 
 struct omBitmap
 {
-  uint16_t Width, Height;
-  uint16_t ColorsNumOf;
+  uint8_t Width, Height;
+  uint8_t ColorsNumOf;
   Bool IsAlpha;
-  uint32_t AlphaColor;
-  uint8_t *RawData;
+  uint8_t AlphaColor;
+  const uint8_t *RawData;
 };
 
 struct omAnimation

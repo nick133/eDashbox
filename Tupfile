@@ -47,6 +47,7 @@ CFLAGS += -MMD -MP
 #CFLAGS += -Wno-unused-function
 #CFLAGS += -Wno-unused-variable
 #CFLAGS += -Wdiscarded-qualifiers
+#CFLAGS += -Wimplicit-function-declaration
 CFLAGS += -Wno-maybe-uninitialized
 CFLAGS += -Wno-misleading-indentation
 
@@ -57,7 +58,9 @@ LIBS = -lc -lm -lnosys
 
 # Fix linker errors with nosys.specs
 # https://stackoverflow.com/questions/5764414/undefined-reference-to-sbrk
-LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(PROJECT).map,--cref -Wl,--gc-sections
+#LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(PROJECT).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(PROJECT).map,--cref -Wl,--gc-sections
+#LDFLAGS += -u _printf_float
 
 NIMFLAGS += --opt:speed
 NIMFLAGS += -d:release -d:strip -d:threads -d:ssl

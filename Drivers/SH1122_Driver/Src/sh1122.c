@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <stdarg.h>
+// #include <string.h>
 #include "sh1122.h"
 
 // Frame buffer

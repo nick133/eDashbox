@@ -10,6 +10,15 @@
 #include "omgui.h"
 #include "main.h"
 
+#include "sh1122.h"
+#include "font.h"
+#include "f10x16f.h"
+
+#ifdef DEBUG
+#include "SEGGER_RTT.h"
+#include "SEGGER_RTT_Conf.h"
+#endif
+
 /* Private */
 static const uint8_t colorMap8bit[16] = {
   // As defined in sh1122.c
@@ -72,53 +81,62 @@ void omDisplayUpdate(omDisplayT *displ)
 }
 
 
-void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint32_t color)
+void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint8_t color)
 {
   displ->DrawPixelCallback(displ, x, y, color);
   return;
 }
 
 
+// void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool update)
 void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y)
 {
-  // !!!!!!!TEST!!!!!! uint32_t *data = bitmap->RawData; // Don't increment original pointer
-
-  uint8_t color1, color2, is_color1;
-  is_color1 = 1;
-
+  uint8_t *data = bitmap->RawData; // Don't increment original pointer
+  uint8_t color1, color2;
+  Bool is_color1 = 1;
+uint8_t n = 0;
   for (uint32_t yto = y; yto < bitmap->Height + y; yto++)
   {
     for (uint32_t xto = x; xto < bitmap->Width + x; xto++)
     {
       if (is_color1 == 1)
       {
-        color1 = colorMap8bit[*(bitmap->RawData) & 15];
+        color1 = colorMap8bit[bitmap->RawData[n]];
+        // color1 = colorMap8bit[*data & 0x0f];
 
+        // SEGGER_RTT_printf(0, "xto = %u, yto = %u, BYTE = %x\r\n", xto, yto, *data);
+        // SEGGER_RTT_printf(0, "  color1 = %x, \r\n", color1);
         if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color1))
         {
           omDrawPixel(displ, xto, yto, color1);
+          SEGGER_RTT_printf(0, "0x%x,", color1);
         }
 
-        is_color1 = 0;
-        continue;
+        is_color1 = False;
       }
       else
       {
-        color2 = colorMap8bit[*(bitmap->RawData) >> 4];
+        // color2 = colorMap8bit[*data >> 4];
+        color2 = colorMap8bit[bitmap->RawData[n]];
 
+        // SEGGER_RTT_printf(0, "  color2 = %x\r\n", color2);
         if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color2))
         {
           omDrawPixel(displ, xto, yto, color2);
+          SEGGER_RTT_printf(0, "0x%x,", color2);
         }
 
-        bitmap->RawData++;
-        is_color1 = 1;
+        data++;
+        is_color1 = True;
       }
+      n++;
     }
+    SEGGER_RTT_printf(0, "\n");
   }
 
   return;
 }
+
 
 /* void omAnimationStart(omAnimationT *anim)
 {

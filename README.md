@@ -16,7 +16,7 @@ This is learning project in early stage, use it at your own risk.
 ### Process
 * First time build after 'git clone' or after CubeMX code generation run:
 ```
-Tools/pre-build.sh
+Tools/configure.sh
 tup
 ```
 

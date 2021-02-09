@@ -8,7 +8,8 @@
 TUPOUT=configs/Auto.tup
 PGM2C_DIR=Tools/pgm2c
 PGM2C=$PGM2C_DIR/bin/pgm2c
-SRC_TOPDIRS="Core Drivers FATFS Middlewares"
+SRC_TOPDIRS="Core Drivers FATFS Middlewares/Third_Party"
+DEBUG_SRC_TOPDIRS="Middlewares/Debug"
 UNUSED_FILES="Core/Src/freertos.c Makefile startup_stm32l432xx.s"
 BUILD_TARGETS="debug"
 #BUILD_TARGETS="release debug"
@@ -51,6 +52,15 @@ echo -e "# build.sh auto-generated TUP-file, do not edit!\n" > $TUPOUT
 find $SRC_TOPDIRS -type f -name "*.c" -printf 'srcs += %h/*.c\n' | sort -u >> $TUPOUT
 echo >> $TUPOUT
 find $SRC_TOPDIRS -type f -name "*.h" -printf 'incs += -I%h\n' | sort -u >> $TUPOUT
+
+if [[ "$DEBUG_SRC_TOPDIRS" ]]
+then
+    echo -e "\n\nifdef DEBUG" >> $TUPOUT
+    find $DEBUG_SRC_TOPDIRS -type f -name "*.c" -printf 'srcs += %h/*.c\n' | sort -u >> $TUPOUT
+    echo >> $TUPOUT
+    find $DEBUG_SRC_TOPDIRS -type f -name "*.h" -printf 'incs += -I%h\n' | sort -u >> $TUPOUT
+    echo -e "endif\n" >> $TUPOUT
+fi
 
 for t in $BUILD_TARGETS
 do

@@ -1,13 +1,13 @@
 #ifndef __SH1122_H
 #define __SH1122_H
 
-#include "spi.h"
 #include <stdio.h> 
 #include "font.h"
 
 // Display size
-#define OLED_WIDTH 256
-#define OLED_HEIGHT 64
+#define SH1122_OLED_WIDTH 256
+#define SH1122_OLED_HEIGHT 64
+#define SH1122_OLED_RAM_SIZE (SH1122_OLED_WIDTH * SH1122_OLED_HEIGHT / 2)
 
 #define OLED_POWER_OFF 0
 #define OLED_POWER_ON 1
@@ -30,6 +30,25 @@
 #define TOP 3
 #define BOTTOM 4
 
+extern const uint8_t Oled8BitColors[16];
+
+#define OLED_GRAY_00 Oled8BitColors[0]
+#define OLED_GRAY_01 Oled8BitColors[1]
+#define OLED_GRAY_02 Oled8BitColors[2]
+#define OLED_GRAY_03 Oled8BitColors[3]
+#define OLED_GRAY_04 Oled8BitColors[4]
+#define OLED_GRAY_05 Oled8BitColors[5]
+#define OLED_GRAY_06 Oled8BitColors[6]
+#define OLED_GRAY_07 Oled8BitColors[7]
+#define OLED_GRAY_08 Oled8BitColors[8]
+#define OLED_GRAY_09 Oled8BitColors[9]
+#define OLED_GRAY_10 Oled8BitColors[10]
+#define OLED_GRAY_11 Oled8BitColors[11]
+#define OLED_GRAY_12 Oled8BitColors[12]
+#define OLED_GRAY_13 Oled8BitColors[13]
+#define OLED_GRAY_14 Oled8BitColors[14]
+#define OLED_GRAY_15 Oled8BitColors[15]
+
 struct Gray_16_Color
 {
     uint8_t Gray_00; 
@@ -51,6 +70,10 @@ struct Gray_16_Color
 };
 
 extern struct Gray_16_Color Display_Color;
+
+void SH1122_DrawPixel(uint16_t x, uint16_t y, uint8_t color);
+void SH1122_DisplayUpdate(void);
+
 //----------------------------------------------------------------------------------------
 // SH1122 Control Functions
 //----------------------------------------------------------------------------------------

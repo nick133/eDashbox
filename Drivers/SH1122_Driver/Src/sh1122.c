@@ -1,4 +1,14 @@
-/*
+/*******************************************************************************
+ * Optimized SH1122 OLED Display library by nick133
+ * 
+ * Original library uses global 16Kb intermediate frame buffer to store pixels
+ * and creates temporary 8Kb buffer to send it to SH1122 RAM each time display
+ * is updated.
+ * This version only keeps global 8kb persistent buffer, as no intermediate
+ * memory is used it is faster and consumes less MCU RAM.
+ *
+ *******************************************************************************
+ *
  * OLED RAM buffer is 4-bit per pixel. Each byte contains 2 pixels -
  * first pixel is left 4-bit of a byte, second is right half.
  * 
@@ -12,22 +22,53 @@
  * Row 2: 128-255 bytes (0+128 - 127+128)
  * Row 3: ...
  * 
- ** Coords to buffer index
- * x, y 
+ ** Coords x, y to buffer index
  * index = floor( (y * 128) + (x / 2) )
- *
- */
+ * 
+ ******************************************************************************/
 
 // #include <stdio.h>
 // #include <stdlib.h>
-// #include <stdarg.h>
+#include <stdarg.h>
 // #include <string.h>
+
 #include "sh1122.h"
+#include "sh1122_conf.h"
+
+#define SH1122_OLED_SPI_HANDLE  &hspi1
+static uint8_t PixelBuffer[SH1122_OLED_WIDTH][SH1122_OLED_HEIGHT] = {0};
 
 // Frame buffer
-static uint8_t FrameBuffer[OLED_WIDTH][OLED_HEIGHT] = {0};
+static uint8_t FrameBuffer[SH1122_OLED_RAM_SIZE] = {0};
 
 struct Gray_16_Color Display_Color = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+
+
+const uint8_t Oled8BitColors[16] = {
+    0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+    0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
+};
+
+    
+void SH1122_DrawPixel(uint16_t x, uint16_t y, uint8_t color)
+{
+  if ((x >= SH1122_OLED_WIDTH) || (y >= SH1122_OLED_HEIGHT))
+    return;
+
+  uint16_t byte_idx = (y * SH1122_OLED_WIDTH/2) + (x / 2);
+  uint8_t byte = FrameBuffer[byte_idx];
+
+  // x is even, set first pixel, apply left 4 bits
+  // x is odd, set second pixel, apply right 4 bits
+  FrameBuffer[byte_idx] = x & 1 ?
+    ( byte & 0xf0 ) | color : (( byte & 0x0f ) << 4) | color;
+}
+
+void SH1122_DisplayUpdate(void)
+{
+    SH1122_WriteData(FrameBuffer, SH1122_OLED_RAM_SIZE);
+}
+
 //----------------------------------------------------------------------------------------
 // Low Level Functions
 //----------------------------------------------------------------------------------------
@@ -37,7 +78,7 @@ static void SendOneByteCommand(uint8_t Cmd)
 {
     HAL_GPIO_WritePin(OLED_nCS_GPIO_Port, OLED_nCS_Pin, GPIO_PIN_RESET); // Select OLED
     HAL_GPIO_WritePin(OLED_DC_GPIO_Port, OLED_DC_Pin, GPIO_PIN_RESET);   // Command mode
-    HAL_SPI_Transmit(&hspi1, (uint8_t *)&Cmd, 1, HAL_MAX_DELAY);        // Send byte
+    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)&Cmd, 1, HAL_MAX_DELAY);        // Send byte
     HAL_GPIO_WritePin(OLED_nCS_GPIO_Port, OLED_nCS_Pin, GPIO_PIN_SET); // Deselect OLED
 }
 
@@ -46,8 +87,8 @@ static void SendDoubleByteCommand(uint8_t CmdH, uint8_t CmdL)
 {
     HAL_GPIO_WritePin(OLED_nCS_GPIO_Port, OLED_nCS_Pin, GPIO_PIN_RESET); // Select OLED
     HAL_GPIO_WritePin(OLED_DC_GPIO_Port, OLED_DC_Pin, GPIO_PIN_RESET);   // Command mode
-    HAL_SPI_Transmit(&hspi1, (uint8_t *)&CmdH, 1, HAL_MAX_DELAY);        // Send byte 1
-    HAL_SPI_Transmit(&hspi1, (uint8_t *)&CmdL, 1, HAL_MAX_DELAY);        // Send byte 2
+    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)&CmdH, 1, HAL_MAX_DELAY);        // Send byte 1
+    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)&CmdL, 1, HAL_MAX_DELAY);        // Send byte 2
     HAL_GPIO_WritePin(OLED_nCS_GPIO_Port, OLED_nCS_Pin, GPIO_PIN_SET); // Deselect OLED
 }
 
@@ -204,7 +245,7 @@ void SH1122_WriteData(uint8_t *pData, uint32_t DataLen)
 {
     HAL_GPIO_WritePin(OLED_nCS_GPIO_Port, OLED_nCS_Pin, GPIO_PIN_RESET); // Select OLED
     HAL_GPIO_WritePin(OLED_DC_GPIO_Port, OLED_DC_Pin, GPIO_PIN_SET);   // Data mode
-    HAL_SPI_Transmit(&hspi1, (uint8_t *)pData, DataLen, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)pData, DataLen, HAL_MAX_DELAY);
     HAL_GPIO_WritePin(OLED_nCS_GPIO_Port, OLED_nCS_Pin, GPIO_PIN_SET); // Deselect OLED
 }
 
@@ -220,8 +261,8 @@ static void SH1122_Reset(void)
 // Clear display internal RAM
 static void SH1122_ClearRAM(void)
 {
-    uint8_t ScreenBuf[OLED_WIDTH * OLED_HEIGHT / 2] = {0};
-    SH1122_WriteData(ScreenBuf, OLED_WIDTH * OLED_HEIGHT / 2);
+    uint8_t ScreenBuf[SH1122_OLED_WIDTH * SH1122_OLED_HEIGHT / 2] = {0};
+    SH1122_WriteData(ScreenBuf, SH1122_OLED_WIDTH * SH1122_OLED_HEIGHT / 2);
 }
 
 //----------------------------------------------------------------------------------------
@@ -254,26 +295,26 @@ void Display_Init(void)
 // Update display
 void Display_SendFrame(void)
 {
-    uint8_t Buffer[OLED_WIDTH * OLED_HEIGHT / 2] = {0};
+    uint8_t Buffer[SH1122_OLED_WIDTH * SH1122_OLED_HEIGHT / 2] = {0};
 
-    for (uint32_t i = 0; i < OLED_HEIGHT; i++)
+    for (uint32_t i = 0; i < SH1122_OLED_HEIGHT; i++)
     {
-        for (uint32_t j = 0; j < OLED_WIDTH - 1; j = j + 2)
+        for (uint32_t j = 0; j < SH1122_OLED_WIDTH - 1; j = j + 2)
         {
-            Buffer[(j + i * OLED_WIDTH) / 2] = (FrameBuffer[j][i] & 0xF0) | ((FrameBuffer[j + 1][i]) & 0x0F);
+            Buffer[(j + i * SH1122_OLED_WIDTH) / 2] = (PixelBuffer[j][i] & 0xF0) | ((PixelBuffer[j + 1][i]) & 0x0F);
         }
     }
 
-    SH1122_WriteData(Buffer, OLED_WIDTH * OLED_HEIGHT / 2);
+    SH1122_WriteData(Buffer, SH1122_OLED_WIDTH * SH1122_OLED_HEIGHT / 2);
 }
 
 // Draw a pixel in (x, y) coordinates
 void Frame_DrawPixel(uint16_t x, uint16_t y, uint8_t color)
 {
-    if ((x >= OLED_WIDTH) || (y >= OLED_HEIGHT))
+    if ((x >= SH1122_OLED_WIDTH) || (y >= SH1122_OLED_HEIGHT))
         return;
 
-    FrameBuffer[x][y] = color;
+    PixelBuffer[x][y] = color;
 }
 
 // Draw a line from (x1, y1) to (x2, y2)

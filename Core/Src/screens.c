@@ -21,8 +21,8 @@ void GUI_Init(void)
 {
   Bitmaps_Init();
   oledUi.Id = 0;
-  oledUi.ResX = OLED_WIDTH;
-  oledUi.ResY = OLED_HEIGHT;
+  oledUi.ResX = SH1122_OLED_WIDTH;
+  oledUi.ResY = SH1122_OLED_HEIGHT;
   oledUi.InitCallback = DisplayInitCb;
   oledUi.DeInitCallback = NULL;
   oledUi.UpdateCallback = DisplayUpdateCb;
@@ -39,48 +39,42 @@ void GUI_Init(void)
 //  omDrawBitmap(&oledUi, &bitmap_test80x25, 0, 0);
 //  omDrawBitmap(&oledUi, &bitmap_test80x25, 120, 20);
   
-  uint8_t Buffer[OLED_WIDTH * OLED_HEIGHT / 2] = {0};
+    // uint16_t x1 = 0,
+    //   y1 = 0, x2 = 127, y2 = 63;
 
-  // for (uint32_t i = 0; i < OLED_HEIGHT; i++)
-  // {
-  //   for (uint32_t j = 0; j < OLED_WIDTH - 1; j = j + 2)
-  //   {
-  //     Buffer[(j + i * OLED_WIDTH) / 2] = (FrameBuffer[j][i] & 0xF0) | ((FrameBuffer[j + 1][i]) & 0x0F);
-  //   }
-  // }
+    // const int16_t deltaX = abs(x2 - x1);
+    // const int16_t deltaY = abs(y2 - y1);
+    // const int16_t signX = x1 < x2 ? 1 : -1;
+    // const int16_t signY = y1 < y2 ? 1 : -1;
 
-  // get byte, containing a pixel
-  int x = 34, y = 124;
-  uint16_t idx = y*OLED_WIDTH/2 + x/2;
-  uint8_t byte = Buffer[idx];
-  // uint8_t left_1st_pixel = byte >> 4;
-  // uint8_t right_2nd_pixel = byte & 0x0f;
-  uint8_t color = 0xff;
+    // int16_t error = deltaX - deltaY;
 
-  if (x & 1) // x is odd, we set second/right pixel
-  {
-      // apply right 4 bits
-      byte = ( byte & 0xf0 ) | color; 
-  }
-  else // x is even, we set first/left pixel
-  {
-      // apply left 4 bits
-      byte = (( byte & 0x0f ) << 4) | color;
-  }
-  Buffer[idx] = color;
+    // SH1122_DrawPixel(x2, y2, OLED_GRAY_07);
 
-  Buffer[128] = 0xf0;
-  SH1122_WriteData(Buffer, OLED_WIDTH * OLED_HEIGHT / 2);
+    // while (x1 != x2 || y1 != y2)
+    // {
+    //     SH1122_DrawPixel(x1, y1, OLED_GRAY_15);
+    //     const int16_t error2 = error * 2;
+
+    //     if (error2 > -deltaY)
+    //     {
+    //         error -= deltaY;
+    //         x1 += signX;
+    //     }
+    //     if (error2 < deltaX)
+    //     {
+    //         error += deltaX;
+    //         y1 += signY;
+    //     }
+    // }
+
+  SH1122_DrawPixel(0, 0, OLED_GRAY_15);
+  SH1122_DrawPixel(0, 62, OLED_GRAY_15);
+  SH1122_DrawPixel(255, 0, OLED_GRAY_15);
+  SH1122_DrawPixel(255, 62, OLED_GRAY_15);
+  SH1122_DisplayUpdate();
   Sleep(2000);
-
-  Buffer[128] = 0x0f;
-  SH1122_WriteData(Buffer, OLED_WIDTH * OLED_HEIGHT / 2);
-  Sleep(2000);
-
-
-
-
-
+  
   // omGuiUpdate(&oledUi);
   //  omScreenSelect(&screenMain);
 }

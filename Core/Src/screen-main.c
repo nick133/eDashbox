@@ -22,7 +22,7 @@ static void WgtMainOdoCb(omWidgetT *);
 void MainScreenInit(void)
 {
   screenMain.Id = IdScreenMain;
-  screenMain.Display = &oled1;
+  screenMain.Ui = &oledUi;
   screenMain.WidgetsNumOf = NumOfMainWidgets;
   screenMain.ShowCallback = ScreenMainShowCb;
   screenMain.HideCallback = NULL;

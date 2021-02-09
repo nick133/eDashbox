@@ -16,16 +16,16 @@ static const uint8_t colorMap8bit[16] = {
   0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
 };
 
-void omDisplayInit(omDisplayT *displ)
+void omGuiInit(omGuiT *ui)
 {
-  displ->InitCallback(displ); // OLED Driver's Init code goes here
-  displ->ActiveScreen=NULL; // Discarded if set, use omScreenSelect()
+  ui->InitCallback(ui); // OLED Driver's Init code goes here
+  ui->ActiveScreen=NULL; // Discarded if set, use omScreenSelect()
 }
 
 
-void omDisplayDeInit(omDisplayT *displ)
+void omGuiDeInit(omGuiT *ui)
 {
-  displ->DeInitCallback(displ); // OLED Driver's DeInit code goes here
+  ui->DeInitCallback(ui); // OLED Driver's DeInit code goes here
 }
 
 
@@ -36,9 +36,9 @@ Bool omScreenSelect(omScreenT *screen)
     return False;
   }
 
-  if (screen->Display->ActiveScreen != NULL && screen->Display->ActiveScreen->HideCallback != NULL)
+  if (screen->Ui->ActiveScreen != NULL && screen->Ui->ActiveScreen->HideCallback != NULL)
   {
-    screen->Display->ActiveScreen->HideCallback(screen);
+    screen->Ui->ActiveScreen->HideCallback(screen);
   }
 
   if (screen->ShowCallback != NULL)
@@ -53,7 +53,7 @@ Bool omScreenSelect(omScreenT *screen)
     screen->Widgets[i].ShowCallback(screen->Widgets + i);
   }
 
-  screen->Display->ActiveScreen = screen;
+  screen->Ui->ActiveScreen = screen;
 
   return True;
 }
@@ -61,20 +61,20 @@ Bool omScreenSelect(omScreenT *screen)
 
 Bool omScreenIsActive(omScreenT *screen)
 {
-  return (screen->Display->ActiveScreen == NULL || screen->Display->ActiveScreen->Id != screen->Id) ? False : True;
+  return (screen->Ui->ActiveScreen == NULL || screen->Ui->ActiveScreen->Id != screen->Id) ? False : True;
 }
 
 
-void omDisplayUpdate(omDisplayT *displ)
+void omGuiUpdate(omGuiT *ui)
 {
-  displ->UpdateCallback(displ);
+  ui->UpdateCallback(ui);
   return;
 }
 
 
-void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint8_t color)
+void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
 {
-  displ->DrawPixelCallback(displ, x, y, color);
+  ui->DrawPixelCallback(ui, x, y, color);
   return;
 }
 
@@ -84,7 +84,7 @@ void omDrawPixel(omDisplayT *displ, uint32_t x, uint32_t y, uint8_t color)
  * https://electronics.stackexchange.com/questions/74589/how-to-stock-variables-in-flash-memory
  * https://forum.arduino.cc/index.php?topic=461487.0
  */
-void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y)
+void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y)
 {
   uint8_t *data = bitmap->RawData; // (!) IMPORTANT (!) Don't increment original pointer
   uint8_t color1, color2;
@@ -101,7 +101,7 @@ void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y)
 
         if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color1))
         {
-          omDrawPixel(displ, xto, yto, color1);
+          omDrawPixel(ui, xto, yto, color1);
         }
 
         is_color1 = False;
@@ -110,7 +110,7 @@ void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y)
       {
         if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color2))
         {
-          omDrawPixel(displ, xto, yto, color2);
+          omDrawPixel(ui, xto, yto, color2);
         }
 
         data++;
@@ -129,7 +129,7 @@ void omDrawBitmap(omDisplayT *displ, omBitmapT *bitmap, uint32_t x, uint32_t y)
   for (uint16_t i = 0; i < anim->FramesNumOf; i++)
   {
     omDrawBitmap(bitmap, anim->PosX, anim->PosY);
-    omDisplayUpdate(anim->Display);
+    omGuiUpdate(anim->Ui);
     SYS_SLEEP(anim->Interval);
 
     bitmap++;

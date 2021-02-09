@@ -22,7 +22,7 @@
 typedef enum { False, True } Bool;
 #endif
 
-typedef struct omDisplay omDisplayT;
+typedef struct omGui omGuiT;
 typedef struct omScreen omScreenT;
 typedef struct omWidget omWidgetT;
 typedef struct omBitmap omBitmapT;
@@ -30,16 +30,16 @@ typedef struct omAnimation omAnimationT;
 
 
 // NOTE: No need to keep array of all screens, just set active screen!!!
-struct omDisplay
+struct omGui
 {
   uint16_t Id;
   uint16_t ResX, ResY;
   omScreenT *ActiveScreen;
 
-  void (*InitCallback)(omDisplayT *);
-  void (*DeInitCallback)(omDisplayT *);
-  void (*UpdateCallback)(omDisplayT *);
-  void (*DrawPixelCallback)(omDisplayT *, uint32_t x, uint32_t y, uint8_t color);
+  void (*InitCallback)(omGuiT *);
+  void (*DeInitCallback)(omGuiT *);
+  void (*UpdateCallback)(omGuiT *);
+  void (*DrawPixelCallback)(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
 };
 
 struct omWidget
@@ -58,7 +58,7 @@ struct omWidget
 struct omScreen
 {
   uint16_t Id;
-  omDisplayT *Display;
+  omGuiT *Ui;
   uint16_t WidgetsNumOf;
   omWidgetT Widgets[OMGUI_MAX_WIDGETS];
 
@@ -80,20 +80,20 @@ struct omAnimation
   uint16_t PosX, PosY;
   uint16_t FramesNumOf;
   uint16_t Interval; // msec
-  omDisplayT *Display;
+  omGuiT *Ui;
   omBitmapT *Bitmaps;
 };
 
 // Public methods
-void omDisplayInit(omDisplayT *);
-void omDisplayDeInit(omDisplayT *);
-void omDisplayUpdate(omDisplayT *);
+void omGuiInit(omGuiT *);
+void omGuiDeInit(omGuiT *);
+void omGuiUpdate(omGuiT *);
 Bool omScreenSelect(omScreenT *);
 Bool omScreenIsActive(omScreenT *);
-void omDrawPixel(omDisplayT *, uint32_t x, uint32_t y, uint8_t color);
-// void omDrawPixel(omDisplayT *, uint32_t x, uint32_t y, uint32_t color, Bool update);
-void omDrawBitmap(omDisplayT *, omBitmapT *, uint32_t x, uint32_t y);
-// void omDrawBitmap(omDisplayT *, omBitmapT *, uint32_t x, uint32_t y, Bool update);
+void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
+// void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint32_t color, Bool update);
+void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y);
+// void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y, Bool update);
 //void omAnimationStart(omAnimationT *);
 
 #endif /* _OMGUI_H_ */

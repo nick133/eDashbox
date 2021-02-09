@@ -1,3 +1,23 @@
+/*
+ * OLED RAM buffer is 4-bit per pixel. Each byte contains 2 pixels -
+ * first pixel is left 4-bit of a byte, second is right half.
+ * 
+ *     First byte of buffer | Second byte of buffer | ...
+ * Bits: 1-1-1-1  2-2-2-2   |   3-3-3-3  4-4-4-4    | ...
+ *          ^        ^      |      ^        ^       |
+ *     1st pixel  2nd pixel | 3rd pixel  4th pixel  | ...
+ * 
+ ** Addressing buffer
+ * Row 1:   0-127 bytes (0-256 pixels)
+ * Row 2: 128-255 bytes (0+128 - 127+128)
+ * Row 3: ...
+ * 
+ ** Coords to buffer index
+ * x, y 
+ * index = floor( (y * 128) + (x / 2) )
+ *
+ */
+
 // #include <stdio.h>
 // #include <stdlib.h>
 // #include <stdarg.h>

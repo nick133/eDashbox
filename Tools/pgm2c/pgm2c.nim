@@ -129,12 +129,13 @@ proc cvt_file(filename: string, out_h: var string, out_c_global: var string, out
   out_c_global &= "\n};\n\n"
 
   out_c_infunc &= &"""
-  bitmap_{name}.Width = {im_width};
-  bitmap_{name}.Height = {im_height};
-  bitmap_{name}.IsAlpha = False;
-  bitmap_{name}.ColorsNumOf = 16;
-  bitmap_{name}.RawData = &bitmap_{name}_data[0];
-  
+  omBitmap_{name}.Width       = {im_width};
+  omBitmap_{name}.Height      = {im_height};
+  omBitmap_{name}.ColorsNumOf = 16;
+  omBitmap_{name}.IsAlpha     = False;
+  omBitmap_{name}.AlphaColor  = 0x00;
+  omBitmap_{name}.RawData     = &bitmap_{name}_data[0];
+
 """
 
   out_h &= &"extern omBitmapT omBitmap_{name};\n"
@@ -148,6 +149,7 @@ proc bytestohex_color(byte1, byte2: string): string =
     icolor2x = ibyte2.shl(4).bitor(ibyte1)
 
   result = (if icolor2x < 16: "0x0" else: "0x") & &"{icolor2x:x}"
+
 
 # Convert PGM's 8-bit 256 color code to 4-bit 16 colors (2 pixels/byte)
 proc color_code_256to16(byte: string): int =

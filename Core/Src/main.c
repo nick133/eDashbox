@@ -191,12 +191,12 @@ int main(void)
   // if (taskTempPollRet == pdPASS)
   // {
   //   ssd1306_WriteString("Task ok!", Font_7x10, White);
-  //   omDisplayUpdate(&oled1);
+  //   omGuiUpdate(&oled1);
   // }
   // else if (taskTempPollRet == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY)
   // {
   //   ssd1306_WriteString("Task FAILED!", Font_7x10, White);
-  //   omDisplayUpdate(&oled1);
+  //   omGuiUpdate(&oled1);
   // }
 
   vTaskStartScheduler();
@@ -312,14 +312,10 @@ void TaskTemperaturePoll(void *pvParams)
 			if (DS18B20_GetTemperature(i, &sensor.Temperature1))
 			{
 				DS18B20_GetROM(i, ROM_tmp);
-//        snprintf(message, 64, "Temperature: %.2f C", sensor.Temperature1);
-        //  uint8_t hAlign, uint8_t vAlign, const char *args, ...)
- //       Frame_printf(0,20, FONTID_10X16F, Display_Color.Gray_11, LEFT, TOP, message);
-  //      omDisplayUpdate(&oled1);
 			}
 		}
 
-    vTaskDelay(600 / portTICK_PERIOD_MS);
+    Sleep(600);
   }
 }
 

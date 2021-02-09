@@ -31,7 +31,6 @@ incs += -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 
 ifdef DEBUG
-
 srcs += Middlewares/Debug/SEGGER_RTT/Src/*.c
 
 incs += -IMiddlewares/Debug/SEGGER_RTT/Inc

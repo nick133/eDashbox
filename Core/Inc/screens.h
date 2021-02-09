@@ -14,7 +14,7 @@ typedef enum {
   IdScreensNumOf
 } omScreenIdT;
 
-extern omDisplayT oled1;
+extern omGuiT oledUi;
 extern omScreenT screenMain, screenData, screenTemp, screenSetup;
 
 void MainScreenInit(void);

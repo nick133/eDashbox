@@ -64,9 +64,9 @@ LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(PR
 
 NIMFLAGS += --opt:speed
 NIMFLAGS += -d:release -d:strip -d:threads -d:ssl
-NIMFLAGS += --nimcache:".nimcache"
 NIMFLAGS += --deadcodeElim:on
 NIMFLAGS += --verbosity:0
+NIMFLAGS += --nimcache:".nimcache"
 
 OBJDIR = objs
 
@@ -82,7 +82,7 @@ bitmaps_h = AutoSrc/bitmaps.h
 # Rules macros
 ################################################################################
 # https://christine.website/blog/nim-and-tup-2015-06-10
-!nim = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f && rm -rf .nimcache |>
+!nim = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f; rm -rf .nimcache |>
 
 !cc = |> ^ cc %b^ $(CC) $(CFLAGS) -Wa,-a,-ad,-alms=%O.lst -c %f -o %o |>
 !as = |> ^ as %b^ $(AS) $(ASFLAGS) -c %f -o %o |>

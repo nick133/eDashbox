@@ -41,6 +41,8 @@ void GUI_Init(void)
   // SH1122_DisplayUpdate();
   // SH1122_ClearRAM();
   omDrawBitmap(&oledUi, &omBitmap_test_gradient, 10, 0, True);
+  omDrawLine(&oledUi, 0,0, 255,63, OLED_GRAY_06, False);
+  omDrawLine(&oledUi, 0,63, 255,0, OLED_GRAY_06, True);
   // omDrawBitmap(&oledUi, &omBitmap_test_gradient, 100, 30, True);
   // omDrawBitmap(&oledUi, &omBitmap_test80x25, 0, 20, True);
   

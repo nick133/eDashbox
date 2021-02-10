@@ -93,7 +93,7 @@ void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
  */
 void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool update)
 {
-  uint8_t *data = bitmap->RawData; // (!) IMPORTANT (!) Don't increment original pointer
+  const uint8_t *data = bitmap->RawData; // (!) IMPORTANT (!) Don't increment original pointer
   uint8_t color1, color2;
   Bool is_color1 = True;
 
@@ -131,6 +131,42 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool up
     omGuiUpdate(ui);
   }
 }
+
+
+void omDrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, Bool update)
+{
+  const int16_t deltaX = abs(x2 - x1);
+  const int16_t deltaY = abs(y2 - y1);
+  const int16_t signX = x1 < x2 ? 1 : -1;
+  const int16_t signY = y1 < y2 ? 1 : -1;
+
+  int16_t error = deltaX - deltaY;
+
+  omDrawPixel(ui, x2, y2, color);
+
+  while (x1 != x2 || y1 != y2)
+  {
+    omDrawPixel(ui, x1, y1, color);
+    const int16_t error2 = error * 2;
+
+    if (error2 > -deltaY)
+    {
+      error -= deltaY;
+      x1 += signX;
+    }
+    if (error2 < deltaX)
+    {
+      error += deltaX;
+      y1 += signY;
+    }
+  }
+
+  if (update)
+  {
+    omGuiUpdate(ui);
+  }
+}
+
 
 /* void omAnimationStart(omAnimationT *anim)
 {

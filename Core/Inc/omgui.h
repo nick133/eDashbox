@@ -55,7 +55,7 @@ struct omWidget
   void (*UpdateCallback)(omWidgetT *, void *); // Update only changed parts of widget
 };
 
-// NOTE: Init is done by setting a struct, no Init func is needed
+// NOTE: Init is done by setting a struct, no Init func is needed for screens
 struct omScreen
 {
   uint16_t Id;
@@ -94,6 +94,7 @@ Bool omScreenSelect(omScreenT *);
 Bool omScreenIsActive(omScreenT *);
 void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
 void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y, Bool update);
+void omDrawLine(omGuiT *, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, Bool update);
 //void omAnimationStart(omAnimationT *);
 
 #endif /* _OMGUI_H_ */

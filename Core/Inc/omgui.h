@@ -69,10 +69,10 @@ struct omScreen
 
 struct omBitmap
 {
-  uint8_t Width, Height;
-  uint8_t ColorsNumOf;
+  uint32_t Width, Height;
+  uint32_t ColorsNumOf;
   Bool IsAlpha;
-  uint8_t AlphaColor;
+  uint32_t AlphaColor;
   const uint8_t *RawData;
 };
 

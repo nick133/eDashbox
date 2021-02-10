@@ -5,5 +5,18 @@
     ],
     "C_Cpp.intelliSenseEngine": "Tag Parser",
     "C_Cpp.intelliSenseEngineFallback": "Enabled",
-    "path-autocomplete.triggerOutsideStrings": true
+    "path-autocomplete.triggerOutsideStrings": true,
+    "actionButtons": {
+        "defaultColor": "#ff0034", // Can also use string color names.
+        "loadNpmCommands":false, // Disables automatic generation of actions for npm commands.
+        "reloadButton":"♻️", // Custom reload button text or icon (default ↻). null value enables automatic reload on configuration change
+        "commands": [
+            {
+                "name": "View RTT",
+                "color": "black",
+                "singleInstance": true,
+                "command": "/opt/SEGGER/JLink/JLinkRTTViewerExe", // This is executed in the terminal.
+            }
+        ]
+    }
 }

@@ -93,18 +93,18 @@ void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
  */
 void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool update)
 {
-  const uint8_t *data = bitmap->RawData; // (!) IMPORTANT (!) Don't increment original pointer
-  uint8_t color1, color2;
+  volatile uint8_t color1, color2;
+  uint32_t idx = 0;
   Bool is_color1 = True;
 
-  for (uint8_t yto = y; yto < bitmap->Height + y; yto++)
+  for (uint16_t yto = y; yto < bitmap->Height + y; yto++)
   {
-    for (uint8_t xto = x; xto < bitmap->Width + x; xto++)
+    for (uint16_t xto = x; xto < bitmap->Width + x; xto++)
     {
       if (is_color1)
       {
-        color1 = *data >> 4;
-        color2 = *data & 0x0f;
+        color1 = bitmap->RawData[idx] >> 4;
+        color2 = bitmap->RawData[idx] & 0x0f;
 
         if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color1))
         {
@@ -120,7 +120,7 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool up
           omDrawPixel(ui, xto, yto, color2);
         }
 
-        data++;
+        idx++;
         is_color1 = True;
       }
     }

@@ -20,7 +20,6 @@ static void DisplayDrawPixelCb(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
 
 void GUI_Init(void)
 {
-  Bitmaps_Init();
   oledUi.Id = 0;
   oledUi.ResX = SH1122_OLED_WIDTH;
   oledUi.ResY = SH1122_OLED_HEIGHT;
@@ -32,33 +31,16 @@ void GUI_Init(void)
 
   omGuiInit(&oledUi);
 
-//  MainScreenInit();
+  Bitmaps_Init();
+
+  MainScreenInit();
 
   // Show logo
-
-  // SH1122_WriteData(omBitmap_test80x25.RawData, (omBitmap_test80x25.Width * omBitmap_test80x25.Height)/2);
-  Bitmaps_Init();
-  // SH1122_DisplayUpdate();
-  // SH1122_ClearRAM();
-  omDrawBitmap(&oledUi, &omBitmap_test_gradient, 10, 0, True);
-  omDrawLine(&oledUi, 0,0, 255,63, OLED_GRAY_06, False);
-  omDrawLine(&oledUi, 0,63, 255,0, OLED_GRAY_06, True);
-  // omDrawBitmap(&oledUi, &omBitmap_test_gradient, 100, 30, True);
-  // omDrawBitmap(&oledUi, &omBitmap_test80x25, 0, 20, True);
-  
-
-  // SH1122_DrawPixel(0, 0, OLED_GRAY_15);
-  // SH1122_DisplayUpdate();
-  // SH1122_DrawPixel(1, 0, OLED_GRAY_15);
-  // SH1122_DisplayUpdate();
-  // SH1122_DrawPixel(2, 0, OLED_GRAY_15);
-  // SH1122_DisplayUpdate();
-  // SH1122_DrawPixel(3, 0, OLED_GRAY_15);
-  // SH1122_DisplayUpdate();
+  omDrawBitmap(&oledUi, &omBitmap_guiscreen, 0, 0, True);
   Sleep(2000);
   
   // omGuiUpdate(&oledUi);
-  //  omScreenSelect(&screenMain);
+  omScreenSelect(&screenMain);
 }
 
 

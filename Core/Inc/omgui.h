@@ -39,6 +39,7 @@ struct omGui
   void (*InitCallback)(omGuiT *);
   void (*DeInitCallback)(omGuiT *);
   void (*UpdateCallback)(omGuiT *);
+  void (*ClearCallback)(omGuiT *);
   void (*DrawPixelCallback)(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
 };
 
@@ -88,12 +89,11 @@ struct omAnimation
 void omGuiInit(omGuiT *);
 void omGuiDeInit(omGuiT *);
 void omGuiUpdate(omGuiT *);
+void omGuiClear(omGuiT *);
 Bool omScreenSelect(omScreenT *);
 Bool omScreenIsActive(omScreenT *);
 void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
-// void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint32_t color, Bool update);
-void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y);
-// void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y, Bool update);
+void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y, Bool update);
 //void omAnimationStart(omAnimationT *);
 
 #endif /* _OMGUI_H_ */

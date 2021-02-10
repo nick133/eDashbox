@@ -79,6 +79,8 @@ extern ConfigSettingsT config;
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+// vTaskDelay() works only after scheduler is started
+// https://stackoverflow.com/questions/42276313/freertos-osdelay-vs-hal-delay
 #define Sleep(ms) vTaskDelay(ms / portTICK_PERIOD_MS)
 /* USER CODE END EM */
 

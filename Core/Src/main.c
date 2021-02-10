@@ -34,6 +34,7 @@
    Tiny printf for embedded systems. Stdlib sprintf corrupts the stack if used
    inside of FreeRTOS vTask */
 #include "printf.h"
+
 #ifdef DEBUG
 #include "SEGGER_RTT.h"
 #include "SEGGER_RTT_Conf.h"

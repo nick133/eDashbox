@@ -2,13 +2,14 @@
  * sh1122_conf.h
  *
  *  Created on: 21 янв. 2021 г.
- *      Author: nick
+ *      Author: nick133
  */
 #ifndef __SH1122_CONF_H
 #define __SH1122_CONF_H
 
-#include "main.h"
 #include "spi.h"
+
+#define OS_SLEEP(ms) HAL_Delay(ms) // HAL or FreeRTOS vTaskDelay()
 
 #define SH1122_OLED_SPI_HANDLE  &hspi1
 

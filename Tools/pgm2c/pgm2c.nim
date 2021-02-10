@@ -10,7 +10,7 @@ import
 
 proc cvt_file(filename: string, out_h: var string, out_c_global: var string, out_c_infunc: var string)
 proc bytestohex_color(byte1, byte2: string): string
-proc color_code_256to16(byte: string): int
+proc color_code_256to16(byte: string): uint8
 
 
 proc main() =
@@ -60,7 +60,7 @@ void Bitmaps_Init(void)
 {
 """ & out_c_buf_f & "}\n"
 
-  out_h_buf &= "\n#endif _BITMAPS_H_\n"
+  out_h_buf &= "\n#endif /* _BITMAPS_H_ */\n"
 
   out_h.writeFile(out_h_buf)
   out_c.writeFile(out_c_buf)
@@ -73,13 +73,14 @@ proc cvt_file(filename: string, out_h: var string, out_c_global: var string, out
     fd_in = filename.open()
     line: string
 
-    im_width: uint
-    im_height: uint
-    im_colors: uint
+    im_width: int
+    im_height: int
+    im_colors: int
 
+    is_oddpixels: bool
     color_mark: bool
     data_sem: bool
-    bytes_in_row_cnt: uint = 0
+    bytes_in_row_cnt: int = 0
     nbytes = 0
     is_byte1 = true
     byte1, byte2: string
@@ -91,18 +92,26 @@ proc cvt_file(filename: string, out_h: var string, out_c_global: var string, out
       continue
 
     elif line =~ re"^(\d+)\s+(\d+)$": # width height
-      (im_width, im_height) = (matches[0].parseUInt, matches[1].parseUInt)
+      (im_width, im_height) = (matches[0].parseInt, matches[1].parseInt)
 
-      out_c_global &= &"static const uint8_t bitmap_{name}_data[{(im_width * im_height).div(2)}] = " & "{\n"
+      is_oddpixels = if (im_width*im_height).bitand(1) == 1: true else: false
+      let idx = (im_width * im_height).div(2) + (if is_oddpixels: 1 else: 0)
+
+      out_c_global &= &"static const uint8_t bitmap_{name}_data[{idx}] = " & "{\n"
       color_mark = true
 
     elif color_mark: # colors
-      im_colors = line.parseUInt
+      im_colors = line.parseInt
       color_mark = false
 
     elif is_byte1:
         byte1 = line
         is_byte1 = false
+
+        # Don't lose the last pixel of odd-pixels bitmap (i.e 27x33)
+        if is_oddpixels and nbytes == int(im_width*im_height/2):
+          out_c_global &= "," & bytestohex_color(byte1, "0")
+
         continue
     else: # byte2
       byte2 = line
@@ -146,13 +155,14 @@ proc bytestohex_color(byte1, byte2: string): string =
     ibyte1 = color_code_256to16 byte1
     ibyte2 = color_code_256to16 byte2
     # merge two 4-bit colors to 1 byte (2222 1111)
-    icolor2x = ibyte2.shl(4).bitor(ibyte1)
+    # icolor2x = ibyte2.shl(4).bitor(ibyte1) # right first
+#    icolor2x = ibyte1.shl(4).bitor(ibyte2) # left first
 
-  result = (if icolor2x < 16: "0x0" else: "0x") & &"{icolor2x:x}"
+  result = &"0x{ibyte1:x}{ibyte2:x}"
 
 
 # Convert PGM's 8-bit 256 color code to 4-bit 16 colors (2 pixels/byte)
-proc color_code_256to16(byte: string): int =
+proc color_code_256to16(byte: string): uint8 =
   result = case byte
     of "0": 0 # "0x00"
     of "15": 1 # "0x11"

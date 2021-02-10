@@ -30,46 +30,22 @@
 #define TOP 3
 #define BOTTOM 4
 
-extern const uint8_t Oled8BitColors[16];
-
-#define OLED_GRAY_00 Oled8BitColors[0]
-#define OLED_GRAY_01 Oled8BitColors[1]
-#define OLED_GRAY_02 Oled8BitColors[2]
-#define OLED_GRAY_03 Oled8BitColors[3]
-#define OLED_GRAY_04 Oled8BitColors[4]
-#define OLED_GRAY_05 Oled8BitColors[5]
-#define OLED_GRAY_06 Oled8BitColors[6]
-#define OLED_GRAY_07 Oled8BitColors[7]
-#define OLED_GRAY_08 Oled8BitColors[8]
-#define OLED_GRAY_09 Oled8BitColors[9]
-#define OLED_GRAY_10 Oled8BitColors[10]
-#define OLED_GRAY_11 Oled8BitColors[11]
-#define OLED_GRAY_12 Oled8BitColors[12]
-#define OLED_GRAY_13 Oled8BitColors[13]
-#define OLED_GRAY_14 Oled8BitColors[14]
-#define OLED_GRAY_15 Oled8BitColors[15]
-
-struct Gray_16_Color
-{
-    uint8_t Gray_00; 
-    uint8_t Gray_01;
-    uint8_t Gray_02;
-    uint8_t Gray_03;
-    uint8_t Gray_04;
-    uint8_t Gray_05;
-    uint8_t Gray_06;
-    uint8_t Gray_07;
-    uint8_t Gray_08;
-    uint8_t Gray_09;
-    uint8_t Gray_10;
-    uint8_t Gray_11;
-    uint8_t Gray_12;
-    uint8_t Gray_13;
-    uint8_t Gray_14;
-    uint8_t Gray_15;
-};
-
-extern struct Gray_16_Color Display_Color;
+#define OLED_GRAY_00 0x00
+#define OLED_GRAY_01 0x01
+#define OLED_GRAY_02 0x02
+#define OLED_GRAY_03 0x03
+#define OLED_GRAY_04 0x04
+#define OLED_GRAY_05 0x05
+#define OLED_GRAY_06 0x06
+#define OLED_GRAY_07 0x07
+#define OLED_GRAY_08 0x08
+#define OLED_GRAY_09 0x09
+#define OLED_GRAY_10 0x0a
+#define OLED_GRAY_11 0x0b
+#define OLED_GRAY_12 0x0c
+#define OLED_GRAY_13 0x0d
+#define OLED_GRAY_14 0x0e
+#define OLED_GRAY_15 0x0f
 
 void SH1122_DrawPixel(uint16_t x, uint16_t y, uint8_t color);
 void SH1122_DisplayUpdate(void);
@@ -96,21 +72,24 @@ void SH1122_DisplayPower(uint8_t State);
 void SH1122_SetDisplayOffset(uint8_t Value);
 // 25: Write Display Data
 void SH1122_WriteData(uint8_t *pData, uint32_t DataLen);
+// Clear display RAM
+void SH1122_ClearRAM(void);
 
 //----------------------------------------------------------------------------------------
 // High Level Display Functions
 //----------------------------------------------------------------------------------------
 
 // Rotate 180 degrees
-void Display_SetOrienation(uint8_t State);
+void SH1122_DisplaySetOrienation(uint8_t State);
 // Init display
-void Display_Init();
+void SH1122_DisplayInit(void);
 // Update display
-void Display_SendFrame(void);
+void SH1122_DisplayUpdate(void);
 // Draw a pixel in (x, y) coordinates
-void Frame_DrawPixel(uint16_t x, uint16_t y, uint8_t color);
+void SH1122_DrawPixel(uint16_t x, uint16_t y, uint8_t color);
 // Draw a line from (x1, y1) to (x2, y2)
-void Frame_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color);
+void SH1122_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color);
+/*
 // Draw rectangle
 void Frame_DrawRectangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color);
 // Draw rectangle filled
@@ -123,5 +102,5 @@ uint8_t Frame_DrawChar(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t Char, uin
 int16_t Frame_DrawString(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t *Str, uint8_t hAlign, uint8_t color);
 // Draw formatted string
 int16_t Frame_printf(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t color, uint8_t hAlign, uint8_t vAlign, const char *args, ...);
-
+*/
 #endif

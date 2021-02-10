@@ -10,11 +10,14 @@
 #include "omgui.h"
 #include "main.h"
 
-/* Private */
-static const uint8_t colorMap8bit[16] = {
-  // As defined in sh1122.c
-  0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
-};
+#ifdef DEBUG
+#include "SEGGER_RTT.h"
+#include "SEGGER_RTT_Conf.h"
+#endif
+
+#include "sh1122.h"
+#include "sh1122_conf.h"
+
 
 void omGuiInit(omGuiT *ui)
 {
@@ -68,23 +71,21 @@ Bool omScreenIsActive(omScreenT *screen)
 void omGuiUpdate(omGuiT *ui)
 {
   ui->UpdateCallback(ui);
-  return;
 }
 
 
 void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
 {
   ui->DrawPixelCallback(ui, x, y, color);
-  return;
 }
 
 
 /* Store bitmap RawData in FLASH memory, not RAM, image buffer is corrupted otherwise.
- * Data array must be declared as global 'const'. Further readings:
+ * Data array must be declared as global 'const'. Further reading:
  * https://electronics.stackexchange.com/questions/74589/how-to-stock-variables-in-flash-memory
  * https://forum.arduino.cc/index.php?topic=461487.0
  */
-void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y)
+void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool update)
 {
   uint8_t *data = bitmap->RawData; // (!) IMPORTANT (!) Don't increment original pointer
   uint8_t color1, color2;
@@ -94,11 +95,16 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y)
   {
     for (uint8_t xto = x; xto < bitmap->Width + x; xto++)
     {
+        // 81 29
+      if (xto == 79 && yto == 28)
+        SEGGER_RTT_printf(0, "x=%d, y=%d, byte=0x%x\n", xto, yto, *data);
       if (is_color1)
       {
-        color1 = colorMap8bit[*data & 0x0f];
-        color2 = colorMap8bit[*data >> 4];
+        color1 = *data >> 4;
+        color2 = *data & 0x0f;
 
+      if (xto == 79 && yto == 28)
+        SEGGER_RTT_printf(0, "x=0x%x, y=0x%x\n", color1, color2);
         if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color1))
         {
           omDrawPixel(ui, xto, yto, color1);
@@ -119,7 +125,10 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y)
     }
   }
 
-  return;
+  if (update)
+  {
+    omGuiUpdate(ui);
+  }
 }
 
 /* void omAnimationStart(omAnimationT *anim)

@@ -82,6 +82,7 @@ bitmaps_h = AutoSrc/bitmaps.h
 # Rules macros
 ################################################################################
 # https://christine.website/blog/nim-and-tup-2015-06-10
+#!nim = |> ^ nim %b^ nim c $(NIMFLAGS) --nimcache:"%O.nimcache" -o:%o %f ; rm -rf %O.nimcache |>
 !nim = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f; rm -rf .nimcache |>
 
 !cc = |> ^ cc %b^ $(CC) $(CFLAGS) -Wa,-a,-ad,-alms=%O.lst -c %f -o %o |>

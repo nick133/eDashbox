@@ -38,13 +38,11 @@ void GUI_Init(void)
 
   // SH1122_WriteData(omBitmap_test80x25.RawData, (omBitmap_test80x25.Width * omBitmap_test80x25.Height)/2);
   Bitmaps_Init();
-  // SH1122_DrawLine(0, 0, 255, 63, 0x0f);
-  // SH1122_DrawLine(0, 63, 255, 0, 0x02);
   // SH1122_DisplayUpdate();
   // SH1122_ClearRAM();
-  omDrawBitmap(&oledUi, &omBitmap_test_gradient, 0, 0, False);
-  omDrawBitmap(&oledUi, &omBitmap_test_gradient, 100, 30, True);
-  omDrawBitmap(&oledUi, &omBitmap_test80x25, 0, 20, True);
+  omDrawBitmap(&oledUi, &omBitmap_test_gradient, 10, 0, True);
+  // omDrawBitmap(&oledUi, &omBitmap_test_gradient, 100, 30, True);
+  // omDrawBitmap(&oledUi, &omBitmap_test80x25, 0, 20, True);
   
 
   // SH1122_DrawPixel(0, 0, OLED_GRAY_15);

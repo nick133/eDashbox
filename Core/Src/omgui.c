@@ -74,6 +74,12 @@ void omGuiUpdate(omGuiT *ui)
 }
 
 
+void omGuiClear(omGuiT *ui)
+{
+  ui->ClearCallback(ui);
+}
+
+
 void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
 {
   ui->DrawPixelCallback(ui, x, y, color);
@@ -95,16 +101,11 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool up
   {
     for (uint8_t xto = x; xto < bitmap->Width + x; xto++)
     {
-        // 81 29
-      if (xto == 79 && yto == 28)
-        SEGGER_RTT_printf(0, "x=%d, y=%d, byte=0x%x\n", xto, yto, *data);
       if (is_color1)
       {
         color1 = *data >> 4;
         color2 = *data & 0x0f;
 
-      if (xto == 79 && yto == 28)
-        SEGGER_RTT_printf(0, "x=0x%x, y=0x%x\n", color1, color2);
         if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color1))
         {
           omDrawPixel(ui, xto, yto, color1);

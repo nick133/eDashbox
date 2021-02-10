@@ -1,17 +1,29 @@
 /*******************************************************************************
- * Optimized SH1122 OLED Display library by nick133
- * 
- * Original library uses global 16Kb intermediate frame buffer to store pixels
- * and creates temporary 8Kb buffer to send it to display RAM each time it
- * updates.
- * This version only keeps global 8kb persistent buffer, as no intermediate
- * memory is used it is faster and consumes less MCU RAM.
- * Also simple configuration support is provided with sh1122_conf.h
- * 
- *******************************************************************************
+ * Optimized SH1122 OLED Display driver library for STM32 by nick133
  *
- * OLED RAM buffer is 4-bit per pixel. Each byte contains 2 pixels -
- * first pixel is left 4-bit of a byte, second is right half.
+ * Fork of Mikhail Tsaryov's SH1122 OLED Display HAL driver:
+ * <https://github.com/mikhail-tsaryov/SH1122-STM32-HAL-Driver 
+ * 
+ * Changes and new features
+ * 
+ * 1. Original library uses global 16Kb frame buffer to store pixels and creates
+ *    temporary 8Kb buffer to send it to display RAM each time it updates.
+ *    This version only keeps global 8kb persistent buffer, as no intermediate
+ *    memory is used it is faster and consumes less of preciuos MCU RAM.
+ * 2. Grayscale 16 colors struct is replaced by defines, i.e:
+ *    new 0x01, 0x02, ... vs old 0x11 0x22, ...
+ *    now colors in/decrement is straightforward.
+ * 3. Configuration support is provided with sh1122_conf.h
+ * 4. Minor refactoring for all functions to look lowlevel (SH1122_).
+ * 5. All gfx primitives support is removed to keep the driver as compact as
+ *    possible. It is more like a lowlevel driver now, only DrawPixel is left.
+ *    All primitives, strings, fonts, bitmaps, etc. API should be device
+ *    independent and realized in a higher level library.
+ * 
+ *------------------------------------------------------------------------------
+ *
+ * OLED RAM buffer is 4 bit per pixel. Each byte contains 2 pixels -
+ * first pixel is left 4 bit of a byte, second is right 4-bit half.
  * 
  *     First byte of buffer | Second byte of buffer | ...
  * Bits: 1-1-1-1  2-2-2-2   |   3-3-3-3  4-4-4-4    | ...
@@ -41,54 +53,11 @@
 #include "SEGGER_RTT.h"
 #include "SEGGER_RTT_Conf.h"
 #endif
+
+
 // Frame buffer
 static uint8_t FrameBuffer[SH1122_OLED_RAM_SIZE] = {0};
 
-
-// Draw a pixel in (x, y) coordinates
-void SH1122_DrawPixel(uint16_t x, uint16_t y, uint8_t color)
-{
-  if ((x >= SH1122_OLED_WIDTH) || (y >= SH1122_OLED_HEIGHT))
-  {
-    return;
-  }
-  else if (color > 0x0f) // not 4-bit color
-  {
-    color = 0x0f;
-  }
-
-  uint16_t byte_idx = (y * SH1122_OLED_WIDTH/2) + (x / 2);
-  uint8_t byte = FrameBuffer[byte_idx];
-
-//   SEGGER_RTT_printf(0, "byte_idx=%u, in byte=0x%x, color=%x\n", byte_idx, byte, color);
-  // x is odd, set second pixel, apply right 4 bits
-  // x is even, set first pixel, apply left 4 bits
-//   FrameBuffer[byte_idx] = x & 1 ?
-//     ( byte & 0xf0 ) | color : (( byte & 0x0f ) << 4) | color;
-    //   if (x == 74)
-    //     SEGGER_RTT_printf(0, "x=%d, y=%d\n", x, y);
-  if (x & 1)
-  {
-    FrameBuffer[byte_idx] = ( byte & 0xf0 ) | color;
-    uint8_t b = ( byte & 0xf0 ) | color;
-
-    // SEGGER_RTT_printf(0, "odd out byte=0x%x\n", b);
-  }
-  else
-  {
-    FrameBuffer[byte_idx] = ( byte & 0x0f ) | ( color << 4 );
-    uint8_t b = ( byte & 0x0f ) | ( color << 4 );
-
-    // SEGGER_RTT_printf(0, "even out byte=0x%x\n", b);
-  }
-//   SEGGER_RTT_printf(0, "out byte=0x%x\n", FrameBuffer[byte_idx]);
-}
-
-// Update display
-void SH1122_DisplayUpdate(void)
-{
-    SH1122_WriteData(FrameBuffer, SH1122_OLED_RAM_SIZE);
-}
 
 //----------------------------------------------------------------------------------------
 // Low Level Functions
@@ -313,6 +282,36 @@ void SH1122_DisplayInit(void)
     OS_SLEEP(100);
 }
 
+// Update display
+void SH1122_DisplayUpdate(void)
+{
+    SH1122_WriteData(FrameBuffer, SH1122_OLED_RAM_SIZE);
+}
+
+// Draw a pixel in (x, y) coordinates, no update
+void SH1122_DrawPixel(uint16_t x, uint16_t y, uint8_t color)
+{
+  if ((x >= SH1122_OLED_WIDTH) || (y >= SH1122_OLED_HEIGHT))
+  {
+    return;
+  }
+  else if (color > 0x0f) // not 4-bit color
+  {
+    color = 0x0f;
+  }
+
+  uint16_t byte_idx = (y * SH1122_OLED_WIDTH/2) + (x / 2);
+  uint8_t byte = FrameBuffer[byte_idx];
+
+  // x is odd, set second pixel, apply right 4 bits or
+  // x is even, set first pixel, apply left 4 bits (preserve existing 4 bits)
+  FrameBuffer[byte_idx] = x & 1 ?
+    (( byte & 0xf0 ) | color) : (( byte & 0x0f ) | ( color << 4 ));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+#ifdef __SH1122_GFX_PRIMITIVES__
+
 // Draw a line from (x1, y1) to (x2, y2)
 void SH1122_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color)
 {
@@ -343,7 +342,7 @@ void SH1122_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t col
     }
 }
 
-/*
+
 // Draw rectangle
 void Frame_DrawRectangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color)
 {
@@ -653,4 +652,4 @@ int16_t Frame_printf(uint16_t X, uint16_t Y, uint8_t FontID, uint8_t color, uint
     return Frame_DrawString(X, Y, FontID, (uint8_t *)StrBuff, hAlign, color);
 }
 
-*/
+#endif

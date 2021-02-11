@@ -71,8 +71,6 @@ struct omBitmap
 {
   uint32_t Width, Height;
   uint32_t ColorsNumOf;
-  Bool IsAlpha;
-  uint32_t AlphaColor;
   const uint8_t *RawData;
 };
 
@@ -93,7 +91,7 @@ void omGuiClear(omGuiT *);
 Bool omScreenSelect(omScreenT *);
 Bool omScreenIsActive(omScreenT *);
 void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
-void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y, Bool update);
+void omDrawBitmap(omGuiT *, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool alpha, Bool update);
 void omDrawLine(omGuiT *, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, Bool update);
 //void omAnimationStart(omAnimationT *);
 

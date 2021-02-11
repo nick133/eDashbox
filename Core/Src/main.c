@@ -106,7 +106,7 @@ void SystemClock_Config(void);
 /* void MX_FREERTOS_Init(void); */
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-void TaskTemperaturePoll(void *);
+static void TaskTemperaturePoll(void *);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -173,21 +173,17 @@ int main(void)
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 
-  SEGGER_RTT_printf(0, "==> Hello!\n");
+  Dispatch_Init();
 
-  GUI_Init();
+  TaskHandle_t taskTemperPoll = NULL;
 
-//  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
-
-  // TaskHandle_t taskTempPoll = NULL;
-
-  // BaseType_t taskTempPollRet = xTaskCreate(
-  //   TaskTemperaturePoll,
-  //   "temp-sensor-poll",        /* Text name for the task. */
-  //   configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
-  //   (void *) 1,                /* Parameter passed into the task. */
-  //   configMAX_PRIORITIES / 2,  /* Priority of the task created. */
-  //   &taskTempPoll );
+  BaseType_t taskTempPollRet = xTaskCreate(
+    TaskTemperaturePoll,
+    "temp-sensor-poll",        /* Text name for the task. */
+    configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
+    (void *) 1,                /* Parameter passed into the task. */
+    configMAX_PRIORITIES / 2,  /* Priority of the task created. */
+    &taskTemperPoll );
 
   // if (taskTempPollRet == pdPASS)
   // {
@@ -212,12 +208,10 @@ int main(void)
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
-  while (1) {
   /* USER CODE BEGIN WHILE */
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
   /* USER CODE END 3 */
 }
 
@@ -295,7 +289,7 @@ static void MX_NVIC_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void TaskTemperaturePoll(void *pvParams)
+static void TaskTemperaturePoll(void *pvParams)
 {
   //configASSERT( ( ( uint32_t ) pvParameters ) == 1 );
   char message[64];

@@ -1,6 +1,7 @@
 # build.sh auto-generated TUP-file, do not edit!
 
 srcs += Core/Src/*.c
+srcs += Core/Src/screens/*.c
 srcs += Drivers/DS18B20_HAL_Driver/Src/*.c
 srcs += Drivers/SH1122_Driver/Src/*.c
 srcs += Drivers/SH1122_Driver/Src/fonts/*.c

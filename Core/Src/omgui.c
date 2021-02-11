@@ -44,6 +44,8 @@ Bool omScreenSelect(omScreenT *screen)
     screen->Ui->ActiveScreen->HideCallback(screen);
   }
 
+  omGuiClear(screen->Ui);
+
   if (screen->ShowCallback != NULL)
   {
     screen->ShowCallback(screen);
@@ -91,7 +93,7 @@ void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
  * https://electronics.stackexchange.com/questions/74589/how-to-stock-variables-in-flash-memory
  * https://forum.arduino.cc/index.php?topic=461487.0
  */
-void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool update)
+void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool alpha, Bool update)
 {
   volatile uint8_t color1, color2;
   uint32_t idx = 0;
@@ -106,7 +108,7 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool up
         color1 = bitmap->RawData[idx] >> 4;
         color2 = bitmap->RawData[idx] & 0x0f;
 
-        if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color1))
+        if (!(alpha && color1 == 0x00))
         {
           omDrawPixel(ui, xto, yto, color1);
         }
@@ -115,7 +117,7 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool up
       }
       else
       {
-        if (!(bitmap->IsAlpha == True && bitmap->AlphaColor == color2))
+        if (!(alpha && color1 == 0x00))
         {
           omDrawPixel(ui, xto, yto, color2);
         }

@@ -75,14 +75,13 @@ PGM_DIR = Bitmaps/PGM
 
 asm_srcs = startup/*.s
 
-bitmaps_c = AutoSrc/bitmaps.c
-bitmaps_h = AutoSrc/bitmaps.h
+assets_c = AutoSrc/assets.c
+assets_h = AutoSrc/assets.h
 
 ################################################################################
 # Rules macros
 ################################################################################
 # https://christine.website/blog/nim-and-tup-2015-06-10
-#!nim = |> ^ nim %b^ nim c $(NIMFLAGS) --nimcache:"%O.nimcache" -o:%o %f ; rm -rf %O.nimcache |>
 !nim = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f; rm -rf .nimcache |>
 
 !cc = |> ^ cc %b^ $(CC) $(CFLAGS) -Wa,-a,-ad,-alms=%O.lst -c %f -o %o |>
@@ -96,9 +95,9 @@ bitmaps_h = AutoSrc/bitmaps.h
 # Build
 ################################################################################
 : $(PGM2C).nim |> !nim |> $(PGM2C)
-: $(PGM_DIR)/*.pgm | $(PGM2C) |> ^ pgm2c %O^ $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(PGM_DIR) |> $(bitmaps_c) | $(bitmaps_h)
+: $(PGM_DIR)/*.pgm | $(PGM2C) |> ^ pgm2c %O^ $(PGM2C) -h:$(assets_h) -c:%o -p:$(PGM_DIR) |> $(assets_c) | $(assets_h)
 
-: foreach $(srcs) $(bitmaps_c) | $(bitmaps_h) |> !cc |> $(OBJDIR)/%B.o | %O.d %O.lst {objs}
+: foreach $(srcs) $(assets_c) | $(assets_h) |> !cc |> $(OBJDIR)/%B.o | %O.d %O.lst {objs}
 : foreach $(asm_srcs) |> !as |> $(OBJDIR)/%B.o {asobjs}
 : {objs} {asobjs} |> !ld |> $(PROJECT).elf | $(PROJECT).map
 : $(PROJECT).elf |> !bin |>

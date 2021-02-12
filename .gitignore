@@ -1,9 +1,8 @@
 /.tup
 /_work
-Core/Src/freertos.c
 /build-*
+/release-*
 Tools/pgm2c/bin
-Tools/WorkingFirmwareForTest
 *.map
 *.lst
 *.bak

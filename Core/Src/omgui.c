@@ -44,6 +44,8 @@ Bool omScreenSelect(omScreenT *screen)
         screen->Ui->ActiveScreen->HideCallback(screen);
     }
 
+    omGuiClear(screen->Ui);
+
     if(screen->ShowCallback != NULL)
     {
         screen->ShowCallback(screen);

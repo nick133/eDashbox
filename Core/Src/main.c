@@ -174,16 +174,17 @@ int main(void)
      * This workaround seems to not work. Step debug to omDrawBitmap() hangs
      * despite the fact TIM2 is not even started!
      */
-#   ifdef DEBUG
-    // Idk how to enable clock for debug in L432KC, there are no such macros
-    //RCC->APB1ENR1 |= RCC_APB1ENR_DBGMCUEN; //enable MCU debug module clock
-    HAL_DBGMCU_EnableDBGStandbyMode(); 
-    HAL_DBGMCU_EnableDBGStopMode();
-    HAL_DBGMCU_EnableDBGStandbyMode();
-    DBGMCU->APB1FZR1 |= DBGMCU_APB1FZR1_DBG_TIM2_STOP; //enable timer 7 stop
-#   endif
+// #   ifdef DEBUG
+//     // Idk how to enable clock for debug in L432KC, there are no such macros
+//     //RCC->APB1ENR1 |= RCC_APB1ENR_DBGMCUEN; //enable MCU debug module clock
+//     HAL_DBGMCU_EnableDBGStandbyMode(); 
+//     HAL_DBGMCU_EnableDBGStopMode();
+//     HAL_DBGMCU_EnableDBGStandbyMode();
+//     DBGMCU->APB1FZR1 |= DBGMCU_APB1FZR1_DBG_TIM2_STOP; //enable timer 7 stop
+// #   endif
 
     Dispatch_Init();
+    SEGGER_RTT_printf(0, "Hello MAIN\n");
 
     vTaskStartScheduler();
 
@@ -197,9 +198,9 @@ int main(void)
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
     while(1)
     {
-  /* USER CODE BEGIN WHILE */
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -282,6 +283,13 @@ static void MX_NVIC_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/* replace HAL library blocking delay function
+ * with FreeRTOS thread aware equivalent */
+void HAL_Delay(volatile uint32_t millis)
+{
+    vTaskDelay(millis / portTICK_PERIOD_MS);
+}
+
 /*
  * Callbacks for Interupts
  */

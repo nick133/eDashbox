@@ -63,8 +63,8 @@ extern const AssetBitmapsT AssetBitmaps;
 
 {out_c_buf_g}
 
-const AssetBitmapsT AssetBitmaps = """ & "{\n" &
-    out_c_buf_s).strip(chars = {'\n', ','}) & "\n};\n"
+const AssetBitmapsT AssetBitmaps = {{
+""" & out_c_buf_s).strip(chars = {'\n', ','}) & "\n};\n"
 #----8<----8<----8<----8<----8<----8<----8<----8<----8<----8<----8<----8<----
 
     out_h.writeFile(out_h_buf)

@@ -20,6 +20,12 @@
 #define SSR_QUEUE_LENGTH  10
 #define SSR_MSG_SIZE      sizeof(SensorMessageT)
 
+#ifdef DEBUG
+#include "SEGGER_RTT.h"
+#include "SEGGER_RTT_Conf.h"
+#endif
+
+
 
 omGuiT oledUi;
 omScreenT screenMain, screenData, screenTemp, screenSetup;
@@ -48,18 +54,14 @@ void Dispatch_Init(void)
     oledUi.DrawPixelCallback = DisplayDrawPixelCb;
 
     TaskHandle_t taskDispatch = NULL;
+    /* Default MAX_TASK_NAME_LEN = 16 */
     BaseType_t taskDispatchRet = xTaskCreate(
         TaskDispatch,
-        "gui-dispatcher",          /* Text name for the task. */
+        "GuiDispatcher",          /* Text name for the task. */
         configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
         NULL,                      /* Parameter passed into the task. */
         configMAX_PRIORITIES / 2,  /* Priority of the task created. */
         &taskDispatch);
-
-    omGuiInit(&oledUi);
-
-    //Bitmaps_Init();
-    MainScreenInit();
 }
 
 
@@ -90,22 +92,22 @@ static void TaskDispatch(void *pvParams)
 {
     //f_mount(&fs, "", 1);
 
-  /* Hardware related init code <<
-   * Must be called from inside the first main task for interrupt callbacks
-   * and other tasks being able to commmunicate with each other correctly.
-   */
- //   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
-   // __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+    /* ((( Hardware related init code
+     * Must be called from inside the first main task for interrupt callbacks
+     * and other tasks being able to commmunicate with each other correctly.
+     */
+    HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 
     TaskHandle_t taskTemperPoll = NULL;
     BaseType_t taskTempPollRet = xTaskCreate(
         TaskTemperaturePoll,
-        "temperature-sensor-poll",
+        "TempSensorPoll",
         configMINIMAL_STACK_SIZE,
         NULL,
         configMAX_PRIORITIES / 2,
         &taskTemperPoll);
-    /* >> Hardware related init code */
+    /* ))) Hardware related init code */
 
     uint8_t SensorMessageBufQ[ SSR_QUEUE_LENGTH * SSR_MSG_SIZE ];
     QueueHandle_t SensorsQueue = xQueueCreateStatic(
@@ -113,14 +115,25 @@ static void TaskDispatch(void *pvParams)
 
     // configASSERT(SensorsQueue);
 
+    //omGuiInit(&oledUi);
+
+    //Bitmaps_Init();
+    MainScreenInit();
+
     // Show logo
-    omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, False, True);
-    Sleep(2000);
-    omScreenSelect(&screenMain);
+    //omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, False, True);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+SEGGER_RTT_printf(0, "Hello1\n");
+    //SH1122_ClearRAM();
+    //omGuiClear(&oledUi);
+    //omScreenSelect(&screenMain);
 
     while(1)
     {
-        Sleep(2000);
+        HAL_Delay(2000);
+        SEGGER_RTT_printf(0, "Hello\n");
+
+        continue;
 
     }
 }
@@ -154,6 +167,6 @@ static void TaskTemperaturePoll(void *pvParams)
             }   
         }
 
-        Sleep(600);
+        HAL_Delay(600);
     }
 }

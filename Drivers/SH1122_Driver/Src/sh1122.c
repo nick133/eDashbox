@@ -252,6 +252,8 @@ static void SH1122_Reset(void)
 void SH1122_ClearRAM(void)
 {
     memset(FrameBuffer, 0x00, SH1122_OLED_RAM_SIZE);
+    //uint8_t *fb = FrameBuffer;
+    //while(fb++ < SH1122_OLED_RAM_SIZE) { *fb = 0; }
     SH1122_WriteData(FrameBuffer, SH1122_OLED_RAM_SIZE);
 }
 

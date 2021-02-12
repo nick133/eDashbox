@@ -81,7 +81,8 @@ extern ConfigSettingsT config;
 /* USER CODE BEGIN EM */
 // vTaskDelay() works only after scheduler is started
 // https://stackoverflow.com/questions/42276313/freertos-osdelay-vs-hal-delay
-#define Sleep(ms) vTaskDelay(ms / portTICK_PERIOD_MS)
+//#define Sleep(ms) vTaskDelay(ms / portTICK_PERIOD_MS)
+//#define Sleep(ms) HAL_Delay(ms)
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -90,6 +91,8 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void *malloc(size_t xBytes);
 void free(void *pvBuffer);
+
+void HAL_Delay(volatile uint32_t millis);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

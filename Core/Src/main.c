@@ -166,15 +166,17 @@ int main(void)
     DS18B20_Init(DS18B20_Resolution_12bits);
 
     /* (!) IMPORTANT (!)
-     * With FreeRTOS if Systick source is set to any hardware timers it hangs at debug
-     * but works with default systick source. Set timers to stop at debug.
-     * Further reading:
+     * With FreeRTOS if Systick source is set to any hardware timers it hangs
+     * at debug but works with default systick source. Set timers to stop at
+     * debug. Further reading:
      * https://forums.freertos.org/t/debugging-hangs-if-i-insert-breakpoint-after-vportsvchandler/9714/7
      * https://community.st.com/s/question/0D50X00009XkYS5/i-cant-make-timer-stop-while-debuging
+     * This workaround seems to not work. Step debug to omDrawBitmap() hangs
+     * despite the fact TIM2 is not even started!
      */
 #   ifdef DEBUG
-    /* This seems to not work. Step debug to omDrawBitmap() hangs despite the TIM2 is not started! */
-    //RCC->APB1ENR |= RCC_APB1ENR_DBGMCUEN; //enable MCU debug module clock
+    // Idk how to enable clock for debug in L432KC, there are no such macros
+    //RCC->APB1ENR1 |= RCC_APB1ENR_DBGMCUEN; //enable MCU debug module clock
     HAL_DBGMCU_EnableDBGStandbyMode(); 
     HAL_DBGMCU_EnableDBGStopMode();
     HAL_DBGMCU_EnableDBGStandbyMode();

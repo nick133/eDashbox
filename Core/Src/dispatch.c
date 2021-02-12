@@ -38,36 +38,28 @@ static void TaskTemperaturePoll(void *);
 
 void Dispatch_Init(void)
 {
-  oledUi.Id = 0;
-  oledUi.ResX = SH1122_OLED_WIDTH;
-  oledUi.ResY = SH1122_OLED_HEIGHT;
-  oledUi.InitCallback = DisplayInitCb;
-  oledUi.DeInitCallback = NULL;
-  oledUi.UpdateCallback = DisplayUpdateCb;
-  oledUi.ClearCallback = DisplayClearCb;
-  oledUi.DrawPixelCallback = DisplayDrawPixelCb;
+    oledUi.Id = 0;
+    oledUi.ResX = SH1122_OLED_WIDTH;
+    oledUi.ResY = SH1122_OLED_HEIGHT;
+    oledUi.InitCallback = DisplayInitCb;
+    oledUi.DeInitCallback = NULL;
+    oledUi.UpdateCallback = DisplayUpdateCb;
+    oledUi.ClearCallback = DisplayClearCb;
+    oledUi.DrawPixelCallback = DisplayDrawPixelCb;
 
     TaskHandle_t taskDispatch = NULL;
     BaseType_t taskDispatchRet = xTaskCreate(
-    TaskDispatch,
-    "gui-dispatcher",          /* Text name for the task. */
-    configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
-    NULL,                      /* Parameter passed into the task. */
-    configMAX_PRIORITIES / 2,  /* Priority of the task created. */
-    &taskDispatch );
+        TaskDispatch,
+        "gui-dispatcher",          /* Text name for the task. */
+        configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
+        NULL,                      /* Parameter passed into the task. */
+        configMAX_PRIORITIES / 2,  /* Priority of the task created. */
+        &taskDispatch);
 
-  omGuiInit(&oledUi);
+    omGuiInit(&oledUi);
 
-  Bitmaps_Init();
-
-  MainScreenInit();
-
-  // Show logo
-  //omDrawBitmap(&oledUi, &omBitmap_logo, 0, 0, False, True);
-  //Sleep(2000);
-  //omGuiClear(&oledUi);
-  // omGuiUpdate(&oledUi);
-  omScreenSelect(&screenMain);
+    //Bitmaps_Init();
+    MainScreenInit();
 }
 
 
@@ -122,7 +114,7 @@ static void TaskDispatch(void *pvParams)
     // configASSERT(SensorsQueue);
 
     // Show logo
-    omDrawBitmap(&oledUi, &omBitmap_logo, 0, 0, False, True);
+    omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, False, True);
     Sleep(2000);
     omScreenSelect(&screenMain);
 

@@ -21,68 +21,69 @@
 
 void omGuiInit(omGuiT *ui)
 {
-  ui->InitCallback(ui); // OLED Driver's Init code goes here
-  ui->ActiveScreen=NULL; // Discarded if set, use omScreenSelect()
+    ui->InitCallback(ui); // OLED Driver's Init code goes here
+    ui->ActiveScreen=NULL; // Discarded if set, use omScreenSelect()
 }
 
 
 void omGuiDeInit(omGuiT *ui)
 {
-  ui->DeInitCallback(ui); // OLED Driver's DeInit code goes here
+    ui->DeInitCallback(ui); // OLED Driver's DeInit code goes here
 }
 
 
 Bool omScreenSelect(omScreenT *screen)
 {
-  if (omScreenIsActive(screen) == True)
-  {
-    return False;
-  }
+    if(omScreenIsActive(screen) == True)
+    {
+        return False;
+    }
 
-  if (screen->Ui->ActiveScreen != NULL && screen->Ui->ActiveScreen->HideCallback != NULL)
-  {
-    screen->Ui->ActiveScreen->HideCallback(screen);
-  }
+    if(screen->Ui->ActiveScreen != NULL && screen->Ui->ActiveScreen->HideCallback != NULL)
+    {
+        screen->Ui->ActiveScreen->HideCallback(screen);
+    }
 
-  if (screen->ShowCallback != NULL)
-  {
-    screen->ShowCallback(screen);
-  }
+    if(screen->ShowCallback != NULL)
+    {
+        screen->ShowCallback(screen);
+    }
 
-  for (uint16_t i = 0; i < screen->WidgetsNumOf; i++)
-  {
-    // array[1] equals to *(array + 1)
-    // https://stackoverflow.com/questions/16201607/c-pointer-to-array-of-structs
-    screen->Widgets[i].ShowCallback(screen->Widgets + i);
-  }
+    for(uint16_t i = 0; i < screen->WidgetsNumOf; i++)
+    {
+        // array[1] equals to *(array + 1)
+        // https://stackoverflow.com/questions/16201607/c-pointer-to-array-of-structs
+        screen->Widgets[i].ShowCallback(screen->Widgets + i);
+    }
 
-  screen->Ui->ActiveScreen = screen;
+    screen->Ui->ActiveScreen = screen;
 
-  return True;
+    return True;
 }
 
 
 Bool omScreenIsActive(omScreenT *screen)
 {
-  return (screen->Ui->ActiveScreen == NULL || screen->Ui->ActiveScreen->Id != screen->Id) ? False : True;
+    return (screen->Ui->ActiveScreen == NULL
+        || screen->Ui->ActiveScreen->Id != screen->Id) ? False : True;
 }
 
 
 void omGuiUpdate(omGuiT *ui)
 {
-  ui->UpdateCallback(ui);
+    ui->UpdateCallback(ui);
 }
 
 
 void omGuiClear(omGuiT *ui)
 {
-  ui->ClearCallback(ui);
+    ui->ClearCallback(ui);
 }
 
 
 void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
 {
-  ui->DrawPixelCallback(ui, x, y, color);
+    ui->DrawPixelCallback(ui, x, y, color);
 }
 
 
@@ -93,87 +94,87 @@ void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
  */
 void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool alpha, Bool update)
 {
-  volatile uint8_t color1, color2;
-  uint32_t idx = 0;
-  Bool is_color1 = True;
+    volatile uint8_t color1, color2;
+    uint32_t idx = 0;
+    Bool is_color1 = True;
 
-  for (uint16_t yto = y; yto < bitmap->Height + y; yto++)
-  {
-    for (uint16_t xto = x; xto < bitmap->Width + x; xto++)
+    for(uint16_t yto = y; yto < bitmap->Height + y; yto++)
     {
-      if (is_color1)
-      {
-        color1 = bitmap->RawData[idx] >> 4;
-        color2 = bitmap->RawData[idx] & 0x0f;
-
-        if (!alpha)
+        for(uint16_t xto = x; xto < bitmap->Width + x; xto++)
         {
-          omDrawPixel(ui, xto, yto, color1);
-        }
+            if(is_color1)
+            {
+                color1 = bitmap->RawData[idx] >> 4;
+                color2 = bitmap->RawData[idx] & 0x0f;
 
-        is_color1 = False;
-      }
-      else
-      {
-        if (!alpha)
-        {
-          omDrawPixel(ui, xto, yto, color2);
-        }
+                if(!alpha)
+                {
+                    omDrawPixel(ui, xto, yto, color1);
+                }
 
-        idx++;
-        is_color1 = True;
-      }
+                is_color1 = False;
+            }
+            else
+            {
+                if(!alpha)
+                {
+                    omDrawPixel(ui, xto, yto, color2);
+                }
+
+                idx++;
+                is_color1 = True;
+            }
+        }
     }
-  }
 
-  if (update) { omGuiUpdate(ui); }
+    if(update) { omGuiUpdate(ui); }
 }
 
 
 void omDrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, Bool update)
 {
-  const int16_t deltaX = abs(x2 - x1);
-  const int16_t deltaY = abs(y2 - y1);
-  const int16_t signX = x1 < x2 ? 1 : -1;
-  const int16_t signY = y1 < y2 ? 1 : -1;
+    const int16_t deltaX = abs(x2 - x1);
+    const int16_t deltaY = abs(y2 - y1);
+    const int16_t signX = x1 < x2 ? 1 : -1;
+    const int16_t signY = y1 < y2 ? 1 : -1;
 
-  int16_t error = deltaX - deltaY;
+    int16_t error = deltaX - deltaY;
 
-  omDrawPixel(ui, x2, y2, color);
+    omDrawPixel(ui, x2, y2, color);
 
-  while (x1 != x2 || y1 != y2)
-  {
-    omDrawPixel(ui, x1, y1, color);
-    const int16_t error2 = error * 2;
-
-    if (error2 > -deltaY)
+    while(x1 != x2 || y1 != y2)
     {
-      error -= deltaY;
-      x1 += signX;
-    }
-    if (error2 < deltaX)
-    {
-      error += deltaX;
-      y1 += signY;
-    }
-  }
+        omDrawPixel(ui, x1, y1, color);
+        const int16_t error2 = error * 2;
 
-  if(update) { omGuiUpdate(ui); }
+        if(error2 > -deltaY)
+        {
+            error -= deltaY;
+            x1 += signX;
+        }
+        if(error2 < deltaX)
+        {
+            error += deltaX;
+            y1 += signY;
+        }
+    }
+
+    if(update) { omGuiUpdate(ui); }
 }
 
 
 /* void omAnimationStart(omAnimationT *anim)
 {
-  omBitmapT *bitmap = anim->Bitmaps; // Don't increment original pointer
+    omBitmapT *bitmap = anim->Bitmaps; // Don't increment original pointer
 
-  for (uint16_t i = 0; i < anim->FramesNumOf; i++)
-  {
-    omDrawBitmap(bitmap, anim->PosX, anim->PosY);
-    omGuiUpdate(anim->Ui);
-    SYS_SLEEP(anim->Interval);
+    for(uint16_t i = 0; i < anim->FramesNumOf; i++)
+    {
+        omDrawBitmap(bitmap, anim->PosX, anim->PosY);
+        omGuiUpdate(anim->Ui);
+        SYS_SLEEP(anim->Interval);
 
-    bitmap++;
-  }
+        bitmap++;
+    }
 
-  return;
+    return;
 } */

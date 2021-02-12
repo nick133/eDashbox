@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-/* #include "cmsis_os.h" */
+#include "cmsis_os.h"
 #include "fatfs.h"
 #include "rtc.h"
 #include "spi.h"
@@ -58,7 +58,7 @@
 #include "f10x16f.h"
 
 /* <<<< GUI >>>> */
-#include "dispatch.h"
+#include "screens.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,7 +101,7 @@ static volatile uint16_t u16_TIM2_OVC = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* void MX_FREERTOS_Init(void); */
+void MX_FREERTOS_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -165,36 +165,18 @@ int main(void)
   /* USER CODE BEGIN 2 */
     DS18B20_Init(DS18B20_Resolution_12bits);
 
-    /* (!) IMPORTANT (!)
-     * With FreeRTOS if Systick source is set to any hardware timers it hangs
-     * at debug but works with default systick source. Set timers to stop at
-     * debug. Further reading:
-     * https://forums.freertos.org/t/debugging-hangs-if-i-insert-breakpoint-after-vportsvchandler/9714/7
-     * https://community.st.com/s/question/0D50X00009XkYS5/i-cant-make-timer-stop-while-debuging
-     * This workaround seems to not work. Step debug to omDrawBitmap() hangs
-     * despite the fact TIM2 is not even started!
-     */
-// #   ifdef DEBUG
-//     // Idk how to enable clock for debug in L432KC, there are no such macros
-//     //RCC->APB1ENR1 |= RCC_APB1ENR_DBGMCUEN; //enable MCU debug module clock
-//     HAL_DBGMCU_EnableDBGStandbyMode(); 
-//     HAL_DBGMCU_EnableDBGStopMode();
-//     HAL_DBGMCU_EnableDBGStandbyMode();
-//     DBGMCU->APB1FZR1 |= DBGMCU_APB1FZR1_DBG_TIM2_STOP; //enable timer 7 stop
-// #   endif
+    /* Hall sensor timer */
+    HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 
-    Dispatch_Init();
-    SEGGER_RTT_printf(0, "Hello MAIN\n");
-
-    vTaskStartScheduler();
-
+    Screens_Init();
   /* USER CODE END 2 */
 
   /* Init scheduler */
-/*   osKernelInitialize(); */  /* Call init function for freertos objects (in freertos.c) */
-/*   MX_FREERTOS_Init(); */
+  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
   /* Start scheduler */
-/*   osKernelStart(); */
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
@@ -283,13 +265,6 @@ static void MX_NVIC_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/* replace HAL library blocking delay function
- * with FreeRTOS thread aware equivalent */
-void HAL_Delay(volatile uint32_t millis)
-{
-    vTaskDelay(millis / portTICK_PERIOD_MS);
-}
-
 /*
  * Callbacks for Interupts
  */

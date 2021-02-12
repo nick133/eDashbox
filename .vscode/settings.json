@@ -16,6 +16,12 @@
                 "color": "black",
                 "singleInstance": true,
                 "command": "/opt/SEGGER/JLink/JLinkRTTViewerExe", // This is executed in the terminal.
+            },
+            {
+                "name": "Tup",
+                "color": "blue",
+                "singleInstance": true,
+                "command": "tup", // This is executed in the terminal.
             }
         ]
     }

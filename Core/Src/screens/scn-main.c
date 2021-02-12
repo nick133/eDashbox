@@ -1,7 +1,8 @@
 
-#include "omgui.h"
-#include "dispatch.h"
 #include "main.h"
+#include "omgui.h"
+#include "screens.h"
+#include "bitmaps.h"
 
 
 typedef enum {

@@ -10,7 +10,8 @@ PGM2C_DIR=Tools/pgm2c
 PGM2C=$PGM2C_DIR/bin/pgm2c
 SRC_TOPDIRS="Core Drivers FATFS Middlewares/Third_Party"
 DEBUG_SRC_TOPDIRS="Middlewares/Debug"
-UNUSED_FILES="Core/Src/freertos.c Makefile startup_stm32l432xx.s"
+#UNUSED_FILES="Core/Src/freertos.c Makefile startup_stm32l432xx.s"
+UNUSED_FILES="Makefile startup_stm32l432xx.s"
 BUILD_TARGETS="debug"
 #BUILD_TARGETS="release debug"
 
@@ -21,17 +22,17 @@ OVERRIDE_SOURCES=FATFS/Target/ffconf.h
 
 cd $(dirname $0)/..
 
-MAIN_C=Core/Src/main.c
-if grep -q '^#include "cmsis_os.h"' ${MAIN_C}
-then
-    echo "==> Patching main.c to disable CMSIS-RTOS code"
-    sed -i \
-    -e 's@^#include "cmsis_os.h"@/* & */@;' \
-    -e 's@^ \+MX_FREERTOS_Init();@/* & */@' \
-    -e 's@^ \+osKernelStart();@/* & */@' \
-    -e 's@^ \+osKernelInitialize();@/* & */@' \
-    -e 's@^void MX_FREERTOS_Init(void);@/* & */@' ${MAIN_C}
-fi
+#MAIN_C=Core/Src/main.c
+#if grep -q '^#include "cmsis_os.h"' ${MAIN_C}
+#then
+    #echo "==> Patching main.c to disable CMSIS-RTOS code"
+    #sed -i \
+    #-e 's@^#include "cmsis_os.h"@/* & */@;' \
+    #-e 's@^ \+MX_FREERTOS_Init();@/* & */@' \
+    #-e 's@^ \+osKernelStart();@/* & */@' \
+    #-e 's@^ \+osKernelInitialize();@/* & */@' \
+    #-e 's@^void MX_FREERTOS_Init(void);@/* & */@' ${MAIN_C}
+#fi
 
 echo "==> Cleaning after CubeMX: $UNUSED_FILES"
 rm -f $UNUSED_FILES

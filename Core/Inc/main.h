@@ -67,8 +67,43 @@ typedef struct SensorsData {
 
 } SensorsDataT;
 
-
 extern ConfigSettingsT config;
+
+/* Sensors, Buttons message <<
+ * Usage: 
+ *   SensorMessageT mesg = {
+ *     .Kind = SsrMsgHall,
+ *     .Data.HallRpm = 2500 
+ *   };
+ */
+typedef enum SensorMessageKind {
+    SsrMsgTmp1,
+    SsrMsgTmp2,
+    SsrMsgTmp3,
+    SsrMsgHall,
+    SsrMsgBtn1,
+    SsrMsgBtn2,
+} SensorMessageKindT;
+
+typedef enum ButtonState {
+    BtnPressed, BtnReleased
+} ButtonStateT;
+
+typedef union SensorMessageData {
+    float Temperature1; // Celsius Degree
+    float Temperature2;
+    float Temperature3;
+    uint16_t HallRpm;
+    ButtonStateT Button1;
+    ButtonStateT Button2;
+} SensorMessageDataT;
+
+typedef struct SensorMessage {
+    SensorMessageKindT Kind;
+    SensorMessageDataT Data;
+} SensorMessageT;
+
+/* >> Sensors, Buttons message */
 
 /* USER CODE END ET */
 
@@ -79,10 +114,6 @@ extern ConfigSettingsT config;
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-// vTaskDelay() works only after scheduler is started
-// https://stackoverflow.com/questions/42276313/freertos-osdelay-vs-hal-delay
-//#define Sleep(ms) vTaskDelay(ms / portTICK_PERIOD_MS)
-//#define Sleep(ms) HAL_Delay(ms)
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -91,8 +122,6 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void *malloc(size_t xBytes);
 void free(void *pvBuffer);
-
-void HAL_Delay(volatile uint32_t millis);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

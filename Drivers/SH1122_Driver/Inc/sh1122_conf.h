@@ -9,8 +9,7 @@
 
 #include "spi.h"
 
-//#define OS_SLEEP(ms) HAL_Delay(ms) // HAL or FreeRTOS vTaskDelay()
-#define OS_SLEEP(ms)            HAL_Delay(ms)
+#define OS_SLEEP(ms)            osDelay(ms)
 
 #define SH1122_OLED_SPI_HANDLE  &hspi1
 

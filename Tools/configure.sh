@@ -10,7 +10,6 @@ PGM2C_DIR=Tools/pgm2c
 PGM2C=$PGM2C_DIR/bin/pgm2c
 SRC_TOPDIRS="Core Drivers FATFS Middlewares/Third_Party"
 DEBUG_SRC_TOPDIRS="Middlewares/Debug"
-#UNUSED_FILES="Core/Src/freertos.c Makefile startup_stm32l432xx.s"
 UNUSED_FILES="Makefile startup_stm32l432xx.s"
 BUILD_TARGETS="debug"
 #BUILD_TARGETS="release debug"

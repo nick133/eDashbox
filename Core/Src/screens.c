@@ -3,7 +3,6 @@
 #include "omgui.h"
 #include "screens.h"
 #include "bitmaps.h"
-//#include "stm32l4xx_hal.h"
 #include "sh1122.h"
 
 #ifdef DEBUG

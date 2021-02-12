@@ -29,6 +29,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* <<<< System >>>> */
+#include "stm32l4xx_hal.h"
 
 /* https://github.com/mpaland/printf
    Tiny printf for embedded systems. Stdlib sprintf corrupts the stack if used
@@ -50,7 +51,6 @@
 #include <timers.h>
 
 /* <<<< Drivers >>>> */
-//#include "sd.h"
 #include "onewire.h"
 #include "ds18b20.h"
 #include "sh1122.h"
@@ -58,8 +58,7 @@
 #include "f10x16f.h"
 
 /* <<<< GUI >>>> */
-#include "omgui.h"
-#include "screens.h"
+#include "dispatch.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,14 +89,13 @@ static volatile uint32_t u32_RPM_T2 = 0;
 static volatile uint32_t u32_RPM_Ticks = 0;
 static volatile uint16_t u16_TIM2_OVC = 0;
 
-
- FATFS fs;
- FATFS *pfs;
- FIL fil;
- FRESULT fres;
- DWORD fre_clust;
- uint32_t totalSpace, freeSpace;
- char buffer[100];
+//FATFS fs;
+//FATFS *pfs;
+//FIL fil;
+//FRESULT fres;
+//DWORD fre_clust;
+//uint32_t totalSpace, freeSpace;
+//char buffer[100];
 
 /* USER CODE END PV */
 
@@ -106,19 +104,18 @@ void SystemClock_Config(void);
 /* void MX_FREERTOS_Init(void); */
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-static void TaskTemperaturePoll(void *);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void *malloc( size_t xBytes )
 {
-  return pvPortMalloc( xBytes );
+    return pvPortMalloc( xBytes );
 }
 
 void free( void *pvBuffer )
 {
-  vPortFree( pvBuffer );
+    vPortFree( pvBuffer );
 }
 /* USER CODE END 0 */
 
@@ -129,8 +126,8 @@ void free( void *pvBuffer )
 int main(void)
 {
   /* USER CODE BEGIN 1 */
- 
-//  config.TempUnits = TEMP_CELSIUS;
+
+ //  config.TempUnits = TEMP_CELSIUS;
   config.SpeedUnits = UnitsSpeedKph;
   config.ShowLogo = False;
   config.WheelCirc = 1285;
@@ -166,37 +163,27 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-  DS18B20_Init(DS18B20_Resolution_12bits);
+    DS18B20_Init(DS18B20_Resolution_12bits);
 
-  f_mount(&fs, "", 1);
-  
-  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
-  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+    /* (!) IMPORTANT (!)
+     * With FreeRTOS if Systick source is set to any hardware timers it hangs at debug
+     * but works with default systick source. Set timers to stop at debug.
+     * Further reading:
+     * https://forums.freertos.org/t/debugging-hangs-if-i-insert-breakpoint-after-vportsvchandler/9714/7
+     * https://community.st.com/s/question/0D50X00009XkYS5/i-cant-make-timer-stop-while-debuging
+     */
+#   ifdef DEBUG
+    /* This seems to not work. Step debug to omDrawBitmap() hangs despite the TIM2 is not started! */
+    //RCC->APB1ENR |= RCC_APB1ENR_DBGMCUEN; //enable MCU debug module clock
+    HAL_DBGMCU_EnableDBGStandbyMode(); 
+    HAL_DBGMCU_EnableDBGStopMode();
+    HAL_DBGMCU_EnableDBGStandbyMode();
+    DBGMCU->APB1FZR1 |= DBGMCU_APB1FZR1_DBG_TIM2_STOP; //enable timer 7 stop
+#   endif
 
-  Dispatch_Init();
+    Dispatch_Init();
 
-  TaskHandle_t taskTemperPoll = NULL;
-
-  BaseType_t taskTempPollRet = xTaskCreate(
-    TaskTemperaturePoll,
-    "temp-sensor-poll",        /* Text name for the task. */
-    configMINIMAL_STACK_SIZE,  /* Stack size in words, not bytes. */
-    (void *) 1,                /* Parameter passed into the task. */
-    configMAX_PRIORITIES / 2,  /* Priority of the task created. */
-    &taskTemperPoll );
-
-  // if (taskTempPollRet == pdPASS)
-  // {
-  //   ssd1306_WriteString("Task ok!", Font_7x10, White);
-  //   omGuiUpdate(&oled1);
-  // }
-  // else if (taskTempPollRet == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY)
-  // {
-  //   ssd1306_WriteString("Task FAILED!", Font_7x10, White);
-  //   omGuiUpdate(&oled1);
-  // }
-
-  vTaskStartScheduler();
+    vTaskStartScheduler();
 
   /* USER CODE END 2 */
 
@@ -208,10 +195,14 @@ int main(void)
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
+    while(1)
+    {
   /* USER CODE BEGIN WHILE */
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+        continue;
+    }
   /* USER CODE END 3 */
 }
 
@@ -289,71 +280,45 @@ static void MX_NVIC_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-static void TaskTemperaturePoll(void *pvParams)
-{
-  //configASSERT( ( ( uint32_t ) pvParameters ) == 1 );
-  char message[64];
-
-  while (1)
-  {
-    DS18B20_ReadAll();
-    DS18B20_StartAll();
-
- 		uint8_t ROM_tmp[8];
-		uint8_t i;
-
-  	for (i = 0; i < DS18B20_Quantity(); i++)
-		{
-			if (DS18B20_GetTemperature(i, &sensor.Temperature1))
-			{
-				DS18B20_GetROM(i, ROM_tmp);
-			}
-		}
-
-    Sleep(600);
-  }
-}
-
-
 /*
  * Callbacks for Interupts
  */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if (GPIO_Pin == BTN1_Pin)
-  {
+    if(GPIO_Pin == BTN1_Pin)
+    {
 
-  }
-  else if (GPIO_Pin == BTN2_Pin)
-  {
+    }
+    else if (GPIO_Pin == BTN2_Pin)
+    {
 
-  }
+    }
 }
 
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim->Instance == TIM2)
-  {
-    if (u8_RPM_State == IDLE)
+    if (htim->Instance == TIM2)
     {
-      u32_RPM_T1 = TIM2->CCR1;
-      u16_TIM2_OVC = 0;
-      u8_RPM_State = DONE;
-    }
-    else if (u8_RPM_State == DONE)
-    {
-      u32_RPM_T2 = TIM2->CCR1;
-      u32_RPM_Ticks = (u32_RPM_T2 + (u16_TIM2_OVC * 20000)) - u32_RPM_T1;
-      /* T sec = (Prescaler * Preload) / Frequency MHz
-       * Preload = Frequency MHz * T sec / Prescaler
-       */
-      sensor.MotorRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / u32_RPM_Ticks);
-      sensor.SpeedKph = ((sensor.MotorRpm * 60) / config.GearRatio) * config.WheelCirc;
+        if (u8_RPM_State == IDLE)
+        {
+            u32_RPM_T1 = TIM2->CCR1;
+            u16_TIM2_OVC = 0;
+            u8_RPM_State = DONE;
+        }
+        else if (u8_RPM_State == DONE)
+        {
+            u32_RPM_T2 = TIM2->CCR1;
+            u32_RPM_Ticks = (u32_RPM_T2 + (u16_TIM2_OVC * 20000)) - u32_RPM_T1;
+            /* T sec = (Prescaler * Preload) / Frequency MHz
+             * Preload = Frequency MHz * T sec / Prescaler
+             */
+            sensor.MotorRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / u32_RPM_Ticks);
+            sensor.SpeedKph = ((sensor.MotorRpm * 60) / config.GearRatio) * config.WheelCirc;
 
-      u8_RPM_State = IDLE;
+            u8_RPM_State = IDLE;
+        }
     }
-  }
 }
 
 /* USER CODE END 4 */
@@ -375,18 +340,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-  else if (htim->Instance == TIM2) {
-    if (u16_TIM2_OVC > 2)
-    {
-      u8_RPM_State = IDLE;
-      u16_TIM2_OVC = 0;
-      sensor.MotorRpm = 0;
-      sensor.SpeedKph = 0;
+    else if (htim->Instance == TIM2) {
+        if (u16_TIM2_OVC > 2)
+        {
+            u8_RPM_State = IDLE;
+            u16_TIM2_OVC = 0;
+            sensor.MotorRpm = 0;
+            sensor.SpeedKph = 0;
+        }
+        else
+            u16_TIM2_OVC++;
     }
-    else
-      u16_TIM2_OVC++;
-  }
-
   /* USER CODE END Callback 1 */
 }
 

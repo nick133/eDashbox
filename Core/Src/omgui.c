@@ -44,8 +44,6 @@ Bool omScreenSelect(omScreenT *screen)
     screen->Ui->ActiveScreen->HideCallback(screen);
   }
 
-  omGuiClear(screen->Ui);
-
   if (screen->ShowCallback != NULL)
   {
     screen->ShowCallback(screen);
@@ -108,7 +106,7 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool al
         color1 = bitmap->RawData[idx] >> 4;
         color2 = bitmap->RawData[idx] & 0x0f;
 
-        if (!(alpha && color1 == 0x00))
+        if (!alpha)
         {
           omDrawPixel(ui, xto, yto, color1);
         }
@@ -117,7 +115,7 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool al
       }
       else
       {
-        if (!(alpha && color1 == 0x00))
+        if (!alpha)
         {
           omDrawPixel(ui, xto, yto, color2);
         }
@@ -128,10 +126,7 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool al
     }
   }
 
-  if (update)
-  {
-    omGuiUpdate(ui);
-  }
+  if (update) { omGuiUpdate(ui); }
 }
 
 
@@ -163,10 +158,7 @@ void omDrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, 
     }
   }
 
-  if (update)
-  {
-    omGuiUpdate(ui);
-  }
+  if(update) { omGuiUpdate(ui); }
 }
 
 

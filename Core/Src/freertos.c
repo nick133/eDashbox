@@ -26,7 +26,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stdbool.h"
 #include "screens.h"
+#include "settings.h"
 #include "bitmaps.h"
 
 #ifdef DEBUG
@@ -43,7 +45,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define DS18B20_POLL_DELAY 600U
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,8 +55,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-osThreadId_t SensorsQueue;
-
 // osThreadId_t taskTempPoll;
 // const osThreadAttr_t taskTempPoll_attr = {
 //   .name = "taskTempPoll",
@@ -103,7 +103,7 @@ void MX_FREERTOS_Init(void) {
     if(TimerTempPoll != NULL)
     {
         // Periodic timer created
-        osStatus_t tmStatus = osTimerStart(TimerTempPoll, 600U);
+        osStatus_t tmStatus = osTimerStart(TimerTempPoll, DS18B20_POLL_DELAY);
  
         if(tmStatus != osOK)
         {
@@ -114,12 +114,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-    SensorsQueue = osMessageQueueNew(16, sizeof(SensorMessageT), NULL);
-
-    if(SensorsQueue == NULL)
-    {
-        ; // Message Queue object not created, handle failure
-    }
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -147,23 +141,30 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
-    // Show logo
-    omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, False, True);
-    osDelay(1500);
-    omScreenSelect(&screenMain);
+    if(config.ShowLogo)
+    {
+        omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, false, true);
+        osDelay(2000);
+    }
+
+    omScreenSelect(uiScreens[config.Screen1]);
   
     while(1)
     {
-        SensorMessageT SsrMsg;
-        SsrMsg.Kind = SsrMsgTmp1;
+        /* Collect sensors data */
+/*
+создает структуру, заполняет данными всех сссенсоров и кнопок, сравнивает с предыдущими значениями,
+изменились или нет, вызывает обновление скрина с этими данными и флагом изменились они или нет.
+отдельная задача с обновлением экрана?
+Setup : menu widget(active,all other inactive), edit property widget, save config widget.
 
-        osStatus_t getStatusQ = osMessageQueueGet(SensorsQueue, &SsrMsg, NULL, 0U);
-        if(getStatusQ == osOK)
-        {
-            SEGGER_RTT_printf(0, "Temp: %u\n", (int)SsrMsg.Data.Temperature1);
-        }
 
-        osDelay(2000);
+илли виджеты вообще не нужны. достаточно разных скринов, но с сохранением состояния.
+(сетап: меню, редактор настройки, др.)
+*/
+        omScreenUpdate(&oledUi);
+
+        osDelay(50); // >25fps
     }
   /* USER CODE END StartDefaultTask */
 }
@@ -172,25 +173,17 @@ void StartDefaultTask(void *argument)
 /* USER CODE BEGIN Application */
 void TemperaturePoll(void *params)
 {
-    uint8_t ROM_tmp[8];
-
-    SensorMessageT SsrMsg;
-    SsrMsg.Kind = SsrMsgTmp1;
-
+    //uint8_t ROM_tmp[8];
     DS18B20_ReadAll();
     DS18B20_StartAll();
 
     for(uint8_t i = 0; i < DS18B20_Quantity(); i++)
     {
-        if(DS18B20_GetTemperature(i, &SsrMsg.Data.Temperature1))
+        if(DS18B20_GetTemperature(i, &sensors.Temperature[i]));
         {
-            DS18B20_GetROM(i, ROM_tmp);
-
-            osMessageQueuePut(SensorsQueue, &SsrMsg, 0U, 0U);
+            // DS18B20_GetROM(i, ROM_tmp);
         }   
     }
-
-    osDelay(600);
 }
 /* USER CODE END Application */
 

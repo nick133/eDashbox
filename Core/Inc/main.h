@@ -39,72 +39,13 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
-typedef enum { UnitsSpeedKph, UnitsSpeedMph } UnitsSpeedT;
-typedef enum { UnitsTempCelsius, UnitsTempFahrenheit } UnitsTempT;
-
-
-typedef struct ConfigSettings {
-  UnitsSpeedT SpeedUnits;
-  UnitsTempT TempUnits;
-  uint16_t WheelCirc; // millimeters
-  uint16_t GearRatio; // millimeters
-  Bool ShowLogo;
-
-} ConfigSettingsT;
-
 typedef struct SensorsData {
-  volatile uint16_t MotorRpm;
-  volatile float SpeedKph;
-  uint32_t DistanceOdo;
-  uint32_t DistanceRide;
-  uint32_t Trip1, Trip2;
-  uint32_t Power;
-  float Temperature1; // Celsius degree
-  float Temperature2;
-  float BattVoltage;
-  float BattCurrent;
-
+  volatile uint16_t HallRpm;
+  volatile float Temperature[4]; // Celsius degree
+  volatile float Volt;
 } SensorsDataT;
 
-extern ConfigSettingsT config;
-
-/* Sensors, Buttons message <<
- * Usage: 
- *   SensorMessageT mesg = {
- *     .Kind = SsrMsgHall,
- *     .Data.HallRpm = 2500 
- *   };
- */
-typedef enum SensorMessageKind {
-    SsrMsgTmp1,
-    SsrMsgTmp2,
-    SsrMsgTmp3,
-    SsrMsgHall,
-    SsrMsgBtn1,
-    SsrMsgBtn2,
-} SensorMessageKindT;
-
-typedef enum ButtonState {
-    BtnPressed, BtnReleased
-} ButtonStateT;
-
-typedef union SensorMessageData {
-    float Temperature1; // Celsius Degree
-    float Temperature2;
-    float Temperature3;
-    uint16_t HallRpm;
-    ButtonStateT Button1;
-    ButtonStateT Button2;
-} SensorMessageDataT;
-
-typedef struct SensorMessage {
-    SensorMessageKindT Kind;
-    SensorMessageDataT Data;
-} SensorMessageT;
-
-/* >> Sensors, Buttons message */
-
+extern SensorsDataT sensors;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

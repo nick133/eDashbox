@@ -59,6 +59,7 @@
 
 /* <<<< GUI >>>> */
 #include "screens.h"
+#include "settings.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -80,23 +81,15 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-ConfigSettingsT config;
-SensorsDataT sensor;
+SensorsDataT sensors;
 
-static volatile uint8_t u8_RPM_State = IDLE;
-static volatile uint32_t u32_RPM_T1 = 0;
-static volatile uint32_t u32_RPM_T2 = 0;
-static volatile uint32_t u32_RPM_Ticks = 0;
-static volatile uint16_t u16_TIM2_OVC = 0;
-
-//FATFS fs;
-//FATFS *pfs;
-//FIL fil;
-//FRESULT fres;
-//DWORD fre_clust;
-//uint32_t totalSpace, freeSpace;
-//char buffer[100];
-
+static struct {
+    volatile uint8_t u8_RPM_State;
+    volatile uint32_t u32_RPM_T1;
+    volatile uint32_t u32_RPM_T2;
+    volatile uint32_t u32_RPM_Ticks;
+    volatile uint16_t u16_TIM2_OVC;
+} HallCount = { IDLE, 0, 0, 0, 0 };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -129,9 +122,10 @@ int main(void)
 
  //  config.TempUnits = TEMP_CELSIUS;
   config.SpeedUnits = UnitsSpeedKph;
-  config.ShowLogo = False;
+  config.ShowLogo = true;
   config.WheelCirc = 1285;
   config.GearRatio = 6;
+  config.Screen1 = IdScreenMain;
 
   /* USER CODE END 1 */
 
@@ -285,23 +279,25 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM2)
     {
-        if (u8_RPM_State == IDLE)
+        if (HallCount.u8_RPM_State == IDLE)
         {
-            u32_RPM_T1 = TIM2->CCR1;
-            u16_TIM2_OVC = 0;
-            u8_RPM_State = DONE;
+            HallCount.u32_RPM_T1 = TIM2->CCR1;
+            HallCount.u16_TIM2_OVC = 0;
+            HallCount.u8_RPM_State = DONE;
         }
-        else if (u8_RPM_State == DONE)
+        else if (HallCount.u8_RPM_State == DONE)
         {
-            u32_RPM_T2 = TIM2->CCR1;
-            u32_RPM_Ticks = (u32_RPM_T2 + (u16_TIM2_OVC * 20000)) - u32_RPM_T1;
+            HallCount.u32_RPM_T2 = TIM2->CCR1;
+            HallCount.u32_RPM_Ticks =
+                (HallCount.u32_RPM_T2 + (HallCount.u16_TIM2_OVC * 20000)) - HallCount.u32_RPM_T1;
+
             /* T sec = (Prescaler * Preload) / Frequency MHz
              * Preload = Frequency MHz * T sec / Prescaler
              */
-            sensor.MotorRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / u32_RPM_Ticks);
-            sensor.SpeedKph = ((sensor.MotorRpm * 60) / config.GearRatio) * config.WheelCirc;
+            sensors.HallRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / HallCount.u32_RPM_Ticks);
+//!!! KPH speed formula !!!// sensor.SpeedKph = ((sensor.MotorRpm * 60) / config.GearRatio) * config.WheelCirc;
 
-            u8_RPM_State = IDLE;
+            HallCount.u8_RPM_State = IDLE;
         }
     }
 }
@@ -326,15 +322,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
   /* USER CODE BEGIN Callback 1 */
     else if (htim->Instance == TIM2) {
-        if (u16_TIM2_OVC > 2)
+        if (HallCount.u16_TIM2_OVC > 2)
         {
-            u8_RPM_State = IDLE;
-            u16_TIM2_OVC = 0;
-            sensor.MotorRpm = 0;
-            sensor.SpeedKph = 0;
+            HallCount.u8_RPM_State = IDLE;
+            HallCount.u16_TIM2_OVC = 0;
+            sensors.HallRpm = 0;
         }
         else
-            u16_TIM2_OVC++;
+        {
+            HallCount.u16_TIM2_OVC++;
+        }
     }
   /* USER CODE END Callback 1 */
 }

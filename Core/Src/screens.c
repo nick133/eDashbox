@@ -13,7 +13,7 @@
 
 omGuiT oledUi;
 omScreenT screenMain, screenData, screenTemp, screenSetup;
-
+omScreenT *uiScreens[4];
 
 static void DisplayInitCb(omGuiT *);
 static void DisplayUpdateCb(omGuiT *);
@@ -31,6 +31,9 @@ void Screens_Init(void)
     oledUi.UpdateCallback = DisplayUpdateCb;
     oledUi.ClearCallback = DisplayClearCb;
     oledUi.DrawPixelCallback = DisplayDrawPixelCb;
+
+    uiScreens[IdScreenMain] = &screenMain;
+    uiScreens[IdScreenData] = &screenData;
 
     omGuiInit(&oledUi);
     MainScreenInit();

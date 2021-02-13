@@ -6,7 +6,7 @@
  *  Created on: 23 янв. 2021 г.
  *      Author: nick
  */
-
+#include "stdbool.h"
 #include "omgui.h"
 #include "main.h"
 
@@ -31,12 +31,22 @@ void omGuiDeInit(omGuiT *ui)
     ui->DeInitCallback(ui); // OLED Driver's DeInit code goes here
 }
 
-
-Bool omScreenSelect(omScreenT *screen)
+bool omScreenUpdate(omGuiT *ui)
 {
-    if(omScreenIsActive(screen) == True)
+    if(ui->ActiveScreen->UpdateCallback != NULL)
     {
-        return False;
+        ui->ActiveScreen->UpdateCallback(ui->ActiveScreen);
+    }
+
+    return true;
+}
+
+
+bool omScreenSelect(omScreenT *screen)
+{
+    if(omScreenIsActive(screen) == true)
+    {
+        return false;
     }
 
     if(screen->Ui->ActiveScreen != NULL && screen->Ui->ActiveScreen->HideCallback != NULL)
@@ -51,23 +61,16 @@ Bool omScreenSelect(omScreenT *screen)
         screen->ShowCallback(screen);
     }
 
-    for(uint16_t i = 0; i < screen->WidgetsNumOf; i++)
-    {
-        // array[1] equals to *(array + 1)
-        // https://stackoverflow.com/questions/16201607/c-pointer-to-array-of-structs
-        screen->Widgets[i].ShowCallback(screen->Widgets + i);
-    }
-
     screen->Ui->ActiveScreen = screen;
 
-    return True;
+    return true;
 }
 
 
-Bool omScreenIsActive(omScreenT *screen)
+bool omScreenIsActive(omScreenT *screen)
 {
     return (screen->Ui->ActiveScreen == NULL
-        || screen->Ui->ActiveScreen->Id != screen->Id) ? False : True;
+        || screen->Ui->ActiveScreen->Id != screen->Id) ? false : true;
 }
 
 
@@ -94,11 +97,11 @@ void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
  * https://electronics.stackexchange.com/questions/74589/how-to-stock-variables-in-flash-memory
  * https://forum.arduino.cc/index.php?topic=461487.0
  */
-void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool alpha, Bool update)
+void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, bool alpha, bool update)
 {
     volatile uint8_t color1, color2;
     uint32_t idx = 0;
-    Bool is_color1 = True;
+    bool is_color1 = true;
 
     for(uint16_t yto = y; yto < bitmap->Height + y; yto++)
     {
@@ -114,7 +117,7 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool al
                     omDrawPixel(ui, xto, yto, color1);
                 }
 
-                is_color1 = False;
+                is_color1 = false;
             }
             else
             {
@@ -124,7 +127,7 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool al
                 }
 
                 idx++;
-                is_color1 = True;
+                is_color1 = true;
             }
         }
     }
@@ -133,7 +136,7 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, Bool al
 }
 
 
-void omDrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, Bool update)
+void omDrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, bool update)
 {
     const int16_t deltaX = abs(x2 - x1);
     const int16_t deltaY = abs(y2 - y1);

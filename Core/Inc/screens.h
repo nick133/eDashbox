@@ -4,21 +4,21 @@
 
 #include "omgui.h"
 
-
 typedef enum {
-    IdScreenLogo,
     IdScreenMain,
     IdScreenData,
-    IdScreenTemp,
+    IdScreenRpm,
     IdScreenSetup,
+    IdScreenSetupEditor,
+
     IdScreensNumOf
-} omScreenIdT;
+} IdScreenT;
 
 extern omGuiT oledUi;
-extern omScreenT screenMain, screenData, screenTemp, screenSetup;
+extern omScreenT screenMain, screenData, screenSetup;
+extern omScreenT *uiScreens[4];
 
 void Screens_Init(void);
-
 void MainScreenInit(void);
 //void DataScreenInit(void);
 

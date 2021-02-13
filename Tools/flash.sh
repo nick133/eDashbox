@@ -2,10 +2,14 @@
 #
 
 project=evAnalyst
+target=debug
+
 firmware=${project}.bin
-build_dir="$(realpath $(dirname $0)/../build-release)"
+build_dir="$(realpath $(dirname $0)/../build-${target})"
+
 mcu=STM32L432KC
 jlinkexe="/opt/SEGGER/JLink/JLinkExe"
+
 jscript_file="/tmp/firmware-flash.jlink"
 jscript_data="si SWD\n\
 speed 4000\n\

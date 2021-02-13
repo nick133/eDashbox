@@ -36,5 +36,6 @@ static void ScreenShowCb(omScreenT *screen)
 
 static void ScreenUpdateCb(omScreenT *screen)
 {
+    SEGGER_RTT_printf(0, "ScreenMain updated!");
     return;
 }

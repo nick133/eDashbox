@@ -46,6 +46,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define DS18B20_POLL_DELAY 600U
+
+#define EVENT_SENSOR_UPDATE 0x01U
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,13 +56,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-/* USER CODE BEGIN Variables */
-// osThreadId_t taskTempPoll;
-// const osThreadAttr_t taskTempPoll_attr = {
-//   .name = "taskTempPoll",
-//   .priority = (osPriority_t) osPriorityNormal,
-//   .stack_size = 128 * 4
-// };
+osEventFlagsId_t SensorEvent;
+
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -125,7 +122,11 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
+    
+    if((SensorEvent = osEventFlagsNew(NULL)) == NULL)
+    {
+        // errror
+    }
   /* USER CODE END RTOS_EVENTS */
 
 }
@@ -151,20 +152,13 @@ void StartDefaultTask(void *argument)
   
     while(1)
     {
-        /* Collect sensors data */
-/*
-создает структуру, заполняет данными всех сссенсоров и кнопок, сравнивает с предыдущими значениями,
-изменились или нет, вызывает обновление скрина с этими данными и флагом изменились они или нет.
-отдельная задача с обновлением экрана?
-Setup : menu widget(active,all other inactive), edit property widget, save config widget.
+        // Wait for event from sensors
+        uint32_t flags = osEventFlagsWait(
+            SensorEvent, EVENT_SENSOR_UPDATE, osFlagsWaitAny, osWaitForever);
 
-
-илли виджеты вообще не нужны. достаточно разных скринов, но с сохранением состояния.
-(сетап: меню, редактор настройки, др.)
-*/
         omScreenUpdate(&oledUi);
 
-        osDelay(50); // >25fps
+        osDelay(1000); // fixed fps if sensors data are comint too fast
     }
   /* USER CODE END StartDefaultTask */
 }
@@ -181,6 +175,7 @@ void TemperaturePoll(void *params)
     {
         if(DS18B20_GetTemperature(i, &sensors.Temperature[i]));
         {
+            osEventFlagsSet(SensorEvent, EVENT_SENSOR_UPDATE);
             // DS18B20_GetROM(i, ROM_tmp);
         }   
     }

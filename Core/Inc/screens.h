@@ -5,6 +5,8 @@
 #include "omgui.h"
 #include "ds18b20.h"
 
+#define KILOS_PER_MILE 1.60934
+
 
 typedef enum {
     IdScreenMain,

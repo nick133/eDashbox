@@ -39,8 +39,7 @@ static void ScreenShowCb(omScreenT *screen)
     prevSensors.Volt = 0;
     memset(prevSensors.Temperature, 0.0, sizeof(prevSensors.Temperature));
 
-    //omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo100, 0, 2, false, true);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo100, 0, 2, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo0, 15+24, 2, false, false);
 }
 
 
@@ -77,7 +76,15 @@ static void RefreshRpm(void)
 
 static void RefreshSpeed(void)
 {
-    
+    // Hall sensor is on wheel
+    float speed = sensors.HallRpm * 60 * config.WheelCirc / 1000000;
+
+    // Hall sensor is on motor's rotor
+    if(config.HallOnWheel == false)
+        { speed /= config.GearRatio; }
+
+    if(config.SpeedUnits == UnitsMph)
+        { speed /= KILOS_PER_MILE; }
 }
 
 

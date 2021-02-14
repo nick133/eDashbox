@@ -7,8 +7,7 @@
 
 
 typedef enum {
-    UnitsSpeedKph, UnitsSpeedMph, 
-    UnitsTempCelsius, UnitsTempFahrenheit
+    UnitsKph, UnitsMph, UnitsCelsius, UnitsFahrenheit
  } UnitsT;
 
 typedef struct ConfigSettings {

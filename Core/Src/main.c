@@ -114,7 +114,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
  //  config.TempUnits = TEMP_CELSIUS;
-  config.SpeedUnits = UnitsSpeedKph;
+  config.SpeedUnits = UnitsKph;
   config.ShowLogo = true;
   config.WheelCirc = 1285;
   config.GearRatio = 6;
@@ -288,8 +288,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
              * Preload = Frequency MHz * T sec / Prescaler
              */
             sensors.HallRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / HallCount.u32_RPM_Ticks);
-//!!! KPH speed formula !!!// sensor.SpeedKph = ((sensor.MotorRpm * 60) / config.GearRatio) * config.WheelCirc;
-
             HallCount.u8_RPM_State = IDLE;
         }
     }

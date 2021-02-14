@@ -149,12 +149,12 @@ proc cvt_file(filename: string, out_h: var string, out_c_g: var string, out_c_f:
 
     out_c_g &= "\n};\n\n"
     out_c_f &= &"""
-    AssetBitmaps.{name.capitalizeAscii} = (omBitmapT){{
+    AssetBitmaps.{name.capitalizeAscii} = ((omBitmapT) {{
         .Width = {im_width},
         .Height = {im_height},
         .ColorsNumOf = 16,
         .RawData = bitmap_{name}_data
-    }};
+    }});
 """
 
 

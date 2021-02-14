@@ -16,7 +16,10 @@ static SensorsDataT prevSensors;
 
 static void ScreenShowCb(omScreenT *);
 static void ScreenUpdateCb(omScreenT *);
-
+static void RefreshRpm(void);
+static void RefreshSpeed(void);
+static void RefreshVolt(void);
+static void RefreshAmpere(void);
 
 void MainScreenInit(void)
 {
@@ -46,4 +49,40 @@ static void ScreenUpdateCb(omScreenT *screen)
             prevSensors.Temperature[i] = sensors.Temperature[i];
         }
     }
+
+    if(sensors.HallRpm != prevSensors.HallRpm)
+    {
+        RefreshRpm();
+        RefreshSpeed();
+    }
+
+    if(sensors.Volt != prevSensors.Volt)
+    {
+        RefreshVolt();
+        RefreshAmpere();
+    }
+}
+
+
+static void RefreshRpm(void)
+{
+
+}
+
+
+static void RefreshSpeed(void)
+{
+
+}
+
+
+static void RefreshVolt(void)
+{
+    
+}
+
+
+static void RefreshAmpere(void)
+{
+    
 }

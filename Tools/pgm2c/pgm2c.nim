@@ -139,7 +139,7 @@ proc cvt_file(filename: string, out_h: var string, out_c_g: var string, out_c_f:
 
     echo &"{filename.extractFilename()}: {nbytes} color bytes created"
 
-    out_h = &"    const omBitmapT {name.capitalizeAscii};\n"
+    out_h &= &"    const omBitmapT {name.capitalizeAscii};\n"
 
     out_c_g &= "\n};\n\n"
     out_c_f &= &"""

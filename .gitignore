@@ -3,6 +3,8 @@
 /build-*
 /release-*
 Tools/pgm2c/bin
+/Makefile
+/startup_stm32l432xx.s
 *.map
 *.lst
 *.bak

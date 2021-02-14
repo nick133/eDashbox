@@ -50,12 +50,6 @@
 #include <task.h>
 #include <timers.h>
 
-/* <<<< Drivers >>>> */
-#include "onewire.h"
-#include "sh1122.h"
-#include "font.h"
-#include "f10x16f.h"
-
 /* <<<< GUI >>>> */
 #include "screens.h"
 #include "settings.h"

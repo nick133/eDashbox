@@ -11,8 +11,6 @@
 #ifndef	_DS18B20_H
 #define	_DS18B20_H
 
-#include "onewire.h"
-
 //
 //	CONFIGURATION
 //
@@ -26,6 +24,9 @@
 #define	_DS18B20_TIMER					htim1
 
 //#define _DS18B20_USE_CRC
+
+// Must be after config macros if they are used in main.h
+#include "onewire.h"
 
 //
 //	Sensor structure

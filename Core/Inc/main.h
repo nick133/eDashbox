@@ -32,7 +32,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "omgui.h"
+#include "ds18b20.h"
+
+/* <<<< FreeRTOS >>>> */
 #include "FreeRTOS.h"
 #include "task.h"
 /* USER CODE END Includes */
@@ -41,7 +43,7 @@ extern "C" {
 /* USER CODE BEGIN ET */
 typedef struct SensorsData {
   volatile uint16_t HallRpm;
-  volatile float Temperature[4]; // Celsius degree
+  volatile float Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
   volatile float Volt;
 } SensorsDataT;
 

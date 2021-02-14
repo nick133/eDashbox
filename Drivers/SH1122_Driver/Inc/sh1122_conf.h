@@ -7,6 +7,7 @@
 #ifndef __SH1122_CONF_H
 #define __SH1122_CONF_H
 
+#include "cmsis_os.h"
 #include "spi.h"
 
 #define OS_SLEEP(ms)            osDelay(ms)

@@ -3,6 +3,8 @@
 #define _SCREENS_H_
 
 #include "omgui.h"
+#include "ds18b20.h"
+
 
 typedef enum {
     IdScreenMain,
@@ -16,7 +18,7 @@ typedef enum {
 
 extern omGuiT oledUi;
 extern omScreenT screenMain, screenData, screenSetup;
-extern omScreenT *uiScreens[4];
+extern omScreenT *uiScreens[_DS18B20_MAX_SENSORS];
 
 void Screens_Init(void);
 void MainScreenInit(void);

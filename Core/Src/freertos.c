@@ -30,6 +30,7 @@
 #include "screens.h"
 #include "settings.h"
 #include "bitmaps.h"
+#include "ds18b20.h"
 
 #ifdef DEBUG
 #include "SEGGER_RTT.h"
@@ -145,7 +146,7 @@ void StartDefaultTask(void *argument)
     if(config.ShowLogo)
     {
         omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, false, true);
-        osDelay(2000);
+        osDelay(1500);
     }
 
     omScreenSelect(uiScreens[config.Screen1]);
@@ -157,8 +158,7 @@ void StartDefaultTask(void *argument)
             SensorEvent, EVENT_SENSOR_UPDATE, osFlagsWaitAny, osWaitForever);
 
         omScreenUpdate(&oledUi);
-
-        osDelay(1000); // fixed fps if sensors data are comint too fast
+        osDelay(1000); // fixed fps if sensors data are coming too fast
     }
   /* USER CODE END StartDefaultTask */
 }

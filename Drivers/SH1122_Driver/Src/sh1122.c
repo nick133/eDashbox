@@ -9,7 +9,7 @@
  * 1. Original library uses global 16Kb frame buffer to store pixels and creates
  *    temporary 8Kb buffer to send it to display RAM each time it updates.
  *    This version only keeps global 8kb persistent buffer, as no intermediate
- *    memory is used it is faster and consumes less of preciuos MCU RAM.
+ *    memory is used it is faster and consumes less of precious MCU RAM.
  * 2. Grayscale 16 colors struct is replaced by defines, i.e:
  *    new 0x01, 0x02, ... vs old 0x11 0x22, ...
  *    now colors in/decrement is straightforward.

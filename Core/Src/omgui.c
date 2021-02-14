@@ -165,6 +165,54 @@ void omDrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, 
 }
 
 
+// Draw rectangle
+void omDrawRectangle(omGuiT *ui, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color, bool update)
+{
+    omDrawLine(ui, x1, y1, x1, y2, color, false);
+    omDrawLine(ui, x2, y1, x2, y2, color, false);
+    omDrawLine(ui, x1, y1, x2, y1, color, false);
+    omDrawLine(ui, x1, y2, x2, y2, color, false);
+
+    if(update) { omGuiUpdate(ui); }
+}
+
+
+// Draw rectangle filled
+void omDrawRectangleFilled(omGuiT *ui, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t bColor, uint8_t fColor, bool update)
+{
+    if(x1 > x2)
+    {
+        int16_t Temp = x1;
+        x1 = x2;
+        x2 = Temp;
+    }
+    
+    if(y1 > y2)
+    {
+        int16_t Temp = y1;
+        y1 = y2;
+        y2 = Temp;
+    }
+
+    // Fill
+    int16_t y_start = y1;
+
+    while(y_start <= y2)
+    {
+        omDrawLine(ui, x1, y_start, x2, y_start, fColor, false);
+        y_start++;
+    }
+
+    // Border
+    omDrawLine(ui, x1, y1, x1, y2, bColor, false);
+    omDrawLine(ui, x2, y1, x2, y2, bColor, false);
+    omDrawLine(ui, x1, y1, x2, y1, bColor, false);
+    omDrawLine(ui, x1, y2, x2, y2, bColor, false);
+
+    if(update) { omGuiUpdate(ui); }
+}
+
+
 /* void omAnimationStart(omAnimationT *anim)
 {
     omBitmapT *bitmap = anim->Bitmaps; // Don't increment original pointer

@@ -31,23 +31,20 @@ void omGuiDeInit(omGuiT *ui)
     ui->DeInitCallback(ui); // OLED Driver's DeInit code goes here
 }
 
-bool omScreenUpdate(omGuiT *ui)
+void omScreenUpdate(omGuiT *ui)
 {
     if(ui->ActiveScreen->UpdateCallback != NULL)
     {
         ui->ActiveScreen->UpdateCallback(ui->ActiveScreen);
     }
 
-    return true;
+    omGuiUpdate(ui);
 }
 
 
 bool omScreenSelect(omScreenT *screen)
 {
-    if(omScreenIsActive(screen) == true)
-    {
-        return false;
-    }
+    if(omScreenIsActive(screen) == true) { return false; }
 
     if(screen->Ui->ActiveScreen != NULL && screen->Ui->ActiveScreen->HideCallback != NULL)
     {

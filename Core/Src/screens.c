@@ -36,6 +36,12 @@ void Screens_Init(void)
     uiScreens[IdScreenData] = &screenData;
 
     omGuiInit(&oledUi);
+
+    /* Assets must be initialized from function, not by global assignment
+     * in bitmaps.c, or strange behaviour occurs - only first bitmap is
+     * accessible, others are all zeros. Also some global pointers become lost.
+     */
+    Bitmaps_Init();
     MainScreenInit();
 }
 

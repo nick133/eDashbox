@@ -47,18 +47,15 @@ bool omScreenSelect(omScreenT *screen)
     if(omScreenIsActive(screen) == true) { return false; }
 
     if(screen->Ui->ActiveScreen != NULL && screen->Ui->ActiveScreen->HideCallback != NULL)
-    {
-        screen->Ui->ActiveScreen->HideCallback(screen);
-    }
+        { screen->Ui->ActiveScreen->HideCallback(screen); }
 
     omGuiClear(screen->Ui);
 
     if(screen->ShowCallback != NULL)
-    {
-        screen->ShowCallback(screen);
-    }
+        { screen->ShowCallback(screen); }
 
     screen->Ui->ActiveScreen = screen;
+    omGuiUpdate(screen->Ui);
 
     return true;
 }
@@ -109,14 +106,14 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, bool al
                 color1 = bitmap->RawData[idx] >> 4;
                 color2 = bitmap->RawData[idx] & 0x0f;
 
-                if(!(alpha && color1 == 0x0))
+                if(!(alpha == true && color1 == 0x0))
                     { omDrawPixel(ui, xto, yto, color1); }
 
                 is_color1 = false;
             }
             else
             {
-                if(!(alpha && color2 == 0x0))
+                if(!(alpha == true && color2 == 0x0))
                     { omDrawPixel(ui, xto, yto, color2); }
 
                 idx++;
@@ -150,7 +147,7 @@ void omDrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
                 color1 = bitmap->RawData[idx] >> 4;
                 color2 = bitmap->RawData[idx] & 0x0f;
 
-                if(!(alpha && color1 == 0x0)
+                if(!(alpha == true && color1 == 0x0)
                         && xto >= x1+x && xto <= x2+x && yto >= y1+y && yto <= y2+y)
                     { omDrawPixel(ui, xto, yto, color1); }
 
@@ -158,7 +155,7 @@ void omDrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
             }
             else
             {
-                if(!(alpha && color2 == 0x0)
+                if(!(alpha == true && color2 == 0x0)
                         && xto >= x1+x && xto <= x2+x && yto >= y1+y && yto <= y2+y)
                     { omDrawPixel(ui, xto, yto, color2); }
 

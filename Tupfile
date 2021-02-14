@@ -46,8 +46,8 @@ CFLAGS += -MMD -MP
 # Disable warnings
 #CFLAGS += -Wno-unused-function
 #CFLAGS += -Wno-unused-variable
-#CFLAGS += -Wdiscarded-qualifiers
-#CFLAGS += -Wimplicit-function-declaration
+#CFLAGS += -Wno-implicit-function-declaration
+#CFLAGS += -Wno-discarded-qualifiers
 CFLAGS += -Wno-maybe-uninitialized
 CFLAGS += -Wno-misleading-indentation
 
@@ -96,7 +96,7 @@ bitmaps_h = AutoSrc/bitmaps.h
 # Build
 ################################################################################
 : $(PGM2C).nim |> !nim |> $(PGM2C)
-: $(PGM_DIR)/*.pgm | $(PGM2C) |> ^ pgm2c %O^ $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(PGM_DIR) |> $(bitmaps_c) | $(bitmaps_h)
+: $(PGM_DIR)/*.pgm | $(PGM2C) |> ^ pgm2c %O^ $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(PGM_DIR); true %f |> $(bitmaps_c) | $(bitmaps_h)
 
 : foreach $(srcs) $(bitmaps_c) | $(bitmaps_h) |> !cc |> $(OBJDIR)/%B.o | %O.d %O.lst {objs}
 : foreach $(asm_srcs) |> !as |> $(OBJDIR)/%B.o {asobjs}

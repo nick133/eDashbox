@@ -18,7 +18,7 @@ typedef enum {
 
 extern omGuiT oledUi;
 extern omScreenT screenMain, screenData, screenSetup;
-extern omScreenT *uiScreens[_DS18B20_MAX_SENSORS];
+extern omScreenT *uiScreens[4];
 
 void Screens_Init(void);
 void MainScreenInit(void);

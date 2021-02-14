@@ -1,10 +1,12 @@
 
+#include <string.h>
+#include "ds18b20.h"
+
 #include "main.h"
 #include "settings.h"
 #include "omgui.h"
 #include "screens.h"
 #include "bitmaps.h"
-#include "ds18b20.h"
 
 #ifdef DEBUG
 #include "SEGGER_RTT.h"
@@ -36,6 +38,9 @@ static void ScreenShowCb(omScreenT *screen)
     prevSensors.HallRpm = 0;
     prevSensors.Volt = 0;
     memset(prevSensors.Temperature, 0.0, sizeof(prevSensors.Temperature));
+
+    //omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo100, 0, 2, false, true);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo100, 0, 2, false, false);
 }
 
 
@@ -66,13 +71,13 @@ static void ScreenUpdateCb(omScreenT *screen)
 
 static void RefreshRpm(void)
 {
-
+ //   omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo100, 0, 2, false, false);
 }
 
 
 static void RefreshSpeed(void)
 {
-
+    
 }
 
 

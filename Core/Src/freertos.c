@@ -152,8 +152,6 @@ void StartDefaultTask(void *argument)
     omScreenSelect(uiScreens[
         (config.Screen1 >= 0 && config.Screen1 < 4) ? config.Screen1 : IdScreenMain]);
     
-    //omScreenSelect(*(uiScreens+config.Screen1));
-  
     while(1)
     {
         // Wait for event from sensors
@@ -170,7 +168,7 @@ void StartDefaultTask(void *argument)
 /* USER CODE BEGIN Application */
 void TemperaturePoll(void *params)
 {
-    //uint8_t ROM_tmp[8];
+    // uint8_t ROM_tmp[8];
     DS18B20_ReadAll();
     DS18B20_StartAll();
 

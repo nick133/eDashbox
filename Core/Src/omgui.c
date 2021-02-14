@@ -109,19 +109,58 @@ void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, bool al
                 color1 = bitmap->RawData[idx] >> 4;
                 color2 = bitmap->RawData[idx] & 0x0f;
 
-                if(!alpha)
-                {
-                    omDrawPixel(ui, xto, yto, color1);
-                }
+                if(!(alpha && color1 == 0x0))
+                    { omDrawPixel(ui, xto, yto, color1); }
 
                 is_color1 = false;
             }
             else
             {
-                if(!alpha)
-                {
-                    omDrawPixel(ui, xto, yto, color2);
-                }
+                if(!(alpha && color2 == 0x0))
+                    { omDrawPixel(ui, xto, yto, color2); }
+
+                idx++;
+                is_color1 = true;
+            }
+        }
+    }
+
+    if(update) { omGuiUpdate(ui); }
+}
+
+
+/*
+ * x1, x2, y1, y2 = 0  croped area is 1x1 pixel, not 0!
+ */
+void omDrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
+        uint32_t x, uint32_t y,
+        uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
+        bool alpha, bool update)
+{
+    volatile uint8_t color1, color2;
+    uint32_t idx = 0;
+    bool is_color1 = true;
+
+    for(uint16_t yto = y; yto < bitmap->Height + y; yto++)
+    {
+        for(uint16_t xto = x; xto < bitmap->Width + x; xto++)
+        {
+            if(is_color1)
+            {
+                color1 = bitmap->RawData[idx] >> 4;
+                color2 = bitmap->RawData[idx] & 0x0f;
+
+                if(!(alpha && color1 == 0x0)
+                        && xto >= x1+x && xto <= x2+x && yto >= y1+y && yto <= y2+y)
+                    { omDrawPixel(ui, xto, yto, color1); }
+
+                is_color1 = false;
+            }
+            else
+            {
+                if(!(alpha && color2 == 0x0)
+                        && xto >= x1+x && xto <= x2+x && yto >= y1+y && yto <= y2+y)
+                    { omDrawPixel(ui, xto, yto, color2); }
 
                 idx++;
                 is_color1 = true;

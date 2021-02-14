@@ -71,6 +71,8 @@ void omScreenUpdate(omGuiT *);
 bool omScreenIsActive(omScreenT *);
 void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
 void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y, bool alpha, bool update);
+void omDrawBitmapCropped(omGuiT *, omBitmapT *, uint32_t x, uint32_t y,
+        uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, bool alpha, bool update);
 void omDrawLine(omGuiT *, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, bool update);
 void omDrawRectangle(omGuiT *,
         int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color, bool update);

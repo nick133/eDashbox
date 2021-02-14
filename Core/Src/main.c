@@ -52,7 +52,6 @@
 
 /* <<<< Drivers >>>> */
 #include "onewire.h"
-#include "ds18b20.h"
 #include "sh1122.h"
 #include "font.h"
 #include "f10x16f.h"

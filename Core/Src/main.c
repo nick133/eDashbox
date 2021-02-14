@@ -117,7 +117,7 @@ int main(void)
   config.SpeedUnits = UnitsKph;
   config.ShowLogo = true;
   config.WheelCirc = 1285;
-  config.GearRatio = 6;
+  config.GearRatio = 6.0;
   config.Screen1 = IdScreenMain;
 
   /* USER CODE END 1 */

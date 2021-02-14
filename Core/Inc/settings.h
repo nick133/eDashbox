@@ -14,7 +14,7 @@ typedef struct ConfigSettings {
   UnitsT SpeedUnits;
   UnitsT TempUnits;
   uint16_t WheelCirc; // millimeters
-  uint16_t GearRatio; // millimeters
+  float GearRatio;
   IdScreenT Screen1;
   IdScreenT Screen2;
   IdScreenT Screen3;

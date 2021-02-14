@@ -70,7 +70,9 @@ static void ScreenUpdateCb(omScreenT *screen)
 
 static void RefreshRpm(void)
 {
- //   omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo100, 0, 2, false, false);
+    uint16_t rpm = (config.HallOnWheel == true)
+        ? (int)roundf((float)sensors.HallRpm * config.GearRatio) : sensors.HallRpm;
+
 }
 
 

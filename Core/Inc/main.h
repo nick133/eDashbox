@@ -32,7 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -41,14 +41,11 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-typedef struct SensorsData {
-  float HallRpm;
-  float Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
-  float Volt;
-} SensorsDataT;
+extern float gf_Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
+extern float gf_Volt;
 
-extern SensorsDataT sensors;
 
+extern osThreadId_t SensorsQueue;
 extern osEventFlagsId_t SensorEvent;
 /* USER CODE END ET */
 
@@ -60,8 +57,8 @@ extern osEventFlagsId_t SensorEvent;
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 #define DS18B20_POLL_DELAY 600U
-#define EVENT_SENSOR_UPDATE 0x01U
-#define RPM_IDLE_TIME 2 // secs
+#define EVENT_SENSOR_UPDATE 0x1U
+#define RPM_IDLE_TIME 1.6 // float seconds
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

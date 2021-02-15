@@ -22,16 +22,21 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
-#include "cmsis_os.h"
+//#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "cmsis_os2.h"
 #include "tim.h"
 #include "stdbool.h"
+
+#include "printf.h"
+#include "ds18b20.h"
+
 #include "screens.h"
 #include "settings.h"
 #include "bitmaps.h"
-#include "ds18b20.h"
+
 
 #ifdef DEBUG
 #include "SEGGER_RTT.h"
@@ -57,6 +62,8 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 osEventFlagsId_t SensorEvent;
+osThreadId_t SensorsQueue;
+
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -82,7 +89,6 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -90,7 +96,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -110,6 +115,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
+    SensorsQueue = osMessageQueueNew(4, sizeof(float), NULL);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -142,8 +148,12 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
 
-    /* Hall sensor timer starts after scheduler as we use RTOS API from ISR. */
-    //__HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+    /* Hall sensor timer starts after scheduler as we use RTOS API from ISR.
+     * Enable HAL_TIM_PeriodElapsedCallback() before HAL_TIM_IC_Start_IT()
+     * as it's not activated by default. Further reading:
+     * https://community.st.com/s/question/0D50X00009hpBdlSAE/timer3-update-event-interrupt-not-working-properly
+     */
+    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
     HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
 
     Screens_Init();
@@ -156,15 +166,27 @@ void StartDefaultTask(void *argument)
 
     omScreenSelect(uiScreens[
         (config.Screen1 >= 0 && config.Screen1 < 4) ? config.Screen1 : IdScreenMain]);
-    
+    uint32_t rt_prev = 0; //osKernelGetTickCount();
     while(1)
     {
         // Wait for event from sensors
         uint32_t flags = osEventFlagsWait(
             SensorEvent, EVENT_SENSOR_UPDATE, osFlagsWaitAny, osWaitForever);
 
+        float rpm;
+        osStatus_t getStatusQ = osMessageQueueGet(SensorsQueue, &rpm, NULL, 10U);
+        if(getStatusQ == osOK)
+        {
+            // case osErrorResource:
+            // case osErrorTimeout:            
+char buf[10];
+snprintf(buf, 10, "%f", rpm);
+SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
+            rt_prev = osKernelGetTickCount();
+        }
+
         omScreenUpdate(&oledUi);
-        osDelay(1650); // fixed fps if sensors data are coming too fast
+        osDelay(150); // fixed fps if sensors data are coming too fast
     }
   /* USER CODE END StartDefaultTask */
 }
@@ -179,7 +201,7 @@ void TemperaturePoll(void *params)
 
     for(uint8_t i = 0; i < DS18B20_Quantity(); i++)
     {
-        if(DS18B20_GetTemperature(i, &sensors.Temperature[i]));
+        if(DS18B20_GetTemperature(i, &gf_Temperature[i]));
         {
             osEventFlagsSet(SensorEvent, EVENT_SENSOR_UPDATE);
             // DS18B20_GetROM(i, ROM_tmp);

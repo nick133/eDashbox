@@ -29,6 +29,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* <<<< System >>>> */
+#include <string.h>
 #include "stm32l4xx_hal.h"
 
 /* https://github.com/mpaland/printf
@@ -71,14 +72,13 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-static uint32_t SysTickFreq;
-static uint32_t SysTickPrev;
-static float RpmFactor;
+float gf_HallRpm;
+float gf_Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
+float gf_Volt;
 
-float Rpm;
-
-SensorsDataT sensors;
-
+static uint32_t gu32_SysTickFreq;
+static uint32_t gu32_SysTickPrev;
+static float gf_RpmFactor;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -148,9 +148,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
     DS18B20_Init(DS18B20_Resolution_12bits);
 
-    SysTickPrev = 0;
-    SysTickFreq = osKernelGetSysTimerFreq();
-    RpmFactor = 60.0 * (float)SysTickFreq;
+    gu32_SysTickPrev = 0;
+    gu32_SysTickFreq = osKernelGetSysTimerFreq();
+    gf_RpmFactor = 60.0 * (float)gu32_SysTickFreq;
+
+    gf_HallRpm = 0.0;
+    gf_Volt = 0.0;
+    memset(gf_Temperature, 0.0, sizeof(gf_Temperature));
 
   /* USER CODE END 2 */
 
@@ -265,18 +269,16 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM2)
     {
         uint32_t Tick = osKernelGetSysTimerCount();
-        //sensors.HallRpm = RpmFactor / ((float)(Tick - SysTickPrev));
 
-        /* Updating global struct from ISR makes HardFault. Use atomic vars! */
-        Rpm = RpmFactor / ((float)(Tick - SysTickPrev));
+        /* (!) Global variable set in ISR and read by thread results HardFault().
+         * (!) Using in-between pointer or semaphore crashes either. MessageQueue is the
+         * (!) only working method so far.
+         */
+        gf_HallRpm = gf_RpmFactor / ((float)(Tick - gu32_SysTickPrev));
 
-        osEventFlagsSet(SensorEvent, EVENT_SENSOR_UPDATE);
+        osMessageQueuePut(SensorsQueue, &gf_HallRpm, 0U, 0U);
 
-char buf[10];
-snprintf(buf, 10, "%f", Rpm);
-SEGGER_RTT_printf(0, "RPM: %s\n", buf);
-
-        SysTickPrev = Tick;
+        gu32_SysTickPrev = Tick;
     }
 }
 
@@ -299,16 +301,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-    // else if(htim->Instance == TIM2) {
-    //     uint32_t Tick = osKernelGetSysTimerCount();
+    else if(htim->Instance == TIM2) {
+        uint32_t Tick = osKernelGetSysTimerCount();
 
-    //     if((Tick - SysTickPrev) / SysTickFreq > RPM_IDLE_TIME)
-    //     {
-    //         /* Reset if no input data */
-    //         //sensors.HallRpm = 0;
-    // //        osEventFlagsSet(SensorEvent, EVENT_SENSOR_UPDATE);
-    //     }
-    // }
+        if(gf_HallRpm > 0.0
+            && (float)(Tick - gu32_SysTickPrev) / (float)gu32_SysTickFreq > RPM_IDLE_TIME)
+        {
+            /* Reset if no input data */
+            gf_HallRpm = 0.0;
+
+            osMessageQueuePut(SensorsQueue, &gf_HallRpm, 0U, 0U);
+        }
+    }
   /* USER CODE END Callback 1 */
 }
 

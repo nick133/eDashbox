@@ -1,14 +1,15 @@
 
 #include <string.h>
+#include <math.h>
+#include "printf.h"
 #include "ds18b20.h"
 #include "sh1122.h"
-#include "printf.h"
 
 #include "main.h"
 #include "settings.h"
+#include "bitmaps.h"
 #include "omgui.h"
 #include "screens.h"
-#include "bitmaps.h"
 
 
 #ifdef DEBUG
@@ -16,7 +17,8 @@
 #include "SEGGER_RTT_Conf.h"
 #endif
 
-#define ASCII_SHIFT 48
+
+static const uint8_t AsciiShift = 48;
 
 static const omBitmapT *SpeedoFont[10] = {
     &AssetBitmaps.MainSpeedo0,
@@ -32,7 +34,11 @@ static const omBitmapT *SpeedoFont[10] = {
 };
 
 static char spdreg_prev[3];
-static SensorsDataT prevSensors;
+static float gf_PrevTemperature[_DS18B20_MAX_SENSORS];
+static float gf_PrevHallRpm;
+static float gf_PrevVolt;
+static float gf_SpeedFactor;
+//static float gf_HallRpm=0.0;
 
 static void ScreenShowCb(omScreenT *);
 static void ScreenUpdateCb(omScreenT *);
@@ -41,6 +47,7 @@ static void RefreshSpeed(void);
 static void RefreshVolt(void);
 static void RefreshAmpere(void);
 
+
 void MainScreenInit(void)
 {
     screenMain.Id = IdScreenMain;
@@ -48,15 +55,23 @@ void MainScreenInit(void)
     screenMain.ShowCallback = ScreenShowCb;
     screenMain.HideCallback = NULL;
     screenMain.UpdateCallback = ScreenUpdateCb;
+
+    gf_SpeedFactor = 60.0 * (float)config.WheelCirc / 1000000.0;
+
+    /* Hall sensor is on motor's rotor */
+    if(config.HallOnWheel == false)
+        { gf_SpeedFactor /= config.GearRatio; }
+
+    if(config.SpeedUnits == UnitsMph)
+        { gf_SpeedFactor /= KILOS_PER_MILE; }
 }
 
 
 static void ScreenShowCb(omScreenT *screen)
 {
-    prevSensors.HallRpm = 0;
-    prevSensors.Volt = 0;
-    memset(prevSensors.Temperature, 0.0, sizeof(prevSensors.Temperature));
-
+    gf_PrevHallRpm = 0.0;
+    gf_PrevVolt = 0.0;
+    memset(gf_PrevTemperature, 0.0, sizeof(gf_PrevTemperature));
     memset(spdreg_prev, '0', sizeof(spdreg_prev));
 
     omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo0, 15+24, 2, false, false);
@@ -67,20 +82,20 @@ static void ScreenUpdateCb(omScreenT *screen)
 {
     for(uint8_t i; i < DS18B20_Quantity(); i++)
     {
-        if(sensors.Temperature[i] != prevSensors.Temperature[i])
+        if(gf_Temperature[i] != gf_PrevTemperature[i])
         {
-//SEGGER_RTT_printf(0, "temp[%u]: %u\n", i, (uint16_t)sensors.Temperature[i]);
-            prevSensors.Temperature[i] = sensors.Temperature[i];
+//SEGGER_RTT_printf(0, "temp[%u]: %u\n", i, (uint16_t)gf_Temperature[i]);
+            gf_PrevTemperature[i] = gf_Temperature[i];
         }
     }
 
-    if(sensors.HallRpm != prevSensors.HallRpm)
-    {
-        RefreshRpm();
-        RefreshSpeed();
-    }
+//     if(aaa != gf_PrevHallRpm)
+//     {
+//         RefreshRpm();
+//         RefreshSpeed();
+//     }
 
-    if(sensors.Volt != prevSensors.Volt)
+    if(gf_Volt != gf_PrevVolt)
     {
         RefreshVolt();
         RefreshAmpere();
@@ -90,8 +105,8 @@ static void ScreenUpdateCb(omScreenT *screen)
 
 static void RefreshRpm(void)
 {
-    uint16_t rpm = (config.HallOnWheel == true)
-        ? (int)roundf((float)sensors.HallRpm * config.GearRatio) : sensors.HallRpm;
+  //  uint16_t rpm = (config.HallOnWheel == true)
+    //    ? (int)roundf((float)gf_HallRpm * config.GearRatio) : gf_HallRpm;
 
 }
 
@@ -99,16 +114,10 @@ static void RefreshRpm(void)
 static void RefreshSpeed(void)
 {
     char spd[3];
-    //SEGGER_RTT_printf(0, "from screen: %u\n", sensors.HallRpm);
+    //SEGGER_RTT_printf(0, "from screen: %u\n", gf_HallRpm);
     // Hall sensor is on wheel
-    float speed = sensors.HallRpm * 60 * config.WheelCirc / 1000000;
-
-    // Hall sensor is on motor's rotor
-    if(config.HallOnWheel == false)
-        { speed /= config.GearRatio; }
-
-    if(config.SpeedUnits == UnitsMph)
-        { speed /= KILOS_PER_MILE; }
+    float speed = 122 * gf_SpeedFactor;
+    //float speed = gf_HallRpm * gf_SpeedFactor;
 
     snprintf(spd, sizeof(spd), "%3.0f", speed);
 
@@ -126,12 +135,12 @@ static void RefreshSpeed(void)
 
     if(spd[1] != spdreg_prev[1] && spd[1] != ' ')
     {
-        omDrawBitmap(&oledUi, SpeedoFont[spd[1] - ASCII_SHIFT], 15, 2, false, false);
+        omDrawBitmap(&oledUi, SpeedoFont[spd[1] - AsciiShift], 15, 2, false, false);
     }
 
     if(spd[2] != spdreg_prev[2])
     {
-        omDrawBitmap(&oledUi, SpeedoFont[spd[1] - ASCII_SHIFT], 15+24, 2, false, false);
+        omDrawBitmap(&oledUi, SpeedoFont[spd[1] - AsciiShift], 15+24, 2, false, false);
     }
 
     spdreg_prev[0] = spd[0];

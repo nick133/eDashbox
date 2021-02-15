@@ -61,9 +61,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define IDLE 0
-#define DONE 1
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -74,15 +71,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+static uint32_t SysTickPrev;
+static float RpmFactor;
+
 SensorsDataT sensors;
 
-static struct {
-    volatile uint8_t u8_RPM_State;
-    volatile uint32_t u32_RPM_T1;
-    volatile uint32_t u32_RPM_T2;
-    volatile uint32_t u32_RPM_Ticks;
-    volatile uint16_t u16_TIM2_OVC;
-} HallCount = { IDLE, 0, 0, 0, 0 };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -152,11 +145,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
     DS18B20_Init(DS18B20_Resolution_12bits);
 
-    /* Hall sensor timer */
-    HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
-    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
-
     Screens_Init();
+
+    SysTickPrev = 0;
+    RpmFactor = 60.0 / (float)osKernelGetSysTimerFreq();
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -240,9 +233,6 @@ void SystemClock_Config(void)
   */
 static void MX_NVIC_Init(void)
 {
-  /* TIM2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(TIM2_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(TIM2_IRQn);
   /* EXTI3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(EXTI3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
@@ -272,24 +262,15 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM2)
     {
-        if (HallCount.u8_RPM_State == IDLE)
-        {
-            HallCount.u32_RPM_T1 = TIM2->CCR1;
-            HallCount.u16_TIM2_OVC = 0;
-            HallCount.u8_RPM_State = DONE;
-        }
-        else if (HallCount.u8_RPM_State == DONE)
-        {
-            HallCount.u32_RPM_T2 = TIM2->CCR1;
-            HallCount.u32_RPM_Ticks =
-                (HallCount.u32_RPM_T2 + (HallCount.u16_TIM2_OVC * 20000)) - HallCount.u32_RPM_T1;
+        uint32_t Tick = osKernelGetSysTimerCount();
+        sensors.HallRpm = RpmFactor / ((float)(Tick - SysTickPrev));
 
-            /* T sec = (Prescaler * Preload) / Frequency MHz
-             * Preload = Frequency MHz * T sec / Prescaler
-             */
-            sensors.HallRpm = 60 * ((FREQ_CLK/htim->Init.Prescaler) / HallCount.u32_RPM_Ticks);
-            HallCount.u8_RPM_State = IDLE;
-        }
+char buf[10];
+snprintf(buf, 10, "%f", sensors.HallRpm);
+SEGGER_RTT_printf(0, "RPM: %s\n", buf);
+// SEGGER_RTT_printf(0, "delta tick: %u\n", tick-SysTickPrev);
+
+        SysTickPrev = Tick;
     }
 }
 
@@ -313,16 +294,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
   /* USER CODE BEGIN Callback 1 */
     else if (htim->Instance == TIM2) {
-        if (HallCount.u16_TIM2_OVC > 2)
-        {
-            HallCount.u8_RPM_State = IDLE;
-            HallCount.u16_TIM2_OVC = 0;
-            sensors.HallRpm = 0;
-        }
-        else
-        {
-            HallCount.u16_TIM2_OVC++;
-        }
+
     }
   /* USER CODE END Callback 1 */
 }

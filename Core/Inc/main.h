@@ -32,22 +32,24 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ds18b20.h"
-
-/* <<<< FreeRTOS >>>> */
+#include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
+
+#include "ds18b20.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 typedef struct SensorsData {
-  volatile uint16_t HallRpm;
-  volatile float Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
-  volatile float Volt;
+  float HallRpm;
+  float Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
+  float Volt;
 } SensorsDataT;
 
 extern SensorsDataT sensors;
+
+extern osEventFlagsId_t SensorEvent;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -57,6 +59,8 @@ extern SensorsDataT sensors;
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+#define DS18B20_POLL_DELAY 600U
+#define EVENT_SENSOR_UPDATE 0x01U
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -95,7 +99,6 @@ void free(void *pvBuffer);
 #define SD_CS_Pin GPIO_PIN_6
 #define SD_CS_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define FREQ_CLK 80000000UL
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

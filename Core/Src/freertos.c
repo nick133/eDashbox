@@ -26,6 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "tim.h"
 #include "stdbool.h"
 #include "screens.h"
 #include "settings.h"
@@ -46,9 +47,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DS18B20_POLL_DELAY 600U
-
-#define EVENT_SENSOR_UPDATE 0x01U
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,8 +55,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN Variables */
 osEventFlagsId_t SensorEvent;
-
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -143,6 +141,16 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
+
+    /* Hall sensor timer, start after scheduler as we use RTOS
+     * API from interrupts.
+     */
+    HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+
+//SEGGER_RTT_printf(0, "OS Systick Freq: %u\n", osKernelGetTickFreq());
+//SEGGER_RTT_printf(0, "MCU Systick Freq: %u\n", osKernelGetSysTimerFreq());
+
     if(config.ShowLogo)
     {
         omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, false, true);
@@ -159,7 +167,7 @@ void StartDefaultTask(void *argument)
             SensorEvent, EVENT_SENSOR_UPDATE, osFlagsWaitAny, osWaitForever);
 
         omScreenUpdate(&oledUi);
-        osDelay(1000); // fixed fps if sensors data are coming too fast
+        osDelay(50); // fixed fps if sensors data are coming too fast
     }
   /* USER CODE END StartDefaultTask */
 }

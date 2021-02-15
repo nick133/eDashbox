@@ -93,7 +93,7 @@ void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
  */
 void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, bool alpha, bool update)
 {
-    volatile uint8_t color1, color2;
+    uint8_t color1, color2;
     uint32_t idx = 0;
     bool is_color1 = true;
 
@@ -134,7 +134,7 @@ void omDrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
         uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
         bool alpha, bool update)
 {
-    volatile uint8_t color1, color2;
+    uint8_t color1, color2;
     uint32_t idx = 0;
     bool is_color1 = true;
 

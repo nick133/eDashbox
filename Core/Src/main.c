@@ -71,8 +71,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+static uint32_t SysTickFreq;
 static uint32_t SysTickPrev;
 static float RpmFactor;
+
+float Rpm;
 
 SensorsDataT sensors;
 
@@ -87,14 +90,14 @@ static void MX_NVIC_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void *malloc( size_t xBytes )
+void *malloc(size_t xBytes)
 {
-    return pvPortMalloc( xBytes );
+    return pvPortMalloc(xBytes);
 }
 
-void free( void *pvBuffer )
+void free(void *pvBuffer)
 {
-    vPortFree( pvBuffer );
+    vPortFree(pvBuffer);
 }
 /* USER CODE END 0 */
 
@@ -145,10 +148,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
     DS18B20_Init(DS18B20_Resolution_12bits);
 
-    Screens_Init();
-
     SysTickPrev = 0;
-    RpmFactor = 60.0 / (float)osKernelGetSysTimerFreq();
+    SysTickFreq = osKernelGetSysTimerFreq();
+    RpmFactor = 60.0 * (float)SysTickFreq;
 
   /* USER CODE END 2 */
 
@@ -263,12 +265,16 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM2)
     {
         uint32_t Tick = osKernelGetSysTimerCount();
-        sensors.HallRpm = RpmFactor / ((float)(Tick - SysTickPrev));
+        //sensors.HallRpm = RpmFactor / ((float)(Tick - SysTickPrev));
+
+        /* Updating global struct from ISR makes HardFault. Use atomic vars! */
+        Rpm = RpmFactor / ((float)(Tick - SysTickPrev));
+
+        osEventFlagsSet(SensorEvent, EVENT_SENSOR_UPDATE);
 
 char buf[10];
-snprintf(buf, 10, "%f", sensors.HallRpm);
+snprintf(buf, 10, "%f", Rpm);
 SEGGER_RTT_printf(0, "RPM: %s\n", buf);
-// SEGGER_RTT_printf(0, "delta tick: %u\n", tick-SysTickPrev);
 
         SysTickPrev = Tick;
     }
@@ -293,9 +299,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-    else if (htim->Instance == TIM2) {
+    // else if(htim->Instance == TIM2) {
+    //     uint32_t Tick = osKernelGetSysTimerCount();
 
-    }
+    //     if((Tick - SysTickPrev) / SysTickFreq > RPM_IDLE_TIME)
+    //     {
+    //         /* Reset if no input data */
+    //         //sensors.HallRpm = 0;
+    // //        osEventFlagsSet(SensorEvent, EVENT_SENSOR_UPDATE);
+    //     }
+    // }
   /* USER CODE END Callback 1 */
 }
 

@@ -61,6 +61,7 @@ extern osEventFlagsId_t SensorEvent;
 /* USER CODE BEGIN EM */
 #define DS18B20_POLL_DELAY 600U
 #define EVENT_SENSOR_UPDATE 0x01U
+#define RPM_IDLE_TIME 2 // secs
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

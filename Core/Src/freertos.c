@@ -142,14 +142,11 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
 
-    /* Hall sensor timer, start after scheduler as we use RTOS
-     * API from interrupts.
-     */
+    /* Hall sensor timer starts after scheduler as we use RTOS API from ISR. */
+    //__HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
     HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
-    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 
-//SEGGER_RTT_printf(0, "OS Systick Freq: %u\n", osKernelGetTickFreq());
-//SEGGER_RTT_printf(0, "MCU Systick Freq: %u\n", osKernelGetSysTimerFreq());
+    Screens_Init();
 
     if(config.ShowLogo)
     {
@@ -167,7 +164,7 @@ void StartDefaultTask(void *argument)
             SensorEvent, EVENT_SENSOR_UPDATE, osFlagsWaitAny, osWaitForever);
 
         omScreenUpdate(&oledUi);
-        osDelay(50); // fixed fps if sensors data are coming too fast
+        osDelay(1650); // fixed fps if sensors data are coming too fast
     }
   /* USER CODE END StartDefaultTask */
 }

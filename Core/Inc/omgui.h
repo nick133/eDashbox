@@ -13,15 +13,11 @@
 #include "stdbool.h"
 #include "stm32l4xx_hal.h"
 
-#ifndef OMGUI_MAX_WIDGETS
-#define OMGUI_MAX_WIDGETS 16
-#endif
 
 typedef struct omGui omGuiT;
 typedef struct omScreen omScreenT;
 typedef struct omBitmap omBitmapT;
 typedef struct omAnimation omAnimationT;
-
 
 struct omGui
 {
@@ -61,7 +57,8 @@ struct omAnimation
   omBitmapT *Bitmaps;
 };
 
-// Public methods
+
+/* Public methods */
 void omGuiInit(omGuiT *);
 void omGuiDeInit(omGuiT *);
 void omGuiUpdate(omGuiT *);

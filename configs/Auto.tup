@@ -2,9 +2,9 @@
 
 srcs += Core/Src/*.c
 srcs += Core/Src/screens/*.c
-srcs += Drivers/DS18B20_HAL_Driver/Src/*.c
-srcs += Drivers/SH1122_Driver/Src/*.c
-srcs += Drivers/SH1122_Driver/Src/fonts/*.c
+srcs += Drivers/DS18B20_HAL_Driver/*.c
+srcs += Drivers/SH1122_Driver/*.c
+srcs += Drivers/SH1122_Driver/fonts/*.c
 srcs += Drivers/STM32L4xx_HAL_Driver/Src/*.c
 srcs += FATFS/App/*.c
 srcs += FATFS/Target/*.c
@@ -18,9 +18,9 @@ srcs += Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/*.c
 incs += -ICore/Inc
 incs += -IDrivers/CMSIS/Device/ST/STM32L4xx/Include
 incs += -IDrivers/CMSIS/Include
-incs += -IDrivers/DS18B20_HAL_Driver/Inc
-incs += -IDrivers/SH1122_Driver/Inc
-incs += -IDrivers/SH1122_Driver/Inc/fonts
+incs += -IDrivers/DS18B20_HAL_Driver
+incs += -IDrivers/SH1122_Driver
+incs += -IDrivers/SH1122_Driver/fonts
 incs += -IDrivers/STM32L4xx_HAL_Driver/Inc
 incs += -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy
 incs += -IFATFS/App
@@ -32,8 +32,8 @@ incs += -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 
 ifdef DEBUG
-srcs += Middlewares/Debug/SEGGER_RTT/Src/*.c
+srcs += Middlewares/Debug/SEGGER_RTT/*.c
 
-incs += -IMiddlewares/Debug/SEGGER_RTT/Inc
+incs += -IMiddlewares/Debug/SEGGER_RTT
 endif
 

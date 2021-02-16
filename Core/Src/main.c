@@ -155,6 +155,7 @@ int main(void)
     Sensors.HallRpm = 0.0;
     Sensors.Volt = 0.0;
     Sensors.Ampere = 0.0;
+    Sensors.Odo = 0.0;
     memset(Sensors.Temperature, 0.0, sizeof(Sensors.Temperature));
 
   /* USER CODE END 2 */
@@ -270,7 +271,12 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM2)
     {
         uint32_t Tick = osKernelGetSysTimerCount();
+        float Odo = (float)Config.WheelCirc / 1000000.0;
 
+        if(!Config.HallOnWheel)
+            { Odo /= Config.GearRatio; }
+
+        Sensors.Odo += Odo;
         Sensors.HallRpm = gf_RpmFactor / ((float)(Tick - gu32_SysTickPrev));
 
         gu32_SysTickPrev = Tick;

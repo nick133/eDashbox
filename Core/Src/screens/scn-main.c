@@ -38,6 +38,7 @@ static char speedreg_prev[3];
 typedef struct ScreenData {
     float Speed;
     float Rpm;
+    float Odo;
     float Temprt[_DS18B20_MAX_SENSORS];
     float Volt;
     float Ampere;
@@ -50,9 +51,11 @@ static ScreenDataT ScreenDatPrev;
 
 static void ScreenShowCb(omScreenT *);
 static void ScreenUpdateCb(omScreenT *, uint32_t flags);
+static void RefreshOdo(void);
 static void RefreshRpm(void);
 static void RefreshBars(void);
 static void RefreshSpeed(void);
+static void RefreshTemprt(uint8_t);
 static void RefreshVolt(void);
 static void RefreshAmpere(void);
 
@@ -69,15 +72,19 @@ void MainScreenInit(void)
 
 static void ScreenShowCb(omScreenT *screen)
 {
-    ScreenDatPrev.Speed = 0.0;
     ScreenDatPrev.Rpm = 0.0;
+    ScreenDatPrev.Odo = 0.0;
     ScreenDatPrev.Volt = 0.0;
     ScreenDatPrev.Ampere = 0.0;
-    ScreenDatPrev.RpmPerctg = 0.0;
     memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
     memset(speedreg_prev, '0', sizeof(speedreg_prev));
 
     omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo0, 15+24, 2, false, false);
+
+    RefreshRpm();
+    RefreshBars();
+    RefreshSpeed();
+    RefreshOdo();
 }
 
 
@@ -86,6 +93,7 @@ static void ScreenUpdateCb(omScreenT *screen, uint32_t flags)
     ScreenDat.Speed = SsrGetSpeed(&Sensors);
     ScreenDat.Rpm = SsrGetMotorRpm(&Sensors);
     ScreenDat.RpmPerctg = SsrGetRpmPerctg(&Sensors);
+    ScreenDat.Odo = Sensors.Odo;
 
     for(uint8_t i; i < DS18B20_Quantity(); i++)
     {
@@ -93,8 +101,7 @@ static void ScreenUpdateCb(omScreenT *screen, uint32_t flags)
 
         if(ScreenDat.Temprt[i] != ScreenDatPrev.Temprt[i])
         {
-            // update temp widget
-//SEGGER_RTT_printf(0, "temp[%u]: %u\n", i, (uint16_t)gf_Temperature[i]);
+            RefreshTemprt(i);
             ScreenDatPrev.Temprt[i] = ScreenDat.Temprt[i];
         }
     }
@@ -104,13 +111,34 @@ static void ScreenUpdateCb(omScreenT *screen, uint32_t flags)
         RefreshRpm();
         RefreshBars();
         RefreshSpeed();
+
+        ScreenDatPrev.Rpm = ScreenDat.Rpm;
+    }
+
+    if(ScreenDat.Odo != ScreenDatPrev.Odo)
+    {
+        RefreshOdo();
+
+        ScreenDatPrev.Odo = ScreenDat.Odo;
     }
 
     if(ScreenDat.Volt != ScreenDatPrev.Volt)
     {
         RefreshVolt();
         RefreshAmpere();
+        
+        ScreenDatPrev.Volt = ScreenDat.Volt;
     }
+
+// char buf[10];
+// snprintf(buf, 10, "%f", Sensors.HallRpm);
+// SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
+}
+
+
+static void RefreshOdo(void)
+{
+
 }
 
 
@@ -129,8 +157,6 @@ static void RefreshBars(void)
 static void RefreshSpeed(void)
 {
     char spd[3];
-    //SEGGER_RTT_printf(0, "from screen: %u\n", gf_HallRpm);
-    // Hall sensor is on wheel
     float speed = ScreenDat.Speed;
 
     snprintf(spd, sizeof(spd), "%3.0f", speed);
@@ -172,4 +198,11 @@ static void RefreshVolt(void)
 static void RefreshAmpere(void)
 {
     
+}
+
+
+static void RefreshTemprt(uint8_t index)
+{
+
+
 }

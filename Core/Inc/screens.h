@@ -9,21 +9,6 @@
 
 
 typedef enum {
-    UpdateScreenSpeed   = 0b0000000000000001U,
-    UpdateScreenTacho   = 0b0000000000000010U,
-    UpdateScreenTemp1   = 0b0000000000000100U,
-    UpdateScreenTemp2   = 0b0000000000001000U,
-    UpdateScreenTemp3   = 0b0000000000010000U,
-    UpdateScreenTemp4   = 0b0000000000100000U,
-    UpdateScreenVolt    = 0b0000000001000000U,
-    UpdateScreenAmpere  = 0b0000000010000000U,
-    UpdateScreenPower   = 0b0000000100000000U,
-    UpdateScreenOdo     = 0b0000001000000000U,
-    UpdateScreenClock   = 0b0000010000000000U
-} UpdateScreenFlagT;
-
-
-typedef enum {
     IdScreenMain,
     IdScreenData,
     IdScreenRpm,

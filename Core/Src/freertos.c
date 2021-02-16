@@ -161,10 +161,6 @@ void StartDefaultTask(void *argument)
     {
         omScreenUpdate(&oledUi);
         osDelay(50); // fixed fps
-
-// char buf[10];
-// snprintf(buf, 10, "%f", Sensors.HallRpm);
-// SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
     }
 
   /* USER CODE END StartDefaultTask */

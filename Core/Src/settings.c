@@ -8,11 +8,8 @@ ConfigSettingsT Config;
 void GetSettings(void)
 {
     FATFS fs;
-    FATFS *pfs;
-    FIL fil;
-    FRESULT fres;
-    DWORD fre_clust;
-    uint32_t totalSpace, freeSpace;
+    // FATFS *pfs;
+    // FIL fil;
     char buffer[100];
 
     if(f_mount(&fs, "", 1) != FR_OK)

@@ -47,6 +47,7 @@ typedef struct SensorsData {
     float Temperature[_DS18B20_MAX_SENSORS]; // depends on Config.TempUnits
     float Volt;
     float Ampere;
+    float Odo;
 
     bool Button1Pressed;
     bool Button1Released;

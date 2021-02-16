@@ -76,6 +76,7 @@ SensorsDataT Sensors;
 
 static uint32_t gu32_SysTickFreq;
 static uint32_t gu32_SysTickPrev;
+
 static float gf_RpmFactor;
 /* USER CODE END PV */
 
@@ -106,15 +107,14 @@ void free(void *pvBuffer)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
-  // Must be read from config.ini on MicroSD card or EEPROM
-  config.TempUnits = UnitsCelsius;
-  config.SpeedUnits = UnitsKph;
-  config.ShowLogo = true;
-  config.WheelCirc = 1285;
-  config.GearRatio = 6.0;
-  config.MaxRpm = 4500;
-  config.Screen1 = IdScreenMain;
+    // Must be read from Config.ini on MicroSD card or EEPROM
+    Config.TempUnits = UnitsCelsius;
+    Config.SpeedUnits = UnitsKph;
+    Config.ShowLogo = true;
+    Config.WheelCirc = 1285;
+    Config.GearRatio = 6.0;
+    Config.MaxRpm = 4500;
+    Config.Screen1 = IdScreenMain;
 
   /* USER CODE END 1 */
 
@@ -154,6 +154,7 @@ int main(void)
 
     Sensors.HallRpm = 0.0;
     Sensors.Volt = 0.0;
+    Sensors.Ampere = 0.0;
     memset(Sensors.Temperature, 0.0, sizeof(Sensors.Temperature));
 
   /* USER CODE END 2 */
@@ -304,8 +305,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         {
             /* Reset and idle if no input data */
             Sensors.HallRpm = 0.0;
-
-            //osMessageQueuePut(SensorsQueue, &gf_pvtHallRpm, 0U, 0U);
         }
     }
   /* USER CODE END Callback 1 */

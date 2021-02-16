@@ -2,6 +2,8 @@
 #include "fatfs.h"
 #include "settings.h"
 
+ConfigSettingsT Config;
+
 
 void GetSettings(void)
 {
@@ -23,5 +25,3 @@ void GetSettings(void)
     
     }
 }
-
-ConfigSettingsT config;

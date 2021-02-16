@@ -36,25 +36,22 @@ extern "C" {
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "stdbool.h"
 #include "ds18b20.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 typedef struct SensorsData {
-    /* Raw */
     float HallRpm;
-    float Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
+    float Temperature[_DS18B20_MAX_SENSORS]; // depends on Config.TempUnits
     float Volt;
     float Ampere;
 
-    /* Calculated */
-    float xTemperature[_DS18B20_MAX_SENSORS]; // depends on Config.TempUnits
-    float xMotorRpm;
-    float xRpmPerctg;
-    float xSpeed; // depends on Config.SpeedUnits
-    float xPower;
-    float xBatPerctg;
+    bool Button1Pressed;
+    bool Button1Released;
+    bool Button2Pressed;
+    bool Button2Released;
  } SensorsDataT;
 
 extern SensorsDataT Sensors;
@@ -66,7 +63,7 @@ extern osEventFlagsId_t SensorEvent;
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 #define DS18B20_POLL_DELAY 600U // msec
-#define EVENT_SENSOR_UPDATE 0x1U
+#define EVENT_SENSOR_UPDATE 0x00000001U
 #define RPM_IDLE_TIME 1.6 // (float) seconds
 
 /* USER CODE END EC */

@@ -25,7 +25,7 @@ typedef struct ConfigSettings {
 } ConfigSettingsT;
 
 
-extern ConfigSettingsT config;
+extern ConfigSettingsT Config;
 
 
 #endif /* _SETTINGS_H_ */

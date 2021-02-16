@@ -32,15 +32,26 @@ static const omBitmapT *SpeedoFont[10] = {
     &AssetBitmaps.MainSpeedo9
 };
 
-static char spdreg_prev[3];
-static float gf_SpeedFactor;
+static char speedreg_prev[3];
 
-static SensorsDataT SensorsPrev;
+
+typedef struct ScreenData {
+    float Speed;
+    float Rpm;
+    float Temprt[_DS18B20_MAX_SENSORS];
+    float Volt;
+    float Ampere;
+    float RpmPerctg;
+} ScreenDataT;
+
+static ScreenDataT ScreenDat;
+static ScreenDataT ScreenDatPrev;
 
 
 static void ScreenShowCb(omScreenT *);
-static void ScreenUpdateCb(omScreenT *);
+static void ScreenUpdateCb(omScreenT *, uint32_t flags);
 static void RefreshRpm(void);
+static void RefreshBars(void);
 static void RefreshSpeed(void);
 static void RefreshVolt(void);
 static void RefreshAmpere(void);
@@ -53,47 +64,49 @@ void MainScreenInit(void)
     screenMain.ShowCallback = ScreenShowCb;
     screenMain.HideCallback = NULL;
     screenMain.UpdateCallback = ScreenUpdateCb;
-
-    gf_SpeedFactor = 60.0 * (float)config.WheelCirc / 1000000.0;
-
-    /* Hall sensor is on motor's rotor */
-    if(config.HallOnWheel == false)
-        { gf_SpeedFactor /= config.GearRatio; }
-
-    if(config.SpeedUnits == UnitsMph)
-        { gf_SpeedFactor /= KILOS_PER_MILE; }
 }
 
 
 static void ScreenShowCb(omScreenT *screen)
 {
-    SensorsPrev.HallRpm = 0.0;
-    SensorsPrev.Volt = 0.0;
-    memset(SensorsPrev.Temperature, 0.0, sizeof(SensorsPrev.Temperature));
-    memset(spdreg_prev, '0', sizeof(spdreg_prev));
+    ScreenDatPrev.Speed = 0.0;
+    ScreenDatPrev.Rpm = 0.0;
+    ScreenDatPrev.Volt = 0.0;
+    ScreenDatPrev.Ampere = 0.0;
+    ScreenDatPrev.RpmPerctg = 0.0;
+    memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
+    memset(speedreg_prev, '0', sizeof(speedreg_prev));
 
     omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo0, 15+24, 2, false, false);
 }
 
 
-static void ScreenUpdateCb(omScreenT *screen)
+static void ScreenUpdateCb(omScreenT *screen, uint32_t flags)
 {
+    ScreenDat.Speed = SsrGetSpeed(&Sensors);
+    ScreenDat.Rpm = SsrGetMotorRpm(&Sensors);
+    ScreenDat.RpmPerctg = SsrGetRpmPerctg(&Sensors);
+
     for(uint8_t i; i < DS18B20_Quantity(); i++)
     {
-        if(Sensors.Temperature[i] != SensorsPrev.Temperature[i])
+        ScreenDat.Temprt[i] = SsrGetTemprt(&Sensors, i);
+
+        if(ScreenDat.Temprt[i] != ScreenDatPrev.Temprt[i])
         {
+            // update temp widget
 //SEGGER_RTT_printf(0, "temp[%u]: %u\n", i, (uint16_t)gf_Temperature[i]);
-            SensorsPrev.Temperature[i] = Sensors.Temperature[i];
+            ScreenDatPrev.Temprt[i] = ScreenDat.Temprt[i];
         }
     }
 
-    if(Sensors.HallRpm != SensorsPrev.HallRpm)
+    if(ScreenDat.Rpm != ScreenDatPrev.Rpm)
     {
         RefreshRpm();
+        RefreshBars();
         RefreshSpeed();
     }
 
-    if(Sensors.Volt != SensorsPrev.Volt)
+    if(ScreenDat.Volt != ScreenDatPrev.Volt)
     {
         RefreshVolt();
         RefreshAmpere();
@@ -103,8 +116,13 @@ static void ScreenUpdateCb(omScreenT *screen)
 
 static void RefreshRpm(void)
 {
-    uint16_t rpm = (config.HallOnWheel == true)
-        ? (int)roundf(Sensors.HallRpm * config.GearRatio) : Sensors.HallRpm;
+
+}
+
+
+static void RefreshBars(void)
+{
+
 }
 
 
@@ -113,11 +131,11 @@ static void RefreshSpeed(void)
     char spd[3];
     //SEGGER_RTT_printf(0, "from screen: %u\n", gf_HallRpm);
     // Hall sensor is on wheel
-    float speed = Sensors.HallRpm * gf_SpeedFactor;
+    float speed = ScreenDat.Speed;
 
     snprintf(spd, sizeof(spd), "%3.0f", speed);
 
-    if(spd[0] != spdreg_prev[0])
+    if(spd[0] != speedreg_prev[0])
     {
         if(spd[0] == '1')
         {
@@ -129,19 +147,19 @@ static void RefreshSpeed(void)
         }
     }
 
-    if(spd[1] != spdreg_prev[1] && spd[1] != ' ')
+    if(spd[1] != speedreg_prev[1] && spd[1] != ' ')
     {
         omDrawBitmap(&oledUi, SpeedoFont[spd[1] - AsciiShift], 15, 2, false, false);
     }
 
-    if(spd[2] != spdreg_prev[2])
+    if(spd[2] != speedreg_prev[2])
     {
        // omDrawBitmap(&oledUi, SpeedoFont[spd[1] - AsciiShift], 15+24, 2, false, false);
     }
 
-    spdreg_prev[0] = spd[0];
-    spdreg_prev[1] = spd[1];
-    spdreg_prev[2] = spd[2];
+    speedreg_prev[0] = spd[0];
+    speedreg_prev[1] = spd[1];
+    speedreg_prev[2] = spd[2];
 }
 
 

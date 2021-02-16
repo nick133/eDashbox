@@ -61,8 +61,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
-osEventFlagsId_t SensorEvent;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -75,6 +73,7 @@ const osThreadAttr_t defaultTask_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 static void TemperaturePoll(void *);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -121,15 +120,9 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-//    taskTempPoll = osThreadNew(TaskTemperaturePoll, NULL, &taskTempPoll_attr); 
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
-    
-    if((SensorEvent = osEventFlagsNew(NULL)) == NULL)
-    {
-        // errror
-    }
   /* USER CODE END RTOS_EVENTS */
 
 }
@@ -144,7 +137,6 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
-  /* Infinite loop */
 
     /* Hall sensor timer starts after scheduler as we use RTOS API from ISR.
      * Enable HAL_TIM_PeriodElapsedCallback() before HAL_TIM_IC_Start_IT()
@@ -156,28 +148,25 @@ void StartDefaultTask(void *argument)
 
     Screens_Init();
 
-    if(config.ShowLogo)
+    if(Config.ShowLogo)
     {
         omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, false, true);
         osDelay(1200);
     }
 
     omScreenSelect(uiScreens[
-        (config.Screen1 >= 0 && config.Screen1 < 4) ? config.Screen1 : IdScreenMain]);
+        (Config.Screen1 >= 0 && Config.Screen1 < 4) ? Config.Screen1 : IdScreenMain]);
 
     while(1)
     {
-        // Wait for event from sensors
-        uint32_t flags = osEventFlagsWait(
-            SensorEvent, EVENT_SENSOR_UPDATE, osFlagsWaitAny, osWaitForever);
+        omScreenUpdate(&oledUi);
+        osDelay(50); // fixed fps
 
-char buf[10];
-snprintf(buf, 10, "%f", Sensors.HallRpm);
-SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
-
-        //omScreenUpdate(&oledUi);
-        osDelay(150); // fixed fps if sensors data are coming too fast
+// char buf[10];
+// snprintf(buf, 10, "%f", Sensors.HallRpm);
+// SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
     }
+
   /* USER CODE END StartDefaultTask */
 }
 
@@ -186,6 +175,7 @@ SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
 void TemperaturePoll(void *params)
 {
     // uint8_t ROM_tmp[8];
+
     DS18B20_ReadAll();
     DS18B20_StartAll();
 
@@ -193,9 +183,8 @@ void TemperaturePoll(void *params)
     {
         if(DS18B20_GetTemperature(i, &Sensors.Temperature[i]));
         {
-            osEventFlagsSet(SensorEvent, EVENT_SENSOR_UPDATE);
             // DS18B20_GetROM(i, ROM_tmp);
-        }   
+        }
     }
 }
 /* USER CODE END Application */

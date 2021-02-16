@@ -22,11 +22,11 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
-//#include "cmsis_os.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "cmsis_os2.h"
+//#include "cmsis_os2.h"
 #include "tim.h"
 #include "stdbool.h"
 
@@ -63,8 +63,6 @@
 /* USER CODE BEGIN Variables */
 
 osEventFlagsId_t SensorEvent;
-osThreadId_t SensorsQueue;
-
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -116,7 +114,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-    SensorsQueue = osMessageQueueNew(4, sizeof(float), NULL);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -174,18 +171,11 @@ void StartDefaultTask(void *argument)
         uint32_t flags = osEventFlagsWait(
             SensorEvent, EVENT_SENSOR_UPDATE, osFlagsWaitAny, osWaitForever);
 
-        //osStatus_t getStatusQ = osMessageQueueGet(SensorsQueue, &b, NULL, 10U);
-        osStatus_t getStatusQ = osMessageQueueGet(SensorsQueue, &gf_HallRpm, NULL, 10U);
-
-        if(getStatusQ == osOK) // osErrorResource, osErrorTimeout
-        {
-         
-        }
 char buf[10];
-snprintf(buf, 10, "%f", gf_HallRpm);
+snprintf(buf, 10, "%f", Sensors.HallRpm);
 SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
 
-        omScreenUpdate(&oledUi);
+        //omScreenUpdate(&oledUi);
         osDelay(150); // fixed fps if sensors data are coming too fast
     }
   /* USER CODE END StartDefaultTask */
@@ -201,7 +191,7 @@ void TemperaturePoll(void *params)
 
     for(uint8_t i = 0; i < DS18B20_Quantity(); i++)
     {
-        if(DS18B20_GetTemperature(i, &gf_Temperature[i]));
+        if(DS18B20_GetTemperature(i, &Sensors.Temperature[i]));
         {
             osEventFlagsSet(SensorEvent, EVENT_SENSOR_UPDATE);
             // DS18B20_GetROM(i, ROM_tmp);

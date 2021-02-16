@@ -41,25 +41,23 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-/*
-1. sensors data
-2. current data ( sensors+calculated(speed,distance)) + odo from sdcard!
-
-*/
-
 typedef struct SensorsData {
-    volatile uint16_t MotorRpm;
-    volatile float SpeedKph;
-    float Temperature1; // Celsius degree
-    float Temperature2;
-    float BattVoltage;
-    float BattCurrent;
+    /* Raw */
+    float HallRpm;
+    float Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
+    float Volt;
+    float Ampere;
+
+    /* Calculated */
+    float xTemperature[_DS18B20_MAX_SENSORS]; // depends on Config.TempUnits
+    float xMotorRpm;
+    float xRpmPerctg;
+    float xSpeed; // depends on Config.SpeedUnits
+    float xPower;
+    float xBatPerctg;
  } SensorsDataT;
 
-
-extern float gf_HallRpm;
-extern float gf_Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
-extern float gf_Volt;
+extern SensorsDataT Sensors;
 
 extern osThreadId_t SensorsQueue;
 extern osEventFlagsId_t SensorEvent;
@@ -67,14 +65,14 @@ extern osEventFlagsId_t SensorEvent;
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+#define DS18B20_POLL_DELAY 600U // msec
+#define EVENT_SENSOR_UPDATE 0x1U
+#define RPM_IDLE_TIME 1.6 // (float) seconds
 
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-#define DS18B20_POLL_DELAY 600U
-#define EVENT_SENSOR_UPDATE 0x1U
-#define RPM_IDLE_TIME 1.6 // float seconds
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

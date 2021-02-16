@@ -72,10 +72,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-float gf_Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
-float gf_Volt;
-float gf_HallRpm;
-static float gf_pvtHallRpm;
+SensorsDataT Sensors;
 
 static uint32_t gu32_SysTickFreq;
 static uint32_t gu32_SysTickPrev;
@@ -110,11 +107,13 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
- //  config.TempUnits = TEMP_CELSIUS;
+  // Must be read from config.ini on MicroSD card or EEPROM
+  config.TempUnits = UnitsCelsius;
   config.SpeedUnits = UnitsKph;
   config.ShowLogo = true;
   config.WheelCirc = 1285;
   config.GearRatio = 6.0;
+  config.MaxRpm = 4500;
   config.Screen1 = IdScreenMain;
 
   /* USER CODE END 1 */
@@ -153,9 +152,9 @@ int main(void)
     gu32_SysTickFreq = osKernelGetSysTimerFreq();
     gf_RpmFactor = 60.0 * (float)gu32_SysTickFreq;
 
-    gf_pvtHallRpm = 0.0;
-    gf_Volt = 0.0;
-    memset(gf_Temperature, 0.0, sizeof(gf_Temperature));
+    Sensors.HallRpm = 0.0;
+    Sensors.Volt = 0.0;
+    memset(Sensors.Temperature, 0.0, sizeof(Sensors.Temperature));
 
   /* USER CODE END 2 */
 
@@ -271,18 +270,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     {
         uint32_t Tick = osKernelGetSysTimerCount();
 
-        /* (!) Global variable set in ISR and read by thread results HardFault().
-         * (!) Using in-between pointer or semaphore crashes either. MessageQueue is the
-         * (!) only working method so far.
-         * 
-         *  Problem was in omDrawBitmap in scn-main.c, global var be can read from thead
-         * with no problem!!!
-         * 
-         */
-        //gf_pvtHallRpm = gf_RpmFactor / ((float)(Tick - gu32_SysTickPrev));
-        gf_HallRpm = gf_RpmFactor / ((float)(Tick - gu32_SysTickPrev));
-
-        //osMessageQueuePut(SensorsQueue, &gf_pvtHallRpm, 0U, 0U);
+        Sensors.HallRpm = gf_RpmFactor / ((float)(Tick - gu32_SysTickPrev));
 
         gu32_SysTickPrev = Tick;
     }
@@ -311,12 +299,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     else if(htim->Instance == TIM2) {
         uint32_t Tick = osKernelGetSysTimerCount();
 
-        if(gf_HallRpm > 0.0
+        if(Sensors.HallRpm > 0.0
             && (float)(Tick - gu32_SysTickPrev) / (float)gu32_SysTickFreq > RPM_IDLE_TIME)
         {
             /* Reset and idle if no input data */
-            //gf_pvtHallRpm = 0.0;
-            gf_HallRpm = 0.0;
+            Sensors.HallRpm = 0.0;
 
             //osMessageQueuePut(SensorsQueue, &gf_pvtHallRpm, 0U, 0U);
         }

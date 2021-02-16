@@ -33,10 +33,9 @@ static const omBitmapT *SpeedoFont[10] = {
 };
 
 static char spdreg_prev[3];
-static float gf_PrevTemperature[_DS18B20_MAX_SENSORS];
-static float gf_PrevHallRpm;
-static float gf_PrevVolt;
 static float gf_SpeedFactor;
+
+static SensorsDataT SensorsPrev;
 
 
 static void ScreenShowCb(omScreenT *);
@@ -68,9 +67,9 @@ void MainScreenInit(void)
 
 static void ScreenShowCb(omScreenT *screen)
 {
-    gf_PrevHallRpm = 0.0;
-    gf_PrevVolt = 0.0;
-    memset(gf_PrevTemperature, 0.0, sizeof(gf_PrevTemperature));
+    SensorsPrev.HallRpm = 0.0;
+    SensorsPrev.Volt = 0.0;
+    memset(SensorsPrev.Temperature, 0.0, sizeof(SensorsPrev.Temperature));
     memset(spdreg_prev, '0', sizeof(spdreg_prev));
 
     omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo0, 15+24, 2, false, false);
@@ -81,20 +80,20 @@ static void ScreenUpdateCb(omScreenT *screen)
 {
     for(uint8_t i; i < DS18B20_Quantity(); i++)
     {
-        if(gf_Temperature[i] != gf_PrevTemperature[i])
+        if(Sensors.Temperature[i] != SensorsPrev.Temperature[i])
         {
 //SEGGER_RTT_printf(0, "temp[%u]: %u\n", i, (uint16_t)gf_Temperature[i]);
-            gf_PrevTemperature[i] = gf_Temperature[i];
+            SensorsPrev.Temperature[i] = Sensors.Temperature[i];
         }
     }
 
-    if(gf_HallRpm != gf_PrevHallRpm)
+    if(Sensors.HallRpm != SensorsPrev.HallRpm)
     {
         RefreshRpm();
         RefreshSpeed();
     }
 
-    if(gf_Volt != gf_PrevVolt)
+    if(Sensors.Volt != SensorsPrev.Volt)
     {
         RefreshVolt();
         RefreshAmpere();
@@ -105,7 +104,7 @@ static void ScreenUpdateCb(omScreenT *screen)
 static void RefreshRpm(void)
 {
     uint16_t rpm = (config.HallOnWheel == true)
-        ? (int)roundf((float)gf_HallRpm * config.GearRatio) : gf_HallRpm;
+        ? (int)roundf(Sensors.HallRpm * config.GearRatio) : Sensors.HallRpm;
 }
 
 
@@ -114,7 +113,7 @@ static void RefreshSpeed(void)
     char spd[3];
     //SEGGER_RTT_printf(0, "from screen: %u\n", gf_HallRpm);
     // Hall sensor is on wheel
-    float speed = gf_HallRpm * gf_SpeedFactor;
+    float speed = Sensors.HallRpm * gf_SpeedFactor;
 
     snprintf(spd, sizeof(spd), "%3.0f", speed);
 

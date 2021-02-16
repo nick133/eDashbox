@@ -5,7 +5,7 @@ include configs/Auto.tup
 # Variables
 ################################################################################
 
-PROJECT = evAnalyst
+PROJECT = eDashbox
 
 ifdef DEBUG
 OPT = -Og

@@ -1,6 +1,6 @@
-# evAnalyst
-Opensource electric motor vehicle analyst and datalogger.
-Firmware for STM32-Nucleo32 board.
+# eDashbox
+E-bike dashboard and datalogger, opensource.
+Firmware for STM32-Nucleo32L4 board.
 
 This is learning project in early stage, use it at your own risk.
 

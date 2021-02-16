@@ -61,6 +61,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+
 osEventFlagsId_t SensorEvent;
 osThreadId_t SensorsQueue;
 
@@ -166,24 +167,23 @@ void StartDefaultTask(void *argument)
 
     omScreenSelect(uiScreens[
         (config.Screen1 >= 0 && config.Screen1 < 4) ? config.Screen1 : IdScreenMain]);
-    uint32_t rt_prev = 0; //osKernelGetTickCount();
+
     while(1)
     {
         // Wait for event from sensors
         uint32_t flags = osEventFlagsWait(
             SensorEvent, EVENT_SENSOR_UPDATE, osFlagsWaitAny, osWaitForever);
 
-        float rpm;
-        osStatus_t getStatusQ = osMessageQueueGet(SensorsQueue, &rpm, NULL, 10U);
-        if(getStatusQ == osOK)
+        //osStatus_t getStatusQ = osMessageQueueGet(SensorsQueue, &b, NULL, 10U);
+        osStatus_t getStatusQ = osMessageQueueGet(SensorsQueue, &gf_HallRpm, NULL, 10U);
+
+        if(getStatusQ == osOK) // osErrorResource, osErrorTimeout
         {
-            // case osErrorResource:
-            // case osErrorTimeout:            
-char buf[10];
-snprintf(buf, 10, "%f", rpm);
-SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
-            rt_prev = osKernelGetTickCount();
+         
         }
+char buf[10];
+snprintf(buf, 10, "%f", gf_HallRpm);
+SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
 
         omScreenUpdate(&oledUi);
         osDelay(150); // fixed fps if sensors data are coming too fast

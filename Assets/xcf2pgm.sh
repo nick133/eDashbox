@@ -1,6 +1,6 @@
 #!/bin/bash
 
-xcf_file="/home/nick/STM32Cube/Projects/evAnalyst/Bitmaps/oled-gui-screens.xcf"
+xcf_file="/home/nick/STM32Cube/Projects/eDashbox/Bitmaps/oled-gui-screens.xcf"
 
 # https://gist.github.com/danstuken/3625841
 gimp -i -b - << EOF

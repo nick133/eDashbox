@@ -1,7 +1,7 @@
 #!/bin/env bash
 #
 
-project=evAnalyst
+project=$(basename $(realpath $(dirname $0)/..))
 target=debug
 
 firmware=${project}.bin

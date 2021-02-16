@@ -11,7 +11,6 @@
 #include "omgui.h"
 #include "screens.h"
 
-
 #ifdef DEBUG
 #include "SEGGER_RTT.h"
 #include "SEGGER_RTT_Conf.h"
@@ -38,7 +37,7 @@ static float gf_PrevTemperature[_DS18B20_MAX_SENSORS];
 static float gf_PrevHallRpm;
 static float gf_PrevVolt;
 static float gf_SpeedFactor;
-//static float gf_HallRpm=0.0;
+
 
 static void ScreenShowCb(omScreenT *);
 static void ScreenUpdateCb(omScreenT *);
@@ -89,11 +88,11 @@ static void ScreenUpdateCb(omScreenT *screen)
         }
     }
 
-//     if(aaa != gf_PrevHallRpm)
-//     {
-//         RefreshRpm();
-//         RefreshSpeed();
-//     }
+    if(gf_HallRpm != gf_PrevHallRpm)
+    {
+        RefreshRpm();
+        RefreshSpeed();
+    }
 
     if(gf_Volt != gf_PrevVolt)
     {
@@ -105,9 +104,8 @@ static void ScreenUpdateCb(omScreenT *screen)
 
 static void RefreshRpm(void)
 {
-  //  uint16_t rpm = (config.HallOnWheel == true)
-    //    ? (int)roundf((float)gf_HallRpm * config.GearRatio) : gf_HallRpm;
-
+    uint16_t rpm = (config.HallOnWheel == true)
+        ? (int)roundf((float)gf_HallRpm * config.GearRatio) : gf_HallRpm;
 }
 
 
@@ -116,8 +114,7 @@ static void RefreshSpeed(void)
     char spd[3];
     //SEGGER_RTT_printf(0, "from screen: %u\n", gf_HallRpm);
     // Hall sensor is on wheel
-    float speed = 122 * gf_SpeedFactor;
-    //float speed = gf_HallRpm * gf_SpeedFactor;
+    float speed = gf_HallRpm * gf_SpeedFactor;
 
     snprintf(spd, sizeof(spd), "%3.0f", speed);
 
@@ -140,7 +137,7 @@ static void RefreshSpeed(void)
 
     if(spd[2] != spdreg_prev[2])
     {
-        omDrawBitmap(&oledUi, SpeedoFont[spd[1] - AsciiShift], 15+24, 2, false, false);
+       // omDrawBitmap(&oledUi, SpeedoFont[spd[1] - AsciiShift], 15+24, 2, false, false);
     }
 
     spdreg_prev[0] = spd[0];

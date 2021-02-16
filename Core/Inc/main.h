@@ -41,9 +41,25 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+/*
+1. sensors data
+2. current data ( sensors+calculated(speed,distance)) + odo from sdcard!
+
+*/
+
+typedef struct SensorsData {
+    volatile uint16_t MotorRpm;
+    volatile float SpeedKph;
+    float Temperature1; // Celsius degree
+    float Temperature2;
+    float BattVoltage;
+    float BattCurrent;
+ } SensorsDataT;
+
+
+extern float gf_HallRpm;
 extern float gf_Temperature[_DS18B20_MAX_SENSORS]; // Celsius degree
 extern float gf_Volt;
-
 
 extern osThreadId_t SensorsQueue;
 extern osEventFlagsId_t SensorEvent;

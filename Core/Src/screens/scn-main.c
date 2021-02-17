@@ -19,6 +19,19 @@
 
 static const uint8_t AsciiShift = 48;
 
+static const omBitmapT *RpmFont[10] = {
+    &AssetBitmaps.MainRpm0,
+    &AssetBitmaps.MainRpm1,
+    &AssetBitmaps.MainRpm2,
+    &AssetBitmaps.MainRpm3,
+    &AssetBitmaps.MainRpm4,
+    &AssetBitmaps.MainRpm5,
+    &AssetBitmaps.MainRpm6,
+    &AssetBitmaps.MainRpm7,
+    &AssetBitmaps.MainRpm8,
+    &AssetBitmaps.MainRpm9
+};
+
 static const omBitmapT *SpeedoFont[10] = {
     &AssetBitmaps.MainSpeedo0,
     &AssetBitmaps.MainSpeedo1,
@@ -32,7 +45,8 @@ static const omBitmapT *SpeedoFont[10] = {
     &AssetBitmaps.MainSpeedo9
 };
 
-static char speedreg_prev[3];
+static char speedreg_prev[3+1];
+static char rpmreg_prev[4+1];
 
 
 typedef struct ScreenData {
@@ -50,7 +64,7 @@ static ScreenDataT ScreenDatPrev;
 
 
 static void ScreenShowCb(omScreenT *);
-static void ScreenUpdateCb(omScreenT *, uint32_t flags);
+static void ScreenUpdateCb(omScreenT *);
 static void RefreshOdo(void);
 static void RefreshRpm(void);
 static void RefreshBars(void);
@@ -77,18 +91,33 @@ static void ScreenShowCb(omScreenT *screen)
     ScreenDatPrev.Volt = 0.0;
     ScreenDatPrev.Ampere = 0.0;
     memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
-    memset(speedreg_prev, '0', sizeof(speedreg_prev));
 
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo0, 15+24, 2, false, false);
+    speedreg_prev[0] = ' ';
+      speedreg_prev[1] = ' ';
+        speedreg_prev[2] = '0';
 
+    rpmreg_prev[0] = ' ';
+      rpmreg_prev[1] = ' ';
+        rpmreg_prev[2] = ' ';
+          rpmreg_prev[3] = ' ';
+            rpmreg_prev[4] = '0'; // always redraw zero on update (no ' ' value)
+
+
+    //omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo0, 15+24, 2, false, false);
+
+    RefreshSpeed();
     RefreshRpm();
     RefreshBars();
-    RefreshSpeed();
-    RefreshOdo();
+
+    RefreshVolt();
+    RefreshAmpere();
+
+    for(uint8_t i; i < DS18B20_Quantity(); i++)
+        { RefreshTemprt(i); }
 }
 
 
-static void ScreenUpdateCb(omScreenT *screen, uint32_t flags)
+static void ScreenUpdateCb(omScreenT *screen)
 {
     ScreenDat.Speed = SsrGetSpeed(&Sensors);
     ScreenDat.Rpm = SsrGetMotorRpm(&Sensors);
@@ -129,10 +158,6 @@ static void ScreenUpdateCb(omScreenT *screen, uint32_t flags)
         
         ScreenDatPrev.Volt = ScreenDat.Volt;
     }
-
-// char buf[10];
-// snprintf(buf, 10, "%f", Sensors.HallRpm);
-// SEGGER_RTT_printf(0, "task->RPM: %s\n", buf);
 }
 
 
@@ -141,10 +166,31 @@ static void RefreshOdo(void)
 
 }
 
-
+/* Updates only changed digits of RPM
+ */
 static void RefreshRpm(void)
 {
+    static const uint8_t fontwidth = 13;
 
+    char rpmreg[4+1];
+    snprintf(rpmreg, sizeof(rpmreg), "%4.0f", ScreenDat.Rpm);
+
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        if(rpmreg[i] == rpmreg_prev[i]) { continue; }
+
+        if(rpmreg[i] == ' ')
+        {
+            omDrawRectangleFilled(&oledUi,
+                2+(fontwidth*i), 47, 14+(fontwidth*i)-1, 61, OLED_GRAY_00, OLED_GRAY_00, false);
+        }
+        else
+        {
+            omDrawBitmap(&oledUi, RpmFont[rpmreg[i] - AsciiShift], 2+(fontwidth*i), 47, false, false);
+        }
+
+        rpmreg_prev[i] = rpmreg[i];
+    }
 }
 
 
@@ -156,6 +202,10 @@ static void RefreshBars(void)
 
 static void RefreshSpeed(void)
 {
+char buf[128];
+snprintf(buf, 128, "%f kph, %f rpm", SsrGetSpeed(&Sensors), SsrGetMotorRpm(&Sensors));
+SEGGER_RTT_printf(0, "%s\n", buf);
+    return;
     char spd[3];
     float speed = ScreenDat.Speed;
 

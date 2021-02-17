@@ -56,10 +56,11 @@ LDSCRIPT = STM32L432KCUx_FLASH.ld
 LIBS = -lc -lm -lnosys 
 #LIBDIR =
 
-# Fix linker errors with nosys.specs
-# https://stackoverflow.com/questions/5764414/undefined-reference-to-sbrk
-#LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(PROJECT).map,--cref -Wl,--gc-sections
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(PROJECT).map,--cref -Wl,--gc-sections
+
+# Fix linker errors
+# https://stackoverflow.com/questions/5764414/undefined-reference-to-sbrk
+#LDFLAGS += -specs=nosys.specs
 #LDFLAGS += -u _printf_float
 
 NIMFLAGS += --opt:speed
@@ -82,7 +83,6 @@ bitmaps_h = AutoSrc/bitmaps.h
 # Rules macros
 ################################################################################
 # https://christine.website/blog/nim-and-tup-2015-06-10
-#!nim = |> ^ nim %b^ nim c $(NIMFLAGS) --nimcache:"%O.nimcache" -o:%o %f ; rm -rf %O.nimcache |>
 !nim = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f; rm -rf .nimcache |>
 
 !cc = |> ^ cc %b^ $(CC) $(CFLAGS) -Wa,-a,-ad,-alms=%O.lst -c %f -o %o |>
@@ -90,7 +90,7 @@ bitmaps_h = AutoSrc/bitmaps.h
 !ld = |> ^ ld %O^ $(CC) $(LDFLAGS) %f -o %o && $(SZ) %o |>
 
 !bin = |> ^ bin %O^ $(BIN) %f %o && $(ST) %o |> %B.bin
-#!hex = |> ^ hex %O^ $(HEX) %f %o && $(ST) %o |> %B.hex
+!hex = |> ^ hex %O^ $(HEX) %f %o && $(ST) %o |> %B.hex
 
 ################################################################################
 # Build

@@ -36,6 +36,7 @@ extern "C" {
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "debug.h"
 #include "stdbool.h"
 #include "ds18b20.h"
 /* USER CODE END Includes */

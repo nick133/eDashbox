@@ -11,6 +11,8 @@ import
 proc cvt_file(filename: string, out_h: var string, out_c_g: var string, out_c_f: var string)
 proc color_code_256to16(byte: string): uint8
 
+var opt_verbose = false
+
 
 proc main() =
     var
@@ -30,6 +32,7 @@ proc main() =
                     of "h": out_h = val
                     of "c": out_c = val
                     of "p": pgm_dir = val
+                    of "v": opt_verbose = true
             of cmdEnd: assert(false)
 
     if out_h.len == 0 or out_c.len == 0:
@@ -143,7 +146,8 @@ proc cvt_file(filename: string, out_h: var string, out_c_g: var string, out_c_f:
 
     fd_in.close()
 
-    echo &"{filename.extractFilename()}: {nbytes} color bytes created"
+    if opt_verbose:
+        echo &"{filename.extractFilename()}: {nbytes} color bytes created"
 
     out_h &= &"    omBitmapT {name.capitalizeAscii};\n"
 

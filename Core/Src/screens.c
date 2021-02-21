@@ -7,11 +7,6 @@
 #include "bitmaps.h"
 #include "sh1122.h"
 
-#ifdef DEBUG
-#include "SEGGER_RTT.h"
-#include "SEGGER_RTT_Conf.h"
-#endif
-
 
 omGuiT oledUi;
 omScreenT screenMain, screenData, screenTemp, screenSetup;

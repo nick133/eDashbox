@@ -10,11 +10,6 @@
 #include "omgui.h"
 #include "main.h"
 
-#ifdef DEBUG
-#include "SEGGER_RTT.h"
-#include "SEGGER_RTT_Conf.h"
-#endif
-
 #include "sh1122.h"
 #include "sh1122_conf.h"
 

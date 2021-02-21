@@ -59,22 +59,22 @@ struct omAnimation
 
 
 /* Public methods */
-void omGuiInit(omGuiT *);
-void omGuiDeInit(omGuiT *);
-void omGuiUpdate(omGuiT *);
-void omGuiClear(omGuiT *);
-bool omScreenSelect(omScreenT *);
-void omScreenUpdate(omGuiT *);
-bool omScreenIsActive(omScreenT *);
-void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
-void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y, bool alpha, bool update);
-void omDrawBitmapCropped(omGuiT *, omBitmapT *, uint32_t x, uint32_t y,
+extern void omGuiInit(omGuiT *);
+extern void omGuiDeInit(omGuiT *);
+extern void omGuiUpdate(omGuiT *);
+extern void omGuiClear(omGuiT *);
+extern bool omScreenSelect(omScreenT *);
+extern void omScreenUpdate(omGuiT *);
+extern bool omScreenIsActive(omScreenT *);
+extern void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
+extern void omDrawBitmap(omGuiT *, omBitmapT *, uint32_t x, uint32_t y, bool alpha, bool update);
+extern void omDrawBitmapCropped(omGuiT *, omBitmapT *, uint32_t x, uint32_t y,
         uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, bool alpha, bool update);
-void omDrawLine(omGuiT *, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, bool update);
-void omDrawRectangle(omGuiT *,
+extern void omDrawLine(omGuiT *, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, bool update);
+extern void omDrawRectangle(omGuiT *,
         int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color, bool update);
-void omDrawRectangleFilled(omGuiT *,
+extern void omDrawRectangleFilled(omGuiT *,
         int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t bColor, uint8_t fColor, bool update);
-//void omAnimationStart(omAnimationT *);
+//extern void omAnimationStart(omAnimationT *);
 
 #endif /* _OMGUI_H_ */

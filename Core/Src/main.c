@@ -37,11 +37,6 @@
    inside of FreeRTOS vTask */
 #include "printf.h"
 
-#ifdef DEBUG
-#include "SEGGER_RTT.h"
-#include "SEGGER_RTT_Conf.h"
-#endif
-
 //#include <stdio.h> // sprintf()
 //#include "stdlib.h" // itoa(), gcvt()
 //#include "string.h" // strcpy(), memset()

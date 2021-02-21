@@ -1,0 +1,71 @@
+include_rules
+
+################################################################################
+# Variables
+################################################################################
+XCF2PGM = ../Tools/xcf2pgm.sh
+CROP2PGM = ../Tools/crop2pgm.sh
+
+colormap = colormap4bit.pgm
+
+fonts_dir = fonts
+
+fonts_srcs += $(fonts_dir)/roboto-mono-25x30.xcf
+fonts_srcs += $(fonts_dir)/roboto-mono-14x17.xcf
+fonts_srcs += $(fonts_dir)/roboto-mono-dark-14x17.xcf
+
+roboto25x30_base = $(pgm_dir)/roboto25x30_
+
+roboto25x30 += $(roboto25x30_base)0.pgm
+roboto25x30 += $(roboto25x30_base)1.pgm
+roboto25x30 += $(roboto25x30_base)2.pgm
+roboto25x30 += $(roboto25x30_base)3.pgm
+roboto25x30 += $(roboto25x30_base)4.pgm
+roboto25x30 += $(roboto25x30_base)5.pgm
+roboto25x30 += $(roboto25x30_base)6.pgm
+roboto25x30 += $(roboto25x30_base)7.pgm
+roboto25x30 += $(roboto25x30_base)8.pgm
+roboto25x30 += $(roboto25x30_base)9.pgm
+
+roboto14x17_base = $(pgm_dir)/roboto14x17_
+
+roboto14x17 += $(roboto14x17_base)0.pgm
+roboto14x17 += $(roboto14x17_base)1.pgm
+roboto14x17 += $(roboto14x17_base)2.pgm
+roboto14x17 += $(roboto14x17_base)3.pgm
+roboto14x17 += $(roboto14x17_base)4.pgm
+roboto14x17 += $(roboto14x17_base)5.pgm
+roboto14x17 += $(roboto14x17_base)6.pgm
+roboto14x17 += $(roboto14x17_base)7.pgm
+roboto14x17 += $(roboto14x17_base)8.pgm
+roboto14x17 += $(roboto14x17_base)9.pgm
+
+roboto_dark14x17_base = $(pgm_dir)/robotoDark14x17_
+
+roboto_dark14x17 += $(roboto_dark14x17_base)0.pgm
+roboto_dark14x17 += $(roboto_dark14x17_base)1.pgm
+roboto_dark14x17 += $(roboto_dark14x17_base)2.pgm
+roboto_dark14x17 += $(roboto_dark14x17_base)3.pgm
+roboto_dark14x17 += $(roboto_dark14x17_base)4.pgm
+roboto_dark14x17 += $(roboto_dark14x17_base)5.pgm
+roboto_dark14x17 += $(roboto_dark14x17_base)6.pgm
+roboto_dark14x17 += $(roboto_dark14x17_base)7.pgm
+roboto_dark14x17 += $(roboto_dark14x17_base)8.pgm
+roboto_dark14x17 += $(roboto_dark14x17_base)9.pgm
+
+################################################################################
+# Rules macros
+################################################################################
+!xcf2pgm = |> ^ xcf2pgm %b^ $(XCF2PGM) %f %o $(colormap) |>
+!crop2pgm = |> ^ crop2pgm %b^ $(CROP2PGM) %f $(colormap) |>
+
+################################################################################
+# Build
+################################################################################
+: foreach $(fonts_srcs) |> !xcf2pgm |> $(fonts_dir)/%B.pgm
+: logo.xcf |> !xcf2pgm |> $(pgm_dir)/%B.pgm <logo>
+
+: $(fonts_dir)/roboto-mono-25x30.pgm |> !crop2pgm $(roboto25x30_base) |> $(roboto25x30) <roboto25x30>
+: $(fonts_dir)/roboto-mono-14x17.pgm |> !crop2pgm $(roboto14x17_base) |> $(roboto14x17) <roboto14x17>
+: $(fonts_dir)/roboto-mono-dark-14x17.pgm |> !crop2pgm $(roboto_dark14x17_base) |> $(roboto_dark14x17) <roboto_dark14x17>
+

@@ -37,12 +37,6 @@
 #include "settings.h"
 #include "bitmaps.h"
 
-
-#ifdef DEBUG
-#include "SEGGER_RTT.h"
-#include "SEGGER_RTT_Conf.h"
-#endif
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -151,7 +145,7 @@ void StartDefaultTask(void *argument)
     if(Config.ShowLogo)
     {
         omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, false, true);
-        osDelay(1200);
+        osDelay(722000);
     }
 
     omScreenSelect(uiScreens[

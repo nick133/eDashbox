@@ -1,3 +1,5 @@
+include_rules
+
 # srcs, incs
 include configs/Auto.tup
 
@@ -72,7 +74,6 @@ NIMFLAGS += --nimcache:".nimcache"
 OBJDIR = objs
 
 PGM2C = Tools/pgm2c/pgm2c
-PGM_DIR = Assets/PGM
 
 asm_srcs = startup/*.s
 
@@ -82,9 +83,6 @@ bitmaps_h = AutoSrc/bitmaps.h
 ################################################################################
 # Rules macros
 ################################################################################
-# https://christine.website/blog/nim-and-tup-2015-06-10
-!nim = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f; rm -rf .nimcache |>
-
 !cc = |> ^ cc %b^ $(CC) $(CFLAGS) -Wa,-a,-ad,-alms=%O.lst -c %f -o %o |>
 !as = |> ^ as %b^ $(AS) $(ASFLAGS) -c %f -o %o |>
 !ld = |> ^ ld %O^ $(CC) $(LDFLAGS) %f -o %o && $(SZ) %o |>
@@ -92,11 +90,15 @@ bitmaps_h = AutoSrc/bitmaps.h
 !bin = |> ^ bin %O^ $(BIN) %f %o && $(ST) %o |> %B.bin
 !hex = |> ^ hex %O^ $(HEX) %f %o && $(ST) %o |> %B.hex
 
+# https://christine.website/blog/nim-and-tup-2015-06-10
+!nim = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f; rm -rf .nimcache |>
+
 ################################################################################
 # Build
 ################################################################################
 : $(PGM2C).nim |> !nim |> $(PGM2C)
-: $(PGM_DIR)/*.pgm | $(PGM2C) |> ^ pgm2c %O^ $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(PGM_DIR); true %f |> $(bitmaps_c) | $(bitmaps_h)
+: Assets/<logo> Assets/<roboto25x30> Assets/<roboto14x17> Assets/<roboto_dark14x17> | $(PGM2C) |> \
+    ^ pgm2c %O^ $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(pgm_dir) |> $(bitmaps_c) | $(bitmaps_h)
 
 : foreach $(srcs) $(bitmaps_c) | $(bitmaps_h) |> !cc |> $(OBJDIR)/%B.o | %O.d %O.lst {objs}
 : foreach $(asm_srcs) |> !as |> $(OBJDIR)/%B.o {asobjs}

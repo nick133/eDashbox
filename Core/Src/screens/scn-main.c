@@ -19,6 +19,9 @@
 #define RpmDisplRegs   4 // i.e. 4500
 #define SpeedDisplRegs 5 // i.e. 123.5 (including dot)
 
+#define METER_REG_SZ 10
+#define ASCII_NUM '0'
+
 /*******************************************************************************
  ** Global variables and types
  */
@@ -69,14 +72,10 @@ static ScreenDataT ScreenDatPrev;
 static void ScreenShowCb(omScreenT *);
 static void ScreenUpdateCb(omScreenT *);
 static void DrawStatic(void);
-
-static void RefreshOdo(void);
-//static bool RefreshRpm(float rpm, float rpmPrev);
-static bool DrawSpeed(uint32_t x, uint32_t y, float speed, float speedPrev);
-static void RefreshBars(void);
-static void RefreshTemprt(uint8_t);
-static void RefreshVolt(void);
-static void RefreshAmpere(void);
+static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
+    uint8_t isize, const char* format,
+    uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy,
+    float num, float numPrev, bool sign);
 
 /*******************************************************************************
  ** Functions definition
@@ -95,21 +94,26 @@ void ScreenShowCb(omScreenT *screen)
 {
     ScreenDat.Speed = ScreenDatPrev.Speed
         = ScreenDat.Rpm = ScreenDatPrev.Rpm
-        = ScreenDat.Odo = ScreenDatPrev.Odo
+        = ScreenDatPrev.Odo
         = ScreenDat.Volt = ScreenDatPrev.Volt
         = ScreenDat.Ampere = ScreenDatPrev.Ampere
         = 0.0;
+    ScreenDat.Odo = Sensors.Odo;
     memset(ScreenDat.Temprt, 0.0, sizeof(ScreenDat.Temprt));
     memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
 
     DrawStatic();
 
     /* Force update to zero */
-    //RefreshRpm(0.0, 9999.0);
-    //RefreshSpeed(0.0, 199.9);
+    // Speedo
+    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, 0.0, 999.9, false);
+    // RPM
+    DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, 0.0, 9999.0, false);
+    // Odo
+    DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47, ScreenDat.Odo, ScreenDatPrev.Odo, false);
 
-    for(uint8_t i; i < DS18B20_Quantity(); i++)
-        { RefreshTemprt(i); }
+ //   for(uint8_t i; i < DS18B20_Quantity(); i++)
+ //       { RefreshTemprt(i); }
 }
 
 
@@ -126,29 +130,17 @@ void ScreenUpdateCb(omScreenT *screen)
 
         if(ScreenDat.Temprt[i] != ScreenDatPrev.Temprt[i])
         {
-            RefreshTemprt(i);
+            //RefreshTemprt(i);
             ScreenDatPrev.Temprt[i] = ScreenDat.Temprt[i];
         }
     }
 
-    //RefreshSpeed(ScreenDat.Speed, ScreenDatPrev.Speed);
-    //RefreshRpm(ScreenDat.Rpm, ScreenDatPrev.Rpm);
-    RefreshBars();
-
-    // if(ScreenDat.Odo != ScreenDatPrev.Odo)
-    // {
-    //     RefreshOdo();
-
-    //     ScreenDatPrev.Odo = ScreenDat.Odo;
-    // }
-
-    // if(ScreenDat.Volt != ScreenDatPrev.Volt)
-    // {
-    //     RefreshVolt();
-    //     RefreshAmpere();
-        
-    //     ScreenDatPrev.Volt = ScreenDat.Volt;
-    // }
+    // Speedo
+    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, ScreenDat.Speed, ScreenDatPrev.Speed, false);
+    // RPM
+    DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, ScreenDat.Rpm, ScreenDatPrev.Rpm, false);
+    // Odo
+    DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47, ScreenDat.Odo, ScreenDatPrev.Odo, false);
 
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
@@ -177,7 +169,7 @@ void DrawStatic(void)
     }
     omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_1, 95, 0, false, false);
     omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_2, 103, 0, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 79, 26, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot4x4, 79, 26, false, false);
 
     /* KM (Odo), dot */
     omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 183, 61, false, false);
@@ -186,123 +178,45 @@ void DrawStatic(void)
 }
 
 
-void RefreshOdo(void)
+bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
+    uint8_t isize, const char* format,
+    uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy,
+    float num, float numPrev, bool sign)
 {
+    if(num == numPrev) { return false; }
 
-}
+    uint32_t font_w = ifont[0]->Width;
+    uint32_t font_h = ifont[0]->Height;
 
-/* Update only changed digits */
+    uint8_t fnumidx = isize + 1;
 
-/* Update RPM */
-// static bool RefreshRpm(float rpm, float rpmPrev)
-// {
-//     if(rpm == rpmPrev) { return false; }
+    char reg[METER_REG_SZ], regPrev[METER_REG_SZ];
 
-//     static const uint32_t rpmPosX = 2;
-//     static const uint32_t rpmPosY = 47;
+    snprintf_(reg, sizeof(reg), format, num);
+    snprintf_(regPrev, sizeof(regPrev), format, numPrev);
 
-//     uint32_t fntWidth = RpmFont[0]->Width;
-//     uint32_t fntHeight = RpmFont[0]->Height;
+    for(uint8_t i = 0; i < isize; i++)
+    {
+        /* Update only changed digits */
+        if(reg[i] == regPrev[i]) { continue; }
 
-//     char reg[RpmDisplRegs+1], regPrev[RpmDisplRegs+1];
+        if(reg[i] == ' ')
+        {
+            omDrawRectangleFilled(&oledUi,
+                ix + (font_w * i), iy, ix + (font_w * (i + 1)) - 1, iy + font_h,
+                OLED_GRAY_00, OLED_GRAY_00, false);
+        }
+        else
+        {
+            omDrawBitmap(&oledUi, ifont[reg[i] - ASCII_NUM], ix + (font_w * i), iy, false, false);
+        }
+    }
 
-//     snprintf_(reg, sizeof(reg), "%4.0f", rpm);
-//     snprintf_(regPrev, sizeof(regPrev), "%4.0f", rpmPrev);
-
-//     for(uint8_t i = 0; i < RpmDisplRegs; i++)
-//     {
-//         if(reg[i] == regPrev[i]) { continue; }
-
-//         if(reg[i] == ' ')
-//         {
-//             omDrawRectangleFilled(&oledUi,
-//                 rpmPosX+(fntWidth * i), rpmPosY, rpmPosX+fntWidth+(fntWidth * i)-1, rpmPosY+fntHeight-1,
-//                 OLED_GRAY_00, OLED_GRAY_00, true); //// false!
-//         }
-//         else
-//         {
-//             omDrawBitmap(&oledUi, RpmFont[reg[i] - '0'], rpmPosX+(fntWidth * i), rpmPosY, false, false);
-//         }
-//     }
-
-//     return true;
-// }
-
-
-    /* Update Speed */
-// s = 160.4
-// x = s*10.0 - (int)s*10;
-bool DrawSpeed(uint32_t x, uint32_t y, float speed, float speedPrev)
-{
-    if(speed == speedPrev) { return false; }
-
-    static const uint32_t speedPosX = 0;
-    static const uint32_t speedPosY = 2;
-
-    uint32_t fntWidth = Roboto25x30[0]->Width;
-    uint32_t fntHeight = Roboto25x30[0]->Height;
-//    uint32_t fntWidth1XX = Roboto25x30[10]->Width;
-
-    char reg[SpeedDisplRegs+1], regPrev[SpeedDisplRegs+1];
-
-    snprintf_(reg, sizeof(reg), "%5.1f", speed);
-    snprintf_(regPrev, sizeof(regPrev), "%5.1f", speedPrev);
-    //SEGGER_RTT_printf(0,"RPM: %d, prev: %d\n", (int)rpm, (int)rpmPrev);
-
-    // if(reg[0] != regPrev[0])
-    // {
-    //     if(reg[0] == ' ')
-    //     {
-    //         omDrawRectangleFilled(&oledUi,
-    //             speedPosX, speedPosY, speedPosX+fntWidth1XX-1, speedPosY+fntHeight,
-    //             OLED_GRAY_00, OLED_GRAY_00, false);
-    //     }
-    //     else
-    //     {
-    //         omDrawBitmap(&oledUi, Roboto25x30[10], speedPosX, speedPosY, false, false);
-    //     }
-    // }
-
-    // for(uint8_t i = 1; i < 3; i++)
-    // {
-    //     if(reg[i] == regPrev[i]) { continue; }
-
-    //     if(reg[i] == ' ')
-    //     {
-    //         omDrawRectangleFilled(&oledUi,
-    //             speedPosX+fntWidth1XX+(fntWidth * (i-1)), speedPosY, speedPosX+fntWidth1XX+(fntWidth * i)-1, speedPosY+fntHeight,
-    //             OLED_GRAY_00, OLED_GRAY_00, false);
-    //     }
-    //     else
-    //     {
-    //         omDrawBitmap(&oledUi, Roboto25x30[reg[i] - '0'], speedPosX+(fntWidth * i), speedPosY, false, false);
-    //     }
-    // }
+    /* Fractional part */
+    if(ffont != NULL && reg[fnumidx] != regPrev[fnumidx]) 
+    {
+        omDrawBitmap(&oledUi, ffont[reg[fnumidx] - ASCII_NUM], fx, fy, false, false);
+    }
 
     return true;
-}
-
-
-void RefreshBars(void)
-{
-
-}
-
-
-void RefreshVolt(void)
-{
-    
-}
-
-
-void RefreshAmpere(void)
-{
-    
-}
-
-
-void RefreshTemprt(uint8_t index)
-{
-
-
 }

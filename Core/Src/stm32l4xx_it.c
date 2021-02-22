@@ -23,6 +23,7 @@
 #include "stm32l4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,7 +61,6 @@ extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
-
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -88,6 +88,10 @@ void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
 
+    /* Mystery - hardfault randomly occurs if no user code is put here.
+     * Just put any line of code here and everything works as expected.
+     */
+    configASSERT(1);
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {

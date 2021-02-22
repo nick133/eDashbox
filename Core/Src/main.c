@@ -150,7 +150,7 @@ int main(void)
     Sensors.HallRpm = 0.0;
     Sensors.Volt = 0.0;
     Sensors.Ampere = 0.0;
-    Sensors.Odo = 0.0;
+    Sensors.Odo = 24589.7;
     memset(Sensors.Temperature, 0.0, sizeof(Sensors.Temperature));
 
   /* USER CODE END 2 */

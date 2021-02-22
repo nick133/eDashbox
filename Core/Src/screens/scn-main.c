@@ -11,11 +11,17 @@
 #include "omgui.h"
 #include "screens.h"
 
+/*******************************************************************************
+ ** Defines and macros
+ */
+
 /* Array size must not be a 'const', as compiler can't guess from 'const' and uses 0 */
 #define RpmDisplRegs   4 // i.e. 4500
 #define SpeedDisplRegs 5 // i.e. 123.5 (including dot)
 
-
+/*******************************************************************************
+ ** Global variables and types
+ */
 /* Speedo font */
 static const omBitmapT *Roboto25x30[] = {
     &AssetBitmaps.Roboto25x30_0,
@@ -57,9 +63,13 @@ typedef struct ScreenData {
 static ScreenDataT ScreenDat;
 static ScreenDataT ScreenDatPrev;
 
-
+/*******************************************************************************
+ ** Functions declaration
+ */
 static void ScreenShowCb(omScreenT *);
 static void ScreenUpdateCb(omScreenT *);
+static void DrawStatic(void);
+
 static void RefreshOdo(void);
 //static bool RefreshRpm(float rpm, float rpmPrev);
 static bool DrawSpeed(uint32_t x, uint32_t y, float speed, float speedPrev);
@@ -68,7 +78,9 @@ static void RefreshTemprt(uint8_t);
 static void RefreshVolt(void);
 static void RefreshAmpere(void);
 
-
+/*******************************************************************************
+ ** Functions definition
+ */
 void MainScreenInit(void)
 {
     screenMain.Id = IdScreenMain;
@@ -79,7 +91,7 @@ void MainScreenInit(void)
 }
 
 
-static void ScreenShowCb(omScreenT *screen)
+void ScreenShowCb(omScreenT *screen)
 {
     ScreenDat.Speed = ScreenDatPrev.Speed
         = ScreenDat.Rpm = ScreenDatPrev.Rpm
@@ -90,22 +102,18 @@ static void ScreenShowCb(omScreenT *screen)
     memset(ScreenDat.Temprt, 0.0, sizeof(ScreenDat.Temprt));
     memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
 
-    //omDrawBitmap(&oledUi, &AssetBitmaps.MainSpeedo0, 15+24, 2, false, false);
+    DrawStatic();
 
     /* Force update to zero */
     //RefreshRpm(0.0, 9999.0);
     //RefreshSpeed(0.0, 199.9);
-    RefreshBars();
-
-    RefreshVolt();
-    RefreshAmpere();
 
     for(uint8_t i; i < DS18B20_Quantity(); i++)
         { RefreshTemprt(i); }
 }
 
 
-static void ScreenUpdateCb(omScreenT *screen)
+void ScreenUpdateCb(omScreenT *screen)
 {
     ScreenDat.Speed = SsrGetSpeed(&Sensors);
     ScreenDat.Rpm = SsrGetMotorRpm(&Sensors);
@@ -149,7 +157,36 @@ static void ScreenUpdateCb(omScreenT *screen)
 }
 
 
-static void RefreshOdo(void)
+void DrawStatic(void)
+{
+    omDrawBitmap(&oledUi, &AssetBitmaps.RpmBars, 3, 36, false, false);
+
+    /* RPM */
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_4, 60, 55, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_1, 68, 55, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 76, 55, false, false);
+
+    /* KPH | MPH, dot */
+    if(Config.SpeedUnits == UnitsMph)
+    {
+        omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 87, 0, false, false);    
+    }
+    else if(Config.SpeedUnits == UnitsKph)
+    {
+        omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 87, 0, false, false);    
+    }
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_1, 95, 0, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_2, 103, 0, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 79, 26, false, false);
+
+    /* KM (Odo), dot */
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 183, 61, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 208, 55, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 216, 55, false, false);
+}
+
+
+void RefreshOdo(void)
 {
 
 }
@@ -246,25 +283,25 @@ bool DrawSpeed(uint32_t x, uint32_t y, float speed, float speedPrev)
 }
 
 
-static void RefreshBars(void)
+void RefreshBars(void)
 {
 
 }
 
 
-static void RefreshVolt(void)
-{
-    
-}
-
-
-static void RefreshAmpere(void)
+void RefreshVolt(void)
 {
     
 }
 
 
-static void RefreshTemprt(uint8_t index)
+void RefreshAmpere(void)
+{
+    
+}
+
+
+void RefreshTemprt(uint8_t index)
 {
 
 

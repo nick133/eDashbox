@@ -1,3 +1,3 @@
 file build-debug/eDashbox.elf
-target remote localhost:50000
+target remote localhost:2331
 load 

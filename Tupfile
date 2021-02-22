@@ -93,12 +93,13 @@ bitmaps_h = AutoSrc/bitmaps.h
 # https://christine.website/blog/nim-and-tup-2015-06-10
 !nim = |> ^ nim %b^ nim c $(NIMFLAGS) -o:%o %f; rm -rf .nimcache |>
 
+!pgm2c = |> ^ pgm2c %O^ $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(pgm_dir) |> $(bitmaps_c) | $(bitmaps_h)
+
 ################################################################################
 # Build
 ################################################################################
 : $(PGM2C).nim |> !nim |> $(PGM2C)
-: Assets/<logo> Assets/<roboto25x30> Assets/<roboto14x17> Assets/<roboto_dark14x17> | $(PGM2C) |> \
-    ^ pgm2c %O^ $(PGM2C) -h:$(bitmaps_h) -c:%o -p:$(pgm_dir) |> $(bitmaps_c) | $(bitmaps_h)
+: $(assets_dir)/<bitmaps> $(PGM2C) |> !pgm2c |>
 
 : foreach $(srcs) $(bitmaps_c) | $(bitmaps_h) |> !cc |> $(OBJDIR)/%B.o | %O.d %O.lst {objs}
 : foreach $(asm_srcs) |> !as |> $(OBJDIR)/%B.o {asobjs}

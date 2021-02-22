@@ -145,7 +145,7 @@ void StartDefaultTask(void *argument)
     if(Config.ShowLogo)
     {
         omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, false, true);
-        osDelay(722000);
+        osDelay(1200);
     }
 
     omScreenSelect(uiScreens[

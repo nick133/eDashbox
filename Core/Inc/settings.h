@@ -22,6 +22,7 @@ typedef struct ConfigSettings {
   IdScreenT Screen4;
   bool HallOnWheel;
   bool ShowLogo;
+  bool HourFormat24;
   float BatLowV;
   float BatHighV;
 } ConfigSettingsT;

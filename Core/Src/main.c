@@ -112,6 +112,7 @@ int main(void)
     Config.Screen1 = IdScreenMain;
     Config.BatLowV = 57.0;
     Config.BatHighV = 84.0;
+    Config.HourFormat24 = true;
 
   /* USER CODE END 1 */
 

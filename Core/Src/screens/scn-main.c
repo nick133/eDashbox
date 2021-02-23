@@ -2,10 +2,13 @@
 #include <string.h>
 #include <math.h>
 #include "printf.h"
+
 #include "ds18b20.h"
 #include "sh1122.h"
 
 #include "main.h"
+#include "rtc.h"
+
 #include "settings.h"
 #include "bitmaps.h"
 #include "omgui.h"
@@ -49,6 +52,19 @@ static const omBitmapT *Roboto14x17[] = {
     &AssetBitmaps.Roboto14x17_9
 };
 
+static const omBitmapT *Roboto10x12[] = {
+    &AssetBitmaps.Roboto10x12_0,
+    &AssetBitmaps.Roboto10x12_1,
+    &AssetBitmaps.Roboto10x12_2,
+    &AssetBitmaps.Roboto10x12_3,
+    &AssetBitmaps.Roboto10x12_4,
+    &AssetBitmaps.Roboto10x12_5,
+    &AssetBitmaps.Roboto10x12_6,
+    &AssetBitmaps.Roboto10x12_7,
+    &AssetBitmaps.Roboto10x12_8,
+    &AssetBitmaps.Roboto10x12_9
+};
+
 static const omBitmapT *BatPie14x14[] = {
     &AssetBitmaps.BatPie14x14_0,
     &AssetBitmaps.BatPie14x14_1,
@@ -72,27 +88,6 @@ static const omBitmapT *BatPie14x14[] = {
     &AssetBitmaps.BatPie14x14_19
 };
 
-static const uint8_t RpmBarsColors[] = {
-    OLED_GRAY_03,
-    OLED_GRAY_03,
-    OLED_GRAY_03,
-    OLED_GRAY_04,
-    OLED_GRAY_05,
-    OLED_GRAY_06,
-    OLED_GRAY_07,
-    OLED_GRAY_08,
-    OLED_GRAY_09,
-    OLED_GRAY_10,
-    OLED_GRAY_11,
-    OLED_GRAY_12,
-    OLED_GRAY_13,
-    OLED_GRAY_14,
-    OLED_GRAY_15,
-    OLED_GRAY_15,
-    OLED_GRAY_15,
-    OLED_GRAY_15
-};
-
 typedef struct ScreenData {
     float Speed;
     float Rpm;
@@ -102,6 +97,7 @@ typedef struct ScreenData {
     float Ampere;
     uint8_t RpmBarsN;
     uint8_t BatPieN;
+    RTC_TimeTypeDef Time;
 } ScreenDataT;
 
 static ScreenDataT ScreenDat;
@@ -118,6 +114,9 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy, float num, float numPrev, bool sign);
 static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev);
 static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev);
+static bool DrawClock(RTC_TimeTypeDef *clockTime, RTC_TimeTypeDef *clockTimePrev);
+
+static HAL_StatusTypeDef GetTimeRTC(RTC_TimeTypeDef *);
 
 /*******************************************************************************
  ** Functions definition
@@ -132,7 +131,7 @@ void MainScreenInit(void)
 }
 
 
-void ScreenShowCb(omScreenT *screen)
+static void ScreenShowCb(omScreenT *screen)
 {
     ScreenDat.Speed = ScreenDatPrev.Speed
         = ScreenDat.Rpm = ScreenDatPrev.Rpm
@@ -144,8 +143,12 @@ void ScreenShowCb(omScreenT *screen)
         = ScreenDat.BatPieN = ScreenDatPrev.BatPieN
         = 0;
     ScreenDat.Odo = Sensors.Odo;
+
     memset(ScreenDat.Temprt, 0.0, sizeof(ScreenDat.Temprt));
     memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
+
+    HAL_RTC_GetTime(&hrtc, &ScreenDat.Time, RTC_FORMAT_BIN);
+    ScreenDatPrev.Time = ScreenDat.Time;
 
     DrawStatic();
 
@@ -163,18 +166,21 @@ void ScreenShowCb(omScreenT *screen)
     // Battery pie chart
     DrawBatPie(0, 1);
 
+    DrawClock(&(ScreenDat.Time), NULL);
+
  //   for(uint8_t i; i < DS18B20_Quantity(); i++)
  //       { RefreshTemprt(i); }
 }
 
 
-void ScreenUpdateCb(omScreenT *screen)
+static void ScreenUpdateCb(omScreenT *screen)
 {
     ScreenDat.Speed = SsrGetSpeed(&Sensors);
     ScreenDat.Rpm = SsrGetMotorRpm(&Sensors);
     ScreenDat.RpmBarsN = roundf(SsrGetRpmPerctg(&Sensors) * MAX_RPM_BARS / 100.0);
     ScreenDat.BatPieN = SsrGetBatPerctg(&Sensors) / (100 / BAT_PIE_PCS); // implicit cast to int
     ScreenDat.Odo = Sensors.Odo;
+    GetTimeRTC(&(ScreenDat.Time));
 
     for(uint8_t i; i < DS18B20_Quantity(); i++)
     {
@@ -203,15 +209,18 @@ void ScreenUpdateCb(omScreenT *screen)
     // Battery pie chart
     DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN);
 
+    DrawClock(&(ScreenDat.Time), &(ScreenDatPrev.Time));
+
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
     ScreenDatPrev.RpmBarsN = ScreenDat.RpmBarsN;
     ScreenDatPrev.Odo = ScreenDat.Odo;
     ScreenDatPrev.BatPieN = ScreenDat.BatPieN;
+    ScreenDatPrev.Time = ScreenDat.Time;
 }
 
 
-void DrawStatic(void)
+static void DrawStatic(void)
 {
     omDrawBitmap(&oledUi, &AssetBitmaps.RpmBars, 3, 36, false, false);
 
@@ -237,10 +246,14 @@ void DrawStatic(void)
     omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 183, 61, false, false);
     omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 208, 55, false, false);
     omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 216, 55, false, false);
+
+    /* Clock dots */
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 231, 3, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 231, 10, false, false);
 }
 
 
-bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
+static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     uint8_t isize, const char* format,
     uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy, float num, float numPrev, bool sign)
 {
@@ -283,13 +296,21 @@ bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
 }
 
 
-bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
+static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
 {
     if(nbars == nbarsPrev) { return false; }
+
+    static const uint8_t RpmBarsColors[] = {
+        OLED_GRAY_03, OLED_GRAY_03, OLED_GRAY_03, OLED_GRAY_04, OLED_GRAY_05, OLED_GRAY_06,
+        OLED_GRAY_07, OLED_GRAY_08, OLED_GRAY_09, OLED_GRAY_10, OLED_GRAY_11, OLED_GRAY_12,
+        OLED_GRAY_13, OLED_GRAY_14, OLED_GRAY_15, OLED_GRAY_15, OLED_GRAY_15, OLED_GRAY_15
+    };
 
     uint8_t reg[MAX_RPM_BARS] = {0};
     uint8_t regPrev[MAX_RPM_BARS] = {0};
     uint8_t i;
+
+/******!!! FIXME !!! algo is dumb, rework!! *******/
 
     for(i = 0; i < nbars; i++) { reg[i] = 1; }
     for(i = 0; i < nbarsPrev; i++) { regPrev[i] = 1; }
@@ -308,9 +329,50 @@ bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
 }
 
 
-bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev)
+static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev)
 {
     if(batpien == batpienPrev || batpien > BAT_PIE_PCS - 1) { return false; }
 
     omDrawBitmap(&oledUi, BatPie14x14[batpien], 238, 46, false, false);
+}
+
+
+static bool DrawClock(RTC_TimeTypeDef *clockTime, RTC_TimeTypeDef *clockTimePrev)
+{
+    bool updateh, updatem;
+    uint8_t prevh, prevm;
+
+    if(clockTimePrev == NULL) // force update
+    {
+        prevh = (clockTime->Hours == 0) ? 23 : (clockTime->Hours - 1);
+        prevm = (clockTime->Minutes == 0) ? 59 : (clockTime->Minutes - 1);
+    }
+    else
+    {
+        prevh = clockTimePrev->Hours;
+        prevm = clockTimePrev->Minutes;
+    }
+
+    updateh = DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 209, 0, 0, 0,
+        (float)clockTime->Hours, (float)prevh, false);
+
+    updatem = DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 236, 0, 0, 0,
+        (float)clockTime->Minutes, (float)prevm, false);
+
+    return (updateh || updatem);
+}
+
+
+static HAL_StatusTypeDef GetTimeRTC(RTC_TimeTypeDef *timeRtc)
+{
+    /* STM32 HAL Manual: "You must call HAL_RTC_GetDate() after HAL_RTC_GetTime()
+     * to unlock the values in the higher-order calendar shadow registers to
+     * ensure consistency between the time and date values. Reading RTC current
+     * time locks the values in calendar shadow registers until current date is read."
+     */
+    HAL_StatusTypeDef status = HAL_RTC_GetTime(&hrtc, timeRtc, RTC_FORMAT_BCD);
+    RTC_DateTypeDef dateRtc;
+    HAL_RTC_GetDate(&hrtc, &dateRtc, RTC_FORMAT_BCD);
+
+    return status;
 }

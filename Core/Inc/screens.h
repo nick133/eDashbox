@@ -31,5 +31,6 @@ extern float SsrGetRpmPerctg(SensorsDataT *);
 extern float SsrGetMotorRpm(SensorsDataT *);
 extern float SsrGetSpeed(SensorsDataT *);
 extern float SsrGetTemprt(SensorsDataT *, uint8_t index);
+extern float SsrGetBatPerctg(SensorsDataT *data);
 
 #endif /* _SCREENS_H_ */

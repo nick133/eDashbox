@@ -11,8 +11,35 @@ colormap = colormap4bit.pgm
 imgs_srcs += logo.xcf
 imgs_srcs += rpmBars.xcf
 
+tmpimgs_srcs += main_screen.xcf
+tmpimgs_srcs += bat_pie18x18.xcf
+
 fonts_dir = fonts
 temp_dir = temp
+
+batpie_base = $(pgm_dir)/batPie14x14_
+
+batpie14x14 += $(batpie_base)0.pgm
+batpie14x14 += $(batpie_base)1.pgm
+batpie14x14 += $(batpie_base)2.pgm
+batpie14x14 += $(batpie_base)3.pgm
+batpie14x14 += $(batpie_base)4.pgm
+batpie14x14 += $(batpie_base)5.pgm
+batpie14x14 += $(batpie_base)6.pgm
+batpie14x14 += $(batpie_base)7.pgm
+batpie14x14 += $(batpie_base)8.pgm
+batpie14x14 += $(batpie_base)9.pgm
+batpie14x14 += $(batpie_base)10.pgm
+batpie14x14 += $(batpie_base)11.pgm
+batpie14x14 += $(batpie_base)12.pgm
+batpie14x14 += $(batpie_base)13.pgm
+batpie14x14 += $(batpie_base)14.pgm
+batpie14x14 += $(batpie_base)15.pgm
+batpie14x14 += $(batpie_base)16.pgm
+batpie14x14 += $(batpie_base)17.pgm
+batpie14x14 += $(batpie_base)18.pgm
+batpie14x14 += $(batpie_base)19.pgm
+
 
 fonts_srcs += $(fonts_dir)/roboto_mono25x30.xcf
 fonts_srcs += $(fonts_dir)/roboto_mono14x17.xcf
@@ -62,11 +89,12 @@ kphmr8x9 += $(kphmr8x9_base)4.pgm
 ################################################################################
 # Build
 ################################################################################
-: foreach main_screen.xcf $(fonts_srcs) |> !xcf2tmp |>
+: foreach $(tmpimgs_srcs) $(fonts_srcs) |> !xcf2tmp |>
 : foreach $(imgs_srcs) |> !xcf2pgm |>
 
 : $(temp_dir)/main_screen.pgm |> !crop2pgm '4x4+79+26' %o |> $(pgm_dir)/mainDot4x4.pgm <bitmaps>
 : $(temp_dir)/main_screen.pgm |> !crop2pgm '3x3+183+61' %o |> $(pgm_dir)/mainDot3x3.pgm <bitmaps>
+: $(temp_dir)/bat_pie18x18.pgm |> !crop2pgm '20x1@' $(batpie_base) |> $(batpie14x14) <bitmaps>
 
 : $(temp_dir)/roboto_mono25x30.pgm |> !crop2pgm '10x1@' $(roboto25x30_base) |> $(roboto25x30) <bitmaps>
 : $(temp_dir)/roboto_mono14x17.pgm |> !crop2pgm '10x1@' $(roboto14x17_base) |> $(roboto14x17) <bitmaps>

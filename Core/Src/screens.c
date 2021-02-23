@@ -114,3 +114,10 @@ float SsrGetTemprt(SensorsDataT *data, uint8_t index)
         return ((data->Temperature[index] * 9.0/5.0) + 32.0);
     }
 }
+
+
+float SsrGetBatPerctg(SensorsDataT *data)
+{
+    return (data->Volt < Config.BatLowV) ? 0.0
+        : ((data->Volt - Config.BatLowV) * 100.0 / (Config.BatHighV - Config.BatLowV));
+}

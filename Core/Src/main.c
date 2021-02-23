@@ -110,6 +110,8 @@ int main(void)
     Config.GearRatio = 6.0;
     Config.MaxRpm = 4500;
     Config.Screen1 = IdScreenMain;
+    Config.BatLowV = 57.0;
+    Config.BatHighV = 84.0;
 
   /* USER CODE END 1 */
 
@@ -236,11 +238,14 @@ void SystemClock_Config(void)
   */
 static void MX_NVIC_Init(void)
 {
+  /* TIM2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(TIM2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(TIM2_IRQn);
   /* EXTI3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 8, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
   /* EXTI4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 8, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 }
 

@@ -20,6 +20,8 @@
 #define SpeedDisplRegs 5 // i.e. 123.5 (including dot)
 
 #define METER_REG_SZ 10
+#define MAX_RPM_BARS 18
+#define RPM_BAR_WIDTH 10
 #define ASCII_NUM '0'
 
 /*******************************************************************************
@@ -36,10 +38,9 @@ static const omBitmapT *Roboto25x30[] = {
     &AssetBitmaps.Roboto25x30_6,
     &AssetBitmaps.Roboto25x30_7,
     &AssetBitmaps.Roboto25x30_8,
-    &AssetBitmaps.Roboto25x30_9
+    &AssetBitmaps.Roboto25x30_9,
 };
 
-/* Tacho/Odo font */
 static const omBitmapT *Roboto14x17[] = {
     &AssetBitmaps.Roboto14x17_0,
     &AssetBitmaps.Roboto14x17_1,
@@ -53,6 +54,27 @@ static const omBitmapT *Roboto14x17[] = {
     &AssetBitmaps.Roboto14x17_9
 };
 
+static const uint8_t RpmBarsColors[] = {
+    OLED_GRAY_03,
+    OLED_GRAY_03,
+    OLED_GRAY_03,
+    OLED_GRAY_04,
+    OLED_GRAY_05,
+    OLED_GRAY_06,
+    OLED_GRAY_07,
+    OLED_GRAY_08,
+    OLED_GRAY_09,
+    OLED_GRAY_10,
+    OLED_GRAY_11,
+    OLED_GRAY_12,
+    OLED_GRAY_13,
+    OLED_GRAY_14,
+    OLED_GRAY_15,
+    OLED_GRAY_15,
+    OLED_GRAY_15,
+    OLED_GRAY_15
+};
+
 typedef struct ScreenData {
     float Speed;
     float Rpm;
@@ -60,7 +82,7 @@ typedef struct ScreenData {
     float Temprt[_DS18B20_MAX_SENSORS];
     float Volt;
     float Ampere;
-    float RpmPerctg;
+    uint8_t RpmBarsN;
 } ScreenDataT;
 
 static ScreenDataT ScreenDat;
@@ -76,6 +98,7 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     uint8_t isize, const char* format,
     uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy,
     float num, float numPrev, bool sign);
+bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev);
 
 /*******************************************************************************
  ** Functions definition
@@ -98,6 +121,7 @@ void ScreenShowCb(omScreenT *screen)
         = ScreenDat.Volt = ScreenDatPrev.Volt
         = ScreenDat.Ampere = ScreenDatPrev.Ampere
         = 0.0;
+    ScreenDat.RpmBarsN = ScreenDatPrev.RpmBarsN = 0;
     ScreenDat.Odo = Sensors.Odo;
     memset(ScreenDat.Temprt, 0.0, sizeof(ScreenDat.Temprt));
     memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
@@ -121,7 +145,7 @@ void ScreenUpdateCb(omScreenT *screen)
 {
     ScreenDat.Speed = SsrGetSpeed(&Sensors);
     ScreenDat.Rpm = SsrGetMotorRpm(&Sensors);
-    ScreenDat.RpmPerctg = SsrGetRpmPerctg(&Sensors);
+    ScreenDat.RpmBarsN = roundf(SsrGetRpmPerctg(&Sensors) * MAX_RPM_BARS / 100.0);
     ScreenDat.Odo = Sensors.Odo;
 
     for(uint8_t i; i < DS18B20_Quantity(); i++)
@@ -139,12 +163,13 @@ void ScreenUpdateCb(omScreenT *screen)
     DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, ScreenDat.Speed, ScreenDatPrev.Speed, false);
     // RPM
     DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, ScreenDat.Rpm, ScreenDatPrev.Rpm, false);
+    DrawRpmBars(ScreenDat.RpmBarsN, ScreenDatPrev.RpmBarsN);
     // Odo
     DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47, ScreenDat.Odo, ScreenDatPrev.Odo, false);
 
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
-    ScreenDatPrev.RpmPerctg = ScreenDat.Rpm;
+    ScreenDatPrev.RpmBarsN = ScreenDat.RpmBarsN;
     ScreenDatPrev.Odo = ScreenDat.Odo;
 }
 
@@ -219,4 +244,26 @@ bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     }
 
     return true;
+}
+
+
+bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
+{
+    if(nbars == nbarsPrev) { return false; }
+
+    uint8_t reg[MAX_RPM_BARS] = {0};
+    uint8_t regPrev[MAX_RPM_BARS] = {0};
+    uint8_t i;
+
+    for(i = 0; i < nbars; i++) { reg[i] = 1; }
+    for(i = 0; i < nbarsPrev; i++) { regPrev[i] = 1; }
+
+    for(i = 0; i < MAX_RPM_BARS; i++)
+    {
+        if(reg[i] == regPrev[i]) { continue; }
+
+        uint8_t color = reg[i] ? RpmBarsColors[i] : OLED_GRAY_00;
+
+        omDrawRectangleFilled(&oledUi, 4 + (i * 14), 37, 13 + (i * 14), 39, color, color, false);
+    }
 }

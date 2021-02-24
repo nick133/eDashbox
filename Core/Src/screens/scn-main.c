@@ -17,11 +17,11 @@
 /*******************************************************************************
  ** Defines and macros
  */
-#define METER_REG_SZ 10
 #define MAX_RPM_BARS 18
 #define BAT_PIE_PCS 20
 #define ASCII_NUM '0'
 
+#define METER_REG_SZ 10
 #define DRAW_METER_SIGNED 0x01
 #define DRAW_METER_FORCED 0x10
 
@@ -168,6 +168,12 @@ static void ScreenShowCb(omScreenT *screen)
     // RPM
     DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, 0.0, 0.0, DRAW_METER_FORCED);
 
+    // Volt
+    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0, ScreenDat.Volt, 0.0, DRAW_METER_FORCED);
+
+    // Ampere
+    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17, ScreenDat.Ampere, 0.0, DRAW_METER_FORCED);
+
     // Odo
     DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47, ScreenDat.Odo, 0.0, DRAW_METER_FORCED);
 
@@ -263,6 +269,12 @@ static void DrawStatic(void)
     omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 183, 61, false, false);
     omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 208, 55, false, false);
     omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 216, 55, false, false);
+
+    /* Volt, Ampere dots, units */
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 156, 10, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 156, 27, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainVoltV, 174, 1, false, false);
+    omDrawBitmap(&oledUi, &AssetBitmaps.MainAmpA, 174, 18, false, false);
 
     /* Clock dots */
     omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 231, 3, false, false);

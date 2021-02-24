@@ -115,6 +115,8 @@ kphmr8x9 += $(kphmr8x9_base)4.pgm
 : $(temp_dir)/main_screen.pgm |> !crop2pgm '4x4+79+26' %o |> $(pgm_dir)/mainDot4x4.pgm <bitmaps>
 : $(temp_dir)/main_screen.pgm |> !crop2pgm '3x3+183+61' %o |> $(pgm_dir)/mainDot3x3.pgm <bitmaps>
 : $(temp_dir)/main_screen.pgm |> !crop2pgm '3x2+231+3' %o |> $(pgm_dir)/mainDot3x2.pgm <bitmaps>
+: $(temp_dir)/main_screen.pgm |> !crop2pgm '9x11+174+1' %o |> $(pgm_dir)/mainVoltV.pgm <bitmaps>
+: $(temp_dir)/main_screen.pgm |> !crop2pgm '9x11+174+18' %o |> $(pgm_dir)/mainAmpA.pgm <bitmaps>
 : $(temp_dir)/bat_pie18x18.pgm |> !crop2pgm '20x1@' $(batpie_base) |> $(batpie14x14) <bitmaps>
 
 : $(temp_dir)/roboto_mono25x30.pgm |> !crop2pgm '10x1@' $(roboto25x30_base) |> $(roboto25x30) <bitmaps>

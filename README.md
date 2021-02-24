@@ -58,7 +58,7 @@ Fix not found includes in VS code:
 * FatFs with MicroSD works but currently not used
 * temperature sensors are working
 * Hall sensor is working
-
+* Voltage meter (ADC) is working
 
 ## TODO
 * Buttons processing
@@ -66,7 +66,7 @@ Fix not found includes in VS code:
 * Change IDE to Vim, configure debugging
 * Test FatFs for MicroSD formatted with mkfs.vfat
 * GPS
-* current/voltage sensor
+* current sensor (Allegro ACS758 200A bidirectional)
 
 
 ## Credits

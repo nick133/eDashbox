@@ -233,6 +233,10 @@ static void ScreenUpdateCb(omScreenT *screen)
     DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0,
         ScreenDat.Volt, ScreenDatPrev.Volt, 0);
 
+    // Ampere
+//    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17,
+//        ScreenDat.Ampere, ScreenDatPrev.Ampere, 0);
+
     // Odo
     DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47,
         ScreenDat.Odo, ScreenDatPrev.Odo, 0);

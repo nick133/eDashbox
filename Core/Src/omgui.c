@@ -86,7 +86,7 @@ void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
  * https://electronics.stackexchange.com/questions/74589/how-to-stock-variables-in-flash-memory
  * https://forum.arduino.cc/index.php?topic=461487.0
  */
-void omDrawBitmap(omGuiT *ui, omBitmapT *bitmap, uint32_t x, uint32_t y, bool alpha, bool update)
+void omDrawBitmap(omGuiT *ui, const omBitmapT *bitmap, uint32_t x, uint32_t y, bool alpha, bool update)
 {
     uint8_t color1, color2;
     uint32_t idx = 0;

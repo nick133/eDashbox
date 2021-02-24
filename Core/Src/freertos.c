@@ -56,7 +56,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-osThreadId_t TempPollTask;
+static osThreadId_t TempPollTask;
+static osThreadId_t AdcPollTask;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -69,7 +70,7 @@ const osThreadAttr_t defaultTask_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 __NO_RETURN static void TemperaturePoll(void *);
-
+__NO_RETURN static void AdcPoll(void *);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -104,6 +105,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
     TempPollTask = osThreadNew(TemperaturePoll, NULL, NULL);
+    AdcPollTask = osThreadNew(AdcPoll, NULL, NULL);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -143,10 +145,9 @@ void StartDefaultTask(void *argument)
     omScreenSelect(uiScreens[
         (Config.Screen1 >= 0 && Config.Screen1 < 4) ? Config.Screen1 : IdScreenMain]);
 
-
     do {
         omScreenUpdate(&oledUi);
-    } while(osDelay(50) == osOK); // fixed fps
+    } while(osDelay(MAIN_THREAD_DELAY) == osOK); // fixed fps
 
   /* USER CODE END StartDefaultTask */
 }
@@ -169,6 +170,13 @@ __NO_RETURN static void TemperaturePoll(void *params)
             }
         }
     } while(osDelay(DS18B20_POLL_DELAY) == osOK);
+}
+
+__NO_RETURN static void AdcPoll(void *params)
+{
+    do {
+        HAL_ADC_Start_IT(&hadc1);
+    } while(osDelay(ADC_POLL_DELAY) == osOK);
 }
 /* USER CODE END Application */
 

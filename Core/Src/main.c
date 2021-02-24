@@ -117,6 +117,15 @@ int main(void)
     Config.BatHighV = 84.0;
     Config.HourFormat24 = true;
 
+    gu32_SysTickPrev = 0;
+    gu32_SysTickFreq = osKernelGetSysTimerFreq();
+    gf_RpmFactor = 60.0 * (float)gu32_SysTickFreq;
+
+    Sensors.HallRpm = 0.0;
+    Sensors.Volt = 0.0;
+    Sensors.Ampere = 0.0;
+    Sensors.Odo = 24589.7;
+    memset(Sensors.Temperature, 0.0, sizeof(Sensors.Temperature));
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -151,23 +160,7 @@ int main(void)
     /* Calibrate The ADC On Power-Up For Better Accuracy */
     HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 
-    ADC_buf[0] = 0;
-    HAL_ADC_Start_IT(&hadc1);
-
-//    HAL_ADC_PollForConversion(&hadc1, 1);
-    
     DS18B20_Init(DS18B20_Resolution_12bits);
-
-    gu32_SysTickPrev = 0;
-    gu32_SysTickFreq = osKernelGetSysTimerFreq();
-    gf_RpmFactor = 60.0 * (float)gu32_SysTickFreq;
-
-    Sensors.HallRpm = 0.0;
-    Sensors.Volt = 0.0;
-    Sensors.Ampere = 0.0;
-    Sensors.Odo = 24589.7;
-    memset(Sensors.Temperature, 0.0, sizeof(Sensors.Temperature));
-
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -270,11 +263,9 @@ static void MX_NVIC_Init(void)
  */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    //debug_printf("%d\n", ADC_buf[0]);
-    ADC_buf[0] = HAL_ADC_GetValue(&hadc1);
+    uint16_t adc_reg = HAL_ADC_GetValue(&hadc1);
 
-
-    debug_printf("adc: %d\n", ADC_buf[0]);
+    Sensors.Volt = (adc_reg + 1) * 3.3 / 4096.0;
 }
 
 // void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)

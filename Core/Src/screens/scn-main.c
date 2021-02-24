@@ -206,6 +206,7 @@ static void ScreenUpdateCb(omScreenT *screen)
     ScreenDat.Rpm = SsrGetMotorRpm(&Sensors);
     ScreenDat.RpmBarsN = roundf(SsrGetRpmPerctg(&Sensors) * MAX_RPM_BARS / 100.0);
     ScreenDat.BatPieN = SsrGetBatPerctg(&Sensors) / (100 / BAT_PIE_PCS); // implicit cast to int
+    ScreenDat.Volt = Sensors.Volt;
     ScreenDat.Odo = Sensors.Odo;
 
     for(uint8_t i; i < DS18B20_Quantity(); i++)
@@ -228,6 +229,10 @@ static void ScreenUpdateCb(omScreenT *screen)
         ScreenDat.Rpm, ScreenDatPrev.Rpm, 0);
     DrawRpmBars(ScreenDat.RpmBarsN, ScreenDatPrev.RpmBarsN);
 
+    // Volt
+    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0,
+        ScreenDat.Volt, ScreenDatPrev.Volt, 0);
+
     // Odo
     DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47,
         ScreenDat.Odo, ScreenDatPrev.Odo, 0);
@@ -238,6 +243,7 @@ static void ScreenUpdateCb(omScreenT *screen)
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
     ScreenDatPrev.RpmBarsN = ScreenDat.RpmBarsN;
+    ScreenDatPrev.Volt = ScreenDat.Volt;
     ScreenDatPrev.Odo = ScreenDat.Odo;
     ScreenDatPrev.BatPieN = ScreenDat.BatPieN;
 }
@@ -356,12 +362,14 @@ static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
         if(reg[i] == regPrev[i]) { continue; }
 
         /* nothing left to redraw */
-        if(!reg[i] && nbars >= nbarsPrev || !regPrev[i] && nbars <= nbarsPrev) { break; }
+        if((!reg[i] && (nbars >= nbarsPrev)) || (!regPrev[i] && nbars <= nbarsPrev)) { break; }
 
         uint8_t color = reg[i] ? RpmBarsColors[i] : OLED_GRAY_00;
 
         omDrawRectangleFilled(&oledUi, 4 + (i * 14), 37, 13 + (i * 14), 39, color, color, false);
     }
+
+    return true;
 }
 
 
@@ -370,6 +378,8 @@ static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev)
     if(batpien == batpienPrev || batpien > BAT_PIE_PCS - 1) { return false; }
 
     omDrawBitmap(&oledUi, BatPie14x14[batpien], 238, 46, false, false);
+
+    return true;
 }
 
 

@@ -53,6 +53,22 @@ Fix not found includes in VS code:
 <https://www.aliexpress.com/item/4000866935030.html>
 
 
+## Status
+* Main screen is working for about 70% of functionality, that is: speedo/tacho, clock, battery pie chart, odo.
+* FatFs with MicroSD works but currently not used
+* temperature sensors are working
+* Hall sensor is working
+
+
+## TODO
+* Buttons processing
+* Config save to EEPROM
+* Change IDE to Vim, configure debugging
+* Test FatFs for MicroSD formatted with mkfs.vfat
+* GPS
+* current/voltage sensor
+
+
 ## Credits
 * Tiny printf() for embedded systems:
 <https://github.com/mpaland/printf>
@@ -68,10 +84,3 @@ Fix not found includes in VS code:
 
 * Tup build system:
 <http://gittup.org/tup/manual.html>
-
-
-## TODO
-* Change IDE to Vim, configure debugging
-* Test FatFs for MicroSD formatted with mkfs.vfat
-* GPS
-* current/voltage sensor

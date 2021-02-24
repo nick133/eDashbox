@@ -58,6 +58,7 @@ void prvGetRegistersFromStack(uint32_t *pulFaultStackAddress);
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim6;
 
@@ -88,20 +89,16 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-
-    /* Mystery - hardfault randomly occurs if no user code is put here.
-     * Just put any line of code here and everything works as expected.
-     */
     __asm volatile
     (
-        " tst lr, #4                                                \n"
-        " ite eq                                                    \n"
-        " mrseq r0, msp                                             \n"
-        " mrsne r0, psp                                             \n"
-        " ldr r1, [r0, #24]                                         \n"
-        " ldr r2, handler2_address_const                            \n"
-        " bx r2                                                     \n"
-        " handler2_address_const: .word prvGetRegistersFromStack    \n"
+        "tst lr, #4                                            \n"
+        "ite eq                                                \n"
+        "mrseq r0, msp                                         \n"
+        "mrsne r0, psp                                         \n"
+        "ldr r1, [r0, #24]                                     \n"
+        "ldr r2, handler2_address_const                        \n"
+        "bx r2                                                 \n"
+        "handler2_address_const: .word prvGetRegistersFromStack\n"
     );
 
   /* USER CODE END HardFault_IRQn 0 */
@@ -178,31 +175,45 @@ void DebugMon_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles EXTI line3 interrupt.
+  * @brief This function handles EXTI line0 interrupt.
   */
-void EXTI3_IRQHandler(void)
+void EXTI0_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI3_IRQn 0 */
+  /* USER CODE BEGIN EXTI0_IRQn 0 */
 
-  /* USER CODE END EXTI3_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
-  /* USER CODE BEGIN EXTI3_IRQn 1 */
+  /* USER CODE END EXTI0_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+  /* USER CODE BEGIN EXTI0_IRQn 1 */
 
-  /* USER CODE END EXTI3_IRQn 1 */
+  /* USER CODE END EXTI0_IRQn 1 */
 }
 
 /**
-  * @brief This function handles EXTI line4 interrupt.
+  * @brief This function handles EXTI line1 interrupt.
   */
-void EXTI4_IRQHandler(void)
+void EXTI1_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI4_IRQn 0 */
+  /* USER CODE BEGIN EXTI1_IRQn 0 */
 
-  /* USER CODE END EXTI4_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
-  /* USER CODE BEGIN EXTI4_IRQn 1 */
+  /* USER CODE END EXTI1_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+  /* USER CODE BEGIN EXTI1_IRQn 1 */
 
-  /* USER CODE END EXTI4_IRQn 1 */
+  /* USER CODE END EXTI1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles ADC1 global interrupt.
+  */
+void ADC1_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC1_IRQn 0 */
+
+  /* USER CODE END ADC1_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc1);
+  /* USER CODE BEGIN ADC1_IRQn 1 */
+
+  /* USER CODE END ADC1_IRQn 1 */
 }
 
 /**
@@ -234,6 +245,7 @@ void TIM6_DAC_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+/* https://www.freertos.org/Debugging-Hard-Faults-On-Cortex-M-Microcontrollers.html */
 void prvGetRegistersFromStack(uint32_t *pulFaultStackAddress)
 {
 /* These are volatile to try and prevent the compiler/linker optimising them

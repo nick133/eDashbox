@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
 //#include "cmsis_os2.h"
 #include "tim.h"
+#include "adc.h"
 #include "stdbool.h"
 
 #include "printf.h"
@@ -141,6 +142,7 @@ void StartDefaultTask(void *argument)
 
     omScreenSelect(uiScreens[
         (Config.Screen1 >= 0 && Config.Screen1 < 4) ? Config.Screen1 : IdScreenMain]);
+
 
     do {
         omScreenUpdate(&oledUi);

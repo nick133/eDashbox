@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "adc.h"
 #include "fatfs.h"
 #include "rtc.h"
 #include "spi.h"
@@ -73,6 +74,8 @@ static uint32_t gu32_SysTickFreq;
 static uint32_t gu32_SysTickPrev;
 
 static float gf_RpmFactor;
+
+uint16_t ADC_buf[10];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -135,15 +138,24 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM2_Init();
-  MX_RTC_Init();
   MX_TIM1_Init();
   MX_SPI1_Init();
   MX_SPI3_Init();
+  MX_ADC1_Init();
+  MX_RTC_Init();
   MX_FATFS_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+    /* Calibrate The ADC On Power-Up For Better Accuracy */
+    HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+
+    ADC_buf[0] = 0;
+    HAL_ADC_Start_IT(&hadc1);
+
+//    HAL_ADC_PollForConversion(&hadc1, 1);
+    
     DS18B20_Init(DS18B20_Resolution_12bits);
 
     gu32_SysTickPrev = 0;
@@ -167,7 +179,7 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    while(1)
+    for( ; ; )
     {
     /* USER CODE END WHILE */
 
@@ -219,8 +231,16 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_ADC;
+  PeriphClkInit.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_MSI;
+  PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
+  PeriphClkInit.PLLSAI1.PLLSAI1N = 16;
+  PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
+  PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
+  PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
+  PeriphClkInit.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_ADC1CLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -242,29 +262,32 @@ static void MX_NVIC_Init(void)
   /* TIM2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(TIM2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(TIM2_IRQn);
-  /* EXTI3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 8, 0);
-  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
-  /* EXTI4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 8, 0);
-  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 }
 
 /* USER CODE BEGIN 4 */
 /*
  * Callbacks for Interupts
  */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    if(GPIO_Pin == BTN1_Pin)
-    {
+    //debug_printf("%d\n", ADC_buf[0]);
+    ADC_buf[0] = HAL_ADC_GetValue(&hadc1);
 
-    }
-    else if (GPIO_Pin == BTN2_Pin)
-    {
 
-    }
+    debug_printf("adc: %d\n", ADC_buf[0]);
 }
+
+// void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+// {
+//     if(GPIO_Pin == BTN1_Pin)
+//     {
+
+//     }
+//     else if (GPIO_Pin == BTN2_Pin)
+//     {
+
+//     }
+// }
 
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)

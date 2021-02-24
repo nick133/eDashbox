@@ -133,8 +133,10 @@ void StartDefaultTask(void *argument)
 
     if(Config.ShowLogo)
     {
-        //omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 0, 0, false, true);
-        //osDelay(1200);
+        omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 4, 4, false, true);
+        omDrawBitmap(&oledUi, &AssetBitmaps.LogoText1, 69, 30, false, true);
+        omDrawBitmap(&oledUi, &AssetBitmaps.LogoText2, 92, 9, false, true);
+        osDelay(1200);
     }
 
     omScreenSelect(uiScreens[
@@ -142,7 +144,7 @@ void StartDefaultTask(void *argument)
 
     do {
         omScreenUpdate(&oledUi);
-    } while(osDelay(50) == osOK) // fixed fps
+    } while(osDelay(50) == osOK); // fixed fps
 
   /* USER CODE END StartDefaultTask */
 }

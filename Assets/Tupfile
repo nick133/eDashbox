@@ -8,9 +8,9 @@ CROP2PGM = ../Tools/crop2pgm.sh
 
 colormap = colormap4bit.pgm
 
-imgs_srcs += logo.xcf
 imgs_srcs += rpmBars.xcf
 
+tmpimgs_srcs += logo.xcf
 tmpimgs_srcs += main_screen.xcf
 tmpimgs_srcs += bat_pie18x18.xcf
 
@@ -112,6 +112,9 @@ kphmr8x9 += $(kphmr8x9_base)4.pgm
 : foreach $(tmpimgs_srcs) $(fonts_srcs) |> !xcf2tmp |>
 : foreach $(imgs_srcs) |> !xcf2pgm |>
 
+: $(temp_dir)/logo.pgm |> !crop2pgm '56x56+4+4' %o |> $(pgm_dir)/logo.pgm <bitmaps>
+: $(temp_dir)/logo.pgm |> !crop2pgm '19x27+69+30' %o |> $(pgm_dir)/logoText1.pgm <bitmaps>
+: $(temp_dir)/logo.pgm |> !crop2pgm '160x37+92+9' %o |> $(pgm_dir)/logoText2.pgm <bitmaps>
 : $(temp_dir)/main_screen.pgm |> !crop2pgm '4x4+79+26' %o |> $(pgm_dir)/mainDot4x4.pgm <bitmaps>
 : $(temp_dir)/main_screen.pgm |> !crop2pgm '3x3+183+61' %o |> $(pgm_dir)/mainDot3x3.pgm <bitmaps>
 : $(temp_dir)/main_screen.pgm |> !crop2pgm '3x2+231+3' %o |> $(pgm_dir)/mainDot3x2.pgm <bitmaps>

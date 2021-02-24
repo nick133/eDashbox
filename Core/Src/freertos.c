@@ -140,11 +140,9 @@ void StartDefaultTask(void *argument)
     omScreenSelect(uiScreens[
         (Config.Screen1 >= 0 && Config.Screen1 < 4) ? Config.Screen1 : IdScreenMain]);
 
-    while(1)
-    {
+    do {
         omScreenUpdate(&oledUi);
-        osDelay(50); // fixed fps
-    }
+    } while(osDelay(50) == osOK) // fixed fps
 
   /* USER CODE END StartDefaultTask */
 }

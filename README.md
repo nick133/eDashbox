@@ -2,27 +2,31 @@
 E-bike dashboard and datalogger, opensource.
 Firmware for STM32-Nucleo32L4 board.
 
-This is learning project in early stage, use it at your own risk.
-
+This is STM32 learning project in early stage, use it at your own risk.
 
 ## Build
+Note: Development is in 'master' branch, don't be surprised for a lot of compilation errors.
+
 ### Prerequisities
+* Linux
 * tup build system
 * Nim language compiler
-* SEGGER JLink debugger and software
-* Microsoft VS code (optional)
+* GIMP
+* ImageMagick
 * STM32 CubeMX (optional)
+* SEGGER JLink debugger and software (optional, for debug only)
+* Microsoft VS code (optional)
 
 ### Process
 * First time build after 'git clone' or after CubeMX code generation run:
 ```
-Tools/configure.sh
-tup
+$ Tools/configure.sh
+$ tup
 ```
 
 * Regular builds - just run:
 ```
-tup
+$ tup
 ```
 
 
@@ -37,6 +41,8 @@ Fix not found includes in VS code:
 
 
 ## Hardware
+### STM32 Nucleo-32 board (STM32L432KC)
+
 ### DS18B20 temperature sensor
 * Use 4.7 kOhm resistor from Vdd to Data pin, accordig to specs
 * Tested with 3.3V Vdd
@@ -63,7 +69,7 @@ Fix not found includes in VS code:
 
 
 ## TODO
+* Change IDE to Vim, configure debugging
 * Test FatFs for MicroSD formatted with mkfs.vfat
 * GPS
-* 2nd and 3rd temperature sensor
 * current/voltage sensor

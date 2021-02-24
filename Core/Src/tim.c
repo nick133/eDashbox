@@ -21,7 +21,9 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-
+/* 
+ * (!) TIM1 is for DS18B20 sensor driver - DO NOT DELETE (!)
+ */
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim1;

@@ -117,10 +117,6 @@ int main(void)
     Config.BatHighV = 84.0;
     Config.HourFormat24 = true;
 
-    gu32_SysTickPrev = 0;
-    gu32_SysTickFreq = osKernelGetSysTimerFreq();
-    gf_RpmFactor = 60.0 * (float)gu32_SysTickFreq;
-
     Sensors.HallRpm = 0.0;
     Sensors.Volt = 0.0;
     Sensors.Ampere = 0.0;
@@ -147,12 +143,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM2_Init();
-  MX_TIM1_Init();
   MX_SPI1_Init();
   MX_SPI3_Init();
   MX_ADC1_Init();
   MX_RTC_Init();
   MX_FATFS_Init();
+  MX_TIM1_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
@@ -161,6 +157,11 @@ int main(void)
     HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 
     DS18B20_Init(DS18B20_Resolution_12bits);
+
+    gu32_SysTickPrev = 0;
+    /* This must be called _AFTER_ SystemClock_Config() for correct frequency value */
+    gu32_SysTickFreq = osKernelGetSysTimerFreq();
+    gf_RpmFactor = 60.0 * (float)gu32_SysTickFreq;
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -321,10 +322,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     else if(htim->Instance == TIM2) {
         uint32_t Tick = osKernelGetSysTimerCount();
 
+        /* Reset and idle if no input data */
         if(Sensors.HallRpm > 0.0
-            && (float)(Tick - gu32_SysTickPrev) / (float)gu32_SysTickFreq > RPM_IDLE_TIME)
+            && (((float)(Tick - gu32_SysTickPrev) / (float)gu32_SysTickFreq) > RPM_IDLE_TIME))
         {
-            /* Reset and idle if no input data */
             Sensors.HallRpm = 0.0;
         }
     }

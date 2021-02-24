@@ -366,7 +366,7 @@ static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
         if(reg[i] == regPrev[i]) { continue; }
 
         /* nothing left to redraw */
-        if((!reg[i] && (nbars >= nbarsPrev)) || (!regPrev[i] && nbars <= nbarsPrev)) { break; }
+        if((!reg[i] && (nbars >= nbarsPrev)) || (!regPrev[i] && (nbars <= nbarsPrev))) { break; }
 
         uint8_t color = reg[i] ? RpmBarsColors[i] : OLED_GRAY_00;
 

@@ -243,9 +243,9 @@ void SH1122_WriteData(uint8_t *pData, uint32_t DataLen)
 static void SH1122_Reset(void)
 {
     HAL_GPIO_WritePin(SH1122_OLED_RES_PORT, SH1122_OLED_RES_PIN, GPIO_PIN_RESET);
-    OS_SLEEP(10);
+    HAL_Delay(10);
     HAL_GPIO_WritePin(SH1122_OLED_RES_PORT, SH1122_OLED_RES_PIN, GPIO_PIN_SET);
-    OS_SLEEP(10);
+    HAL_Delay(10);
 }
 
 // Clear display internal RAM
@@ -281,7 +281,7 @@ void SH1122_DisplayInit(void)
 
     SH1122_ClearRAM();
     SH1122_DisplayPower(OLED_POWER_ON);
-    OS_SLEEP(100);
+    HAL_Delay(100);
 }
 
 // Update display

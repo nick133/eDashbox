@@ -55,7 +55,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-static osTimerId_t TimerTempPoll;
+osThreadId_t TempPollTask;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -67,7 +67,7 @@ const osThreadAttr_t defaultTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-static void TemperaturePoll(void *);
+__NO_RETURN static void TemperaturePoll(void *);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -92,19 +92,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
-    TimerTempPoll = osTimerNew(TemperaturePoll, osTimerPeriodic, NULL, NULL);
-  
-    if(TimerTempPoll != NULL)
-    {
-        // Periodic timer created
-        osStatus_t tmStatus = osTimerStart(TimerTempPoll, DS18B20_POLL_DELAY);
- 
-        if(tmStatus != osOK)
-        {
-            // Timer could not be started
-        }
-    }
-
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -115,6 +102,7 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
+    TempPollTask = osThreadNew(TemperaturePoll, NULL, NULL);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -163,20 +151,22 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void TemperaturePoll(void *params)
+__NO_RETURN static void TemperaturePoll(void *params)
 {
-    // uint8_t ROM_tmp[8];
+    do {
+        // uint8_t ROM_tmp[8];
 
-    DS18B20_ReadAll();
-    DS18B20_StartAll();
+        DS18B20_ReadAll();
+        DS18B20_StartAll();
 
-    for(uint8_t i = 0; i < DS18B20_Quantity(); i++)
-    {
-        if(DS18B20_GetTemperature(i, &Sensors.Temperature[i]));
+        for(uint8_t i = 0; i < DS18B20_Quantity(); i++)
         {
-            // DS18B20_GetROM(i, ROM_tmp);
+            if(DS18B20_GetTemperature(i, &Sensors.Temperature[i]));
+            {
+                // DS18B20_GetROM(i, ROM_tmp);
+            }
         }
-    }
+    } while(osDelay(DS18B20_POLL_DELAY) == osOK);
 }
 /* USER CODE END Application */
 

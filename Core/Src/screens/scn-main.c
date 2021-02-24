@@ -22,6 +22,9 @@
 #define BAT_PIE_PCS 20
 #define ASCII_NUM '0'
 
+#define DRAW_METER_SIGNED 0x01
+#define DRAW_METER_FORCED 0x10
+
 /*******************************************************************************
  ** Global variables and types
  */
@@ -103,20 +106,24 @@ typedef struct ScreenData {
 static ScreenDataT ScreenDat;
 static ScreenDataT ScreenDatPrev;
 
+static osThreadId_t ClockUpdateTask;
+
 /*******************************************************************************
  ** Functions declaration
  */
 static void ScreenShowCb(omScreenT *);
+static void ScreenHideCb(omScreenT *);
 static void ScreenUpdateCb(omScreenT *);
+
+__NO_RETURN static void ClockUpdate(void *);
+
 static void DrawStatic(void);
 static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     uint8_t isize, const char* format,
-    uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy, float num, float numPrev, bool sign);
+    uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy,
+    float num, float numPrev, uint8_t flags);
 static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev);
 static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev);
-static bool DrawClock(RTC_TimeTypeDef *clockTime, RTC_TimeTypeDef *clockTimePrev);
-
-static HAL_StatusTypeDef GetTimeRTC(RTC_TimeTypeDef *);
 
 /*******************************************************************************
  ** Functions definition
@@ -126,7 +133,7 @@ void MainScreenInit(void)
     screenMain.Id = IdScreenMain;
     screenMain.Ui = &oledUi;
     screenMain.ShowCallback = ScreenShowCb;
-    screenMain.HideCallback = NULL;
+    screenMain.HideCallback = ScreenHideCb;
     screenMain.UpdateCallback = ScreenUpdateCb;
 }
 
@@ -139,37 +146,51 @@ static void ScreenShowCb(omScreenT *screen)
         = ScreenDat.Volt = ScreenDatPrev.Volt
         = ScreenDat.Ampere = ScreenDatPrev.Ampere
         = 0.0;
+
     ScreenDat.RpmBarsN = ScreenDatPrev.RpmBarsN
         = ScreenDat.BatPieN = ScreenDatPrev.BatPieN
         = 0;
+
     ScreenDat.Odo = Sensors.Odo;
+
+    // for ClockUpdate task start and resume
+    ScreenDatPrev.Time.Hours = ScreenDatPrev.Time.Minutes = 0;
 
     memset(ScreenDat.Temprt, 0.0, sizeof(ScreenDat.Temprt));
     memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
-
-    HAL_RTC_GetTime(&hrtc, &ScreenDat.Time, RTC_FORMAT_BIN);
-    ScreenDatPrev.Time = ScreenDat.Time;
 
     DrawStatic();
 
     /* Draw all meters zero */
     // Speedo
-    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, 0.0, 999.9, false);
+    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, 0.0, 0.0, DRAW_METER_FORCED);
 
     // RPM
-    DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, 0.0, 9999.0, false);
+    DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, 0.0, 0.0, DRAW_METER_FORCED);
 
     // Odo
-    DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47,
-        ScreenDat.Odo, ScreenDatPrev.Odo, false);
+    DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47, ScreenDat.Odo, 0.0, DRAW_METER_FORCED);
 
     // Battery pie chart
     DrawBatPie(0, 1);
 
-    DrawClock(&(ScreenDat.Time), NULL);
-
  //   for(uint8_t i; i < DS18B20_Quantity(); i++)
  //       { RefreshTemprt(i); }
+
+    if (osThreadGetState(ClockUpdateTask) == osThreadBlocked)
+    {
+        osThreadResume(ClockUpdateTask);
+    }
+    else
+    {
+        ClockUpdateTask = osThreadNew(ClockUpdate, NULL, NULL);
+    }
+}
+
+
+static void ScreenHideCb(omScreenT *screen)
+{
+    osThreadSuspend(ClockUpdateTask);
 }
 
 
@@ -180,7 +201,6 @@ static void ScreenUpdateCb(omScreenT *screen)
     ScreenDat.RpmBarsN = roundf(SsrGetRpmPerctg(&Sensors) * MAX_RPM_BARS / 100.0);
     ScreenDat.BatPieN = SsrGetBatPerctg(&Sensors) / (100 / BAT_PIE_PCS); // implicit cast to int
     ScreenDat.Odo = Sensors.Odo;
-    GetTimeRTC(&(ScreenDat.Time));
 
     for(uint8_t i; i < DS18B20_Quantity(); i++)
     {
@@ -195,28 +215,25 @@ static void ScreenUpdateCb(omScreenT *screen)
 
     // Speedo
     DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13,
-        ScreenDat.Speed, ScreenDatPrev.Speed, false);
+        ScreenDat.Speed, ScreenDatPrev.Speed, 0);
 
     // RPM
     DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0,
-        ScreenDat.Rpm, ScreenDatPrev.Rpm, false);
+        ScreenDat.Rpm, ScreenDatPrev.Rpm, 0);
     DrawRpmBars(ScreenDat.RpmBarsN, ScreenDatPrev.RpmBarsN);
 
     // Odo
     DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47,
-        ScreenDat.Odo, ScreenDatPrev.Odo, false);
+        ScreenDat.Odo, ScreenDatPrev.Odo, 0);
 
     // Battery pie chart
     DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN);
-
-    DrawClock(&(ScreenDat.Time), &(ScreenDatPrev.Time));
 
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
     ScreenDatPrev.RpmBarsN = ScreenDat.RpmBarsN;
     ScreenDatPrev.Odo = ScreenDat.Odo;
     ScreenDatPrev.BatPieN = ScreenDat.BatPieN;
-    ScreenDatPrev.Time = ScreenDat.Time;
 }
 
 
@@ -255,9 +272,10 @@ static void DrawStatic(void)
 
 static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     uint8_t isize, const char* format,
-    uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy, float num, float numPrev, bool sign)
+    uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy,
+    float num, float numPrev, uint8_t flags)
 {
-    if(num == numPrev) { return false; }
+    if(num == numPrev && !(flags & DRAW_METER_FORCED)) { return false; }
 
     uint32_t font_w = ifont[0]->Width;
     uint32_t font_h = ifont[0]->Height;
@@ -267,13 +285,19 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     char reg[METER_REG_SZ], regPrev[METER_REG_SZ];
 
     snprintf_(reg, sizeof(reg), format, num);
-    snprintf_(regPrev, sizeof(regPrev), format, numPrev);
+
+    if (!(flags & DRAW_METER_FORCED))
+        { snprintf_(regPrev, sizeof(regPrev), format, numPrev); }
 
     for(uint8_t i = 0; i < isize; i++)
     {
-        /* Update only changed digits */
-        if(reg[i] == regPrev[i]) { continue; }
-
+        /* Update only changed digits.
+         * No need to clean prev. number in forced mode (first run)
+         */
+        if((!(flags & DRAW_METER_FORCED) && reg[i] == regPrev[i])
+                || ((flags & DRAW_METER_FORCED) && reg[i] == ' '))
+            { continue; }
+ 
         if(reg[i] == ' ')
         {
             omDrawRectangleFilled(&oledUi,
@@ -287,7 +311,7 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     }
 
     /* Fractional part */
-    if(ffont != NULL && reg[fnumidx] != regPrev[fnumidx]) 
+    if(ffont != NULL && ((flags & DRAW_METER_FORCED) || reg[fnumidx] != regPrev[fnumidx]))
     {
         omDrawBitmap(&oledUi, ffont[reg[fnumidx] - ASCII_NUM], fx, fy, false, false);
     }
@@ -337,42 +361,28 @@ static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev)
 }
 
 
-static bool DrawClock(RTC_TimeTypeDef *clockTime, RTC_TimeTypeDef *clockTimePrev)
+__NO_RETURN static void ClockUpdate(void *params)
 {
-    bool updateh, updatem;
-    uint8_t prevh, prevm;
-
-    if(clockTimePrev == NULL) // force update
-    {
-        prevh = (clockTime->Hours == 0) ? 23 : (clockTime->Hours - 1);
-        prevm = (clockTime->Minutes == 0) ? 59 : (clockTime->Minutes - 1);
-    }
-    else
-    {
-        prevh = clockTimePrev->Hours;
-        prevm = clockTimePrev->Minutes;
-    }
-
-    updateh = DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 209, 0, 0, 0,
-        (float)clockTime->Hours, (float)prevh, false);
-
-    updatem = DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 236, 0, 0, 0,
-        (float)clockTime->Minutes, (float)prevm, false);
-
-    return (updateh || updatem);
-}
-
-
-static HAL_StatusTypeDef GetTimeRTC(RTC_TimeTypeDef *timeRtc)
-{
-    /* STM32 HAL Manual: "You must call HAL_RTC_GetDate() after HAL_RTC_GetTime()
-     * to unlock the values in the higher-order calendar shadow registers to
-     * ensure consistency between the time and date values. Reading RTC current
-     * time locks the values in calendar shadow registers until current date is read."
-     */
-    HAL_StatusTypeDef status = HAL_RTC_GetTime(&hrtc, timeRtc, RTC_FORMAT_BCD);
     RTC_DateTypeDef dateRtc;
-    HAL_RTC_GetDate(&hrtc, &dateRtc, RTC_FORMAT_BCD);
+    uint8_t flags = DRAW_METER_FORCED;
+ 
+    do {
+       /* STM32 HAL Manual: "You must call HAL_RTC_GetDate() after HAL_RTC_GetTime()
+         * to unlock the values in the higher-order calendar shadow registers to
+         * ensure consistency between the time and date values. Reading RTC current
+         * time locks the values in calendar shadow registers until current date is read."
+         */
+        HAL_RTC_GetTime(&hrtc, &(ScreenDat.Time), RTC_FORMAT_BIN);
+        HAL_RTC_GetDate(&hrtc, &dateRtc, RTC_FORMAT_BIN);
 
-    return status;
+        DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 209, 0, 0, 0,
+            (float)ScreenDat.Time.Hours, (float)ScreenDat.Time.Hours, flags);
+
+        DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 236, 0, 0, 0,
+            (float)ScreenDat.Time.Minutes, (float)ScreenDatPrev.Time.Minutes, flags);
+
+        if(flags & DRAW_METER_FORCED) { flags = 0; }
+
+        ScreenDatPrev.Time = ScreenDat.Time;
+    } while(osDelay(1000) == osOK);
 }

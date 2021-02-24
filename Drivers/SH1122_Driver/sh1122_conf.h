@@ -10,8 +10,6 @@
 #include "cmsis_os.h"
 #include "spi.h"
 
-#define OS_SLEEP(ms)            osDelay(ms)
-
 #define SH1122_OLED_SPI_HANDLE  &hspi1
 
 #define SH1122_OLED_DC_PIN      OLED_DC_Pin

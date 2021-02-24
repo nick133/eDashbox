@@ -4,6 +4,8 @@ Firmware for STM32-Nucleo32L4 board.
 
 This is STM32 learning project in early stage, use it at your own risk.
 
+![Project show-up](doc/ProjectShow.jpg "Project")
+
 ## Build
 Note: Development is in 'master' branch, don't be surprised for a lot of compilation errors.
 

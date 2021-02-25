@@ -113,7 +113,7 @@ static osThreadId_t ClockUpdateTask;
  */
 static void ScreenShowCb(omScreenT *);
 static void ScreenHideCb(omScreenT *);
-static void ScreenUpdateCb(omScreenT *);
+static bool ScreenUpdateCb(omScreenT *);
 
 __NO_RETURN static void ClockUpdate(void *);
 
@@ -200,8 +200,10 @@ static void ScreenHideCb(omScreenT *screen)
 }
 
 
-static void ScreenUpdateCb(omScreenT *screen)
+static bool ScreenUpdateCb(omScreenT *screen)
 {
+    uint8_t is_update = 0;
+
     ScreenDat.Speed = SsrGetSpeed(&Sensors);
     ScreenDat.Rpm = SsrGetMotorRpm(&Sensors);
     ScreenDat.RpmBarsN = roundf(SsrGetRpmPerctg(&Sensors) * MAX_RPM_BARS / 100.0);
@@ -221,16 +223,16 @@ static void ScreenUpdateCb(omScreenT *screen)
     }
 
     // Speedo
-    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13,
+    is_update += DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13,
         ScreenDat.Speed, ScreenDatPrev.Speed, 0);
 
     // RPM
-    DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0,
+    is_update += DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0,
         ScreenDat.Rpm, ScreenDatPrev.Rpm, 0);
-    DrawRpmBars(ScreenDat.RpmBarsN, ScreenDatPrev.RpmBarsN);
+    is_update += DrawRpmBars(ScreenDat.RpmBarsN, ScreenDatPrev.RpmBarsN);
 
     // Volt
-    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0,
+    is_update += DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0,
         ScreenDat.Volt, ScreenDatPrev.Volt, 0);
 
     // Ampere
@@ -238,11 +240,11 @@ static void ScreenUpdateCb(omScreenT *screen)
 //        ScreenDat.Ampere, ScreenDatPrev.Ampere, 0);
 
     // Odo
-    DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47,
+    is_update += DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47,
         ScreenDat.Odo, ScreenDatPrev.Odo, 0);
 
     // Battery pie chart
-    DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN);
+    is_update += DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN);
 
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
@@ -250,6 +252,8 @@ static void ScreenUpdateCb(omScreenT *screen)
     ScreenDatPrev.Volt = ScreenDat.Volt;
     ScreenDatPrev.Odo = ScreenDat.Odo;
     ScreenDatPrev.BatPieN = ScreenDat.BatPieN;
+
+    return (is_update > 0);
 }
 
 

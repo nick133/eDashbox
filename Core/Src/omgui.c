@@ -28,12 +28,11 @@ void omGuiDeInit(omGuiT *ui)
 
 void omScreenUpdate(omGuiT *ui)
 {
-    if(ui->ActiveScreen->UpdateCallback != NULL)
+    if(ui->ActiveScreen->UpdateCallback != NULL
+        && ui->ActiveScreen->UpdateCallback(ui->ActiveScreen))
     {
-        ui->ActiveScreen->UpdateCallback(ui->ActiveScreen);
+        omGuiUpdate(ui);
     }
-
-    omGuiUpdate(ui);
 }
 
 

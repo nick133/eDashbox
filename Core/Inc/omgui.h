@@ -38,7 +38,7 @@ struct omScreen
   omGuiT *Ui;
   void (*ShowCallback)(omScreenT *);
   void (*HideCallback)(omScreenT *);
-  void (*UpdateCallback)(omScreenT *);
+  bool (*UpdateCallback)(omScreenT *);
 };
 
 struct omBitmap

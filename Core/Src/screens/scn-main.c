@@ -352,23 +352,28 @@ static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
         OLED_GRAY_13, OLED_GRAY_14, OLED_GRAY_15, OLED_GRAY_15, OLED_GRAY_15, OLED_GRAY_15
     };
 
-    uint8_t reg[MAX_RPM_BARS] = {0};
-    uint8_t regPrev[MAX_RPM_BARS] = {0};
-    uint8_t i;
-
-/******!!! FIXME !!! algo is dumb, rework!! *******/
-
-    for(i = 0; i < nbars; i++) { reg[i] = 1; }
-    for(i = 0; i < nbarsPrev; i++) { regPrev[i] = 1; }
-
-    for(i = 0; i < MAX_RPM_BARS; i++)
+    for(uint8_t i = 0; i < MAX_RPM_BARS; i++)
     {
-        if(reg[i] == regPrev[i]) { continue; }
+        uint8_t color;
 
-        /* nothing left to redraw */
-        if((!reg[i] && (nbars >= nbarsPrev)) || (!regPrev[i] && (nbars <= nbarsPrev))) { break; }
-
-        uint8_t color = reg[i] ? RpmBarsColors[i] : OLED_GRAY_00;
+        if(nbars > nbarsPrev && i >= nbarsPrev && i < nbars)
+        {
+            /* Add missing bars */
+            color = RpmBarsColors[i];
+        }
+        else if(nbars < nbarsPrev && i >= nbars && i < nbarsPrev)
+        {
+            /* Clean excess bars */
+            color = OLED_GRAY_00;
+        }
+        else if(i >= nbars && i >= nbarsPrev)
+        {
+            break; // Do not process left empty bars
+        }
+        else
+        {
+            continue; // Update only changed bars
+        }
 
         omDrawRectangleFilled(&oledUi, 4 + (i * 14), 37, 13 + (i * 14), 39, color, color, false);
     }

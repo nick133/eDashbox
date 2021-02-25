@@ -264,9 +264,7 @@ static void MX_NVIC_Init(void)
  */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    uint16_t adc_reg = HAL_ADC_GetValue(&hadc1);
-
-    Sensors.Volt = (adc_reg + 1) * 3.3 / 4096.0;
+    Sensors.Volt = (HAL_ADC_GetValue(&hadc1) + 1) * 3.3 / 4096.0;
 }
 
 // void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -293,7 +291,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
             { Odo /= Config.GearRatio; }
 
         Sensors.Odo += Odo;
-        Sensors.HallRpm = gf_RpmFactor / ((float)(Tick - gu32_SysTickPrev));
+        Sensors.HallRpm = gf_RpmFactor / (float)(Tick - gu32_SysTickPrev);
 
         gu32_SysTickPrev = Tick;
     }
@@ -324,7 +322,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         /* Reset and idle if no input data */
         if(Sensors.HallRpm > 0.0
-            && (((float)(Tick - gu32_SysTickPrev) / (float)gu32_SysTickFreq) > RPM_IDLE_TIME))
+            && ((float)(Tick - gu32_SysTickPrev) / (float)gu32_SysTickFreq) > RPM_IDLE_TIME)
         {
             Sensors.HallRpm = 0.0;
         }

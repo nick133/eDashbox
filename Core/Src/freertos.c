@@ -146,7 +146,10 @@ void StartDefaultTask(void *argument)
         ? Config.Screen1 : IdScreenMain]);
 
     do {
-        omScreenUpdate(&oledUi);
+        if(!omScreenUpdate(&oledUi))
+        {
+//            omGuiUpdate(&oledUi);
+        }
     } while(osDelay(MAIN_THREAD_DELAY) == osOK); // fixed fps
 
   /* USER CODE END StartDefaultTask */

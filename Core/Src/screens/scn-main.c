@@ -107,6 +107,7 @@ static ScreenDataT ScreenDat;
 static ScreenDataT ScreenDatPrev;
 
 static osThreadId_t ClockUpdateTask;
+static osEventFlagsId_t EvtClockUpdate;
 
 /*******************************************************************************
  ** Functions declaration
@@ -190,6 +191,7 @@ static void ScreenShowCb(omScreenT *screen)
     else
     {
         ClockUpdateTask = osThreadNew(ClockUpdate, NULL, NULL);
+        EvtClockUpdate = osEventFlagsNew(NULL);
     }
 }
 
@@ -245,6 +247,10 @@ static bool ScreenUpdateCb(omScreenT *screen)
 
     // Battery pie chart
     is_update += DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN);
+
+    // Clock
+    if(osEventFlagsWait(EvtClockUpdate, 0x00000001U, osFlagsWaitAny, 0) == 0x00000001U)
+        { ++is_update; }
 
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
@@ -384,7 +390,7 @@ static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
 
 static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev)
 {
-    if(batpien == batpienPrev || batpien > BAT_PIE_PCS - 1) { return false; }
+    if(batpien == batpienPrev || batpien >= BAT_PIE_PCS) { return false; }
 
     omDrawBitmap(&oledUi, BatPie14x14[batpien], 238, 46, false, false);
 
@@ -415,5 +421,7 @@ __NO_RETURN static void ClockUpdate(void *params)
         if(flags & DRAW_METER_FORCED) { flags = 0; }
 
         ScreenDatPrev.Time = ScreenDat.Time;
+
+        osEventFlagsSet(EvtClockUpdate, 0x00000001U);
     } while(osDelay(1000) == osOK);
 }

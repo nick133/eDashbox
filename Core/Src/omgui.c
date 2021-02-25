@@ -26,13 +26,16 @@ void omGuiDeInit(omGuiT *ui)
     ui->DeInitCallback(ui); // OLED Driver's DeInit code goes here
 }
 
-void omScreenUpdate(omGuiT *ui)
+bool omScreenUpdate(omGuiT *ui)
 {
     if(ui->ActiveScreen->UpdateCallback != NULL
         && ui->ActiveScreen->UpdateCallback(ui->ActiveScreen))
     {
         omGuiUpdate(ui);
+        return true;
     }
+
+    return false;
 }
 
 

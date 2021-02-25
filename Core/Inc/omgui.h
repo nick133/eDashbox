@@ -64,7 +64,7 @@ extern void omGuiDeInit(omGuiT *);
 extern void omGuiUpdate(omGuiT *);
 extern void omGuiClear(omGuiT *);
 extern bool omScreenSelect(omScreenT *);
-extern void omScreenUpdate(omGuiT *);
+extern bool omScreenUpdate(omGuiT *);
 extern bool omScreenIsActive(omScreenT *);
 extern void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
 extern void omDrawBitmap(omGuiT *, const omBitmapT *, uint32_t x, uint32_t y, bool alpha, bool update);

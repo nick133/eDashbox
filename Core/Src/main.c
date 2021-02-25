@@ -74,8 +74,6 @@ static uint32_t gu32_SysTickFreq;
 static uint32_t gu32_SysTickPrev;
 
 static float gf_RpmFactor;
-
-uint16_t ADC_buf[10];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

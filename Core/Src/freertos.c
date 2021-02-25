@@ -142,8 +142,8 @@ void StartDefaultTask(void *argument)
         osDelay(1200);
     }
 
-    omScreenSelect(uiScreens[
-        (Config.Screen1 >= 0 && Config.Screen1 < 4) ? Config.Screen1 : IdScreenMain]);
+    omScreenSelect(uiScreens[(Config.Screen1 >= 0 && Config.Screen1 < 4)
+        ? Config.Screen1 : IdScreenMain]);
 
     do {
         omScreenUpdate(&oledUi);

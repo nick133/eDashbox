@@ -352,7 +352,7 @@ static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
         OLED_GRAY_13, OLED_GRAY_14, OLED_GRAY_15, OLED_GRAY_15, OLED_GRAY_15, OLED_GRAY_15
     };
 
-    for(uint8_t i = 0; i < MAX_RPM_BARS; i++)
+    for(uint8_t i = 0; i < ((nbars > nbarsPrev) ? nbars : nbarsPrev); i++)
     {
         uint8_t color;
 
@@ -365,10 +365,6 @@ static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
         {
             /* Clean excess bars */
             color = OLED_GRAY_00;
-        }
-        else if(i >= nbars && i >= nbarsPrev)
-        {
-            break; // Do not process left empty bars
         }
         else
         {

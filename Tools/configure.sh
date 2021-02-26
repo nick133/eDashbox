@@ -21,17 +21,10 @@ OVERRIDE_SOURCES=FATFS/Target/ffconf.h
 
 cd $(dirname $0)/..
 
-#MAIN_C=Core/Src/main.c
-#if grep -q '^#include "cmsis_os.h"' ${MAIN_C}
-#then
-    #echo "==> Patching main.c to disable CMSIS-RTOS code"
-    #sed -i \
-    #-e 's@^#include "cmsis_os.h"@/* & */@;' \
-    #-e 's@^ \+MX_FREERTOS_Init();@/* & */@' \
-    #-e 's@^ \+osKernelStart();@/* & */@' \
-    #-e 's@^ \+osKernelInitialize();@/* & */@' \
-    #-e 's@^void MX_FREERTOS_Init(void);@/* & */@' ${MAIN_C}
-#fi
+echo "==> Patching sources.."
+sed -i -e \
+    's@^/\* \+\(#define USE_FULL_ASSERT \+1U\) \+\*/@#ifdef DEBUG\n\1\n#endif\n@' \
+    Core/Inc/stm32l4xx_hal_conf.h
 
 echo "==> Cleaning after CubeMX: $UNUSED_FILES"
 rm -f $UNUSED_FILES

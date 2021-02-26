@@ -64,10 +64,13 @@ extern osEventFlagsId_t SensorEvent;
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-#define DS18B20_POLL_DELAY 600U
 #define ADC_POLL_DELAY 250U
+#define ADC_CHANNELS 2U
+#define ADC_VREF 3.3
+#define ADC_12BIT_MAX 4095U
 #define MAIN_THREAD_DELAY 50U
 #define RPM_IDLE_TIME 1.1 // (float) seconds
+#define DS18B20_POLL_DELAY 600U
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

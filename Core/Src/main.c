@@ -157,7 +157,7 @@ int main(void)
     HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 
     DS18B20_Init(DS18B20_Resolution_12bits);
-assert(1);
+
     gu32_SysTickPrev = 0;
     /* This must be called _AFTER_ SystemClock_Config() for correct frequency value */
     gu32_SysTickFreq = osKernelGetSysTimerFreq();

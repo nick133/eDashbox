@@ -176,15 +176,15 @@ __NO_RETURN static void TemperaturePoll(void *params)
 
 __NO_RETURN static void AdcPoll(void *params)
 {
-    static uint32_t ADC_channels[2]; // 0 - Volt, 1 - Ampere
-    static const double AdcFactor = 3.3 / 4096.0;
+    static uint32_t ADC_channels[ADC_CHANNELS]; // 0 - Volt, 1 - Ampere
+    static const double AdcFactor = (double)ADC_VREF / (double)(ADC_12BIT_MAX + 1);
 
     do {
-        HAL_ADC_Start_DMA(&hadc1, &ADC_channels, 2);
-
-        Sensors.Volt = (double)(ADC_channels[0] + 1) * AdcFactor;
-        Sensors.Ampere = (double)(ADC_channels[1] + 1) * AdcFactor;
-
+        if(HAL_ADC_Start_DMA(&hadc1, &ADC_channels, ADC_CHANNELS) == HAL_OK)
+        {
+            Sensors.Volt = (double)(ADC_channels[0] + 1) * AdcFactor;
+            Sensors.Ampere = (double)(ADC_channels[1] + 1) * AdcFactor;
+        }
     } while(osDelay(ADC_POLL_DELAY) == osOK);
 }
 /* USER CODE END Application */

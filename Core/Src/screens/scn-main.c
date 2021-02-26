@@ -14,9 +14,7 @@
 #include "omgui.h"
 #include "screens.h"
 
-/*******************************************************************************
- ** Defines and macros
- */
+/******************************************************************************/
 #define MAX_RPM_BARS 18
 #define BAT_PIE_PCS 20
 #define ASCII_NUM '0'
@@ -25,9 +23,7 @@
 #define DRAW_METER_SIGNED 0x01
 #define DRAW_METER_FORCED 0x10
 
-/*******************************************************************************
- ** Global variables and types
- */
+/******************************************************************************/
 /* Speedo font */
 static const omBitmapT *Roboto25x30[] = {
     &AssetBitmaps.Roboto25x30_0,
@@ -109,9 +105,7 @@ static ScreenDataT ScreenDatPrev;
 static osThreadId_t ClockUpdateTask;
 static osEventFlagsId_t EvtClockUpdate;
 
-/*******************************************************************************
- ** Functions declaration
- */
+/******************************************************************************/
 static void ScreenShowCb(omScreenT *);
 static void ScreenHideCb(omScreenT *);
 static bool ScreenUpdateCb(omScreenT *);
@@ -126,9 +120,7 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
 static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev);
 static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev);
 
-/*******************************************************************************
- ** Functions definition
- */
+/******************************************************************************/
 void MainScreenInit(void)
 {
     screenMain.Id = IdScreenMain;
@@ -211,6 +203,7 @@ static bool ScreenUpdateCb(omScreenT *screen)
     ScreenDat.RpmBarsN = roundf(SsrGetRpmPerctg(&Sensors) * MAX_RPM_BARS / 100.0);
     ScreenDat.BatPieN = SsrGetBatPerctg(&Sensors) / (100 / BAT_PIE_PCS); // implicit cast to int
     ScreenDat.Volt = Sensors.Volt;
+    ScreenDat.Ampere = Sensors.Ampere;
     ScreenDat.Odo = Sensors.Odo;
 
     for(uint8_t i; i < DS18B20_Quantity(); i++)
@@ -238,8 +231,8 @@ static bool ScreenUpdateCb(omScreenT *screen)
         ScreenDat.Volt, ScreenDatPrev.Volt, 0);
 
     // Ampere
-//    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17,
-//        ScreenDat.Ampere, ScreenDatPrev.Ampere, 0);
+    is_update += DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17,
+        ScreenDat.Ampere, ScreenDatPrev.Ampere, 0);
 
     // Odo
     is_update += DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47,
@@ -255,6 +248,7 @@ static bool ScreenUpdateCb(omScreenT *screen)
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
     ScreenDatPrev.RpmBarsN = ScreenDat.RpmBarsN;
     ScreenDatPrev.Volt = ScreenDat.Volt;
+    ScreenDatPrev.Ampere = ScreenDat.Ampere;
     ScreenDatPrev.Odo = ScreenDat.Odo;
     ScreenDatPrev.BatPieN = ScreenDat.BatPieN;
 

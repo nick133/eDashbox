@@ -58,6 +58,7 @@
 /* USER CODE BEGIN Variables */
 static osThreadId_t TempPollTask;
 static osThreadId_t AdcPollTask;
+
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -146,10 +147,8 @@ void StartDefaultTask(void *argument)
         ? Config.Screen1 : IdScreenMain]);
 
     do {
-        if(!omScreen_Update(&oledUi))
-        {
-//            omGui_Update(&oledUi);
-        }
+        omScreen_Update(&oledUi);
+
     } while(osDelay(MAIN_THREAD_DELAY) == osOK); // fixed fps
 
   /* USER CODE END StartDefaultTask */
@@ -177,8 +176,15 @@ __NO_RETURN static void TemperaturePoll(void *params)
 
 __NO_RETURN static void AdcPoll(void *params)
 {
+    static uint32_t ADC_channels[2]; // 0 - Volt, 1 - Ampere
+    static const double AdcFactor = 3.3 / 4096.0;
+
     do {
-        HAL_ADC_Start_IT(&hadc1);
+        HAL_ADC_Start_DMA(&hadc1, &ADC_channels, 2);
+
+        Sensors.Volt = (double)(ADC_channels[0] + 1) * AdcFactor;
+        Sensors.Ampere = (double)(ADC_channels[1] + 1) * AdcFactor;
+
     } while(osDelay(ADC_POLL_DELAY) == osOK);
 }
 /* USER CODE END Application */

@@ -89,6 +89,8 @@ void free(void *pvBuffer);
 #define VCP_TX_GPIO_Port GPIOA
 #define ADC_VOLT_Pin GPIO_PIN_3
 #define ADC_VOLT_GPIO_Port GPIOA
+#define ADC_AMPS_Pin GPIO_PIN_4
+#define ADC_AMPS_GPIO_Port GPIOA
 #define OLED_RES_Pin GPIO_PIN_5
 #define OLED_RES_GPIO_Port GPIOA
 #define DS18B20_Pin GPIO_PIN_7

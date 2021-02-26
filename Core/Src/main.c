@@ -21,6 +21,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "adc.h"
+#include "dma.h"
 #include "fatfs.h"
 #include "rtc.h"
 #include "spi.h"
@@ -140,6 +141,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_TIM2_Init();
   MX_SPI1_Init();
   MX_SPI3_Init();
@@ -260,11 +262,6 @@ static void MX_NVIC_Init(void)
 /*
  * Callbacks for Interupts
  */
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
-{
-    Sensors.Volt = (HAL_ADC_GetValue(&hadc1) + 1) * 3.3 / 4096.0;
-}
-
 // void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 // {
 //     if(GPIO_Pin == BTN1_Pin)

@@ -157,7 +157,7 @@ int main(void)
     HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 
     DS18B20_Init(DS18B20_Resolution_12bits);
-
+assert(1);
     gu32_SysTickPrev = 0;
     /* This must be called _AFTER_ SystemClock_Config() for correct frequency value */
     gu32_SysTickFreq = osKernelGetSysTimerFreq();
@@ -353,6 +353,7 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+    debug_printf("Assert failed at: %s line %u\n", file, line);
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

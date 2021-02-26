@@ -16,9 +16,11 @@
 
 typedef struct omGui omGuiT;
 typedef struct omScreen omScreenT;
-typedef struct omBitmap omBitmapT;
-typedef struct omAnimation omAnimationT;
 
+typedef struct omBitmap omBitmapT;
+//typedef struct omAnimation omAnimationT;
+
+/******************************************************************************/
 struct omGui
 {
   uint16_t Id;
@@ -32,6 +34,22 @@ struct omGui
   void (*DrawPixelCallback)(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
 };
 
+extern void omGui_Init(omGuiT *);
+extern void omGui_DeInit(omGuiT *);
+extern void omGui_Update(omGuiT *);
+extern void omGui_Clear(omGuiT *);
+
+extern void omGui_DrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
+extern void omGui_DrawBitmap(omGuiT *, const omBitmapT *, uint32_t x, uint32_t y, bool alpha, bool update);
+extern void omGui_DrawBitmapCropped(omGuiT *, omBitmapT *, uint32_t x, uint32_t y,
+        uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, bool alpha, bool update);
+extern void omGui_DrawLine(omGuiT *, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, bool update);
+extern void omGui_DrawRectangle(omGuiT *,
+        int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color, bool update);
+extern void omGui_DrawRectangleFilled(omGuiT *,
+        int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t bColor, uint8_t fColor, bool update);
+
+/******************************************************************************/
 struct omScreen
 {
   uint16_t Id;
@@ -41,6 +59,11 @@ struct omScreen
   bool (*UpdateCallback)(omScreenT *);
 };
 
+extern bool omScreen_Select(omScreenT *);
+extern bool omScreen_Update(omGuiT *);
+extern bool omScreen_IsActive(omScreenT *);
+
+/******************************************************************************/
 struct omBitmap
 {
   uint32_t Width, Height;
@@ -48,33 +71,15 @@ struct omBitmap
   const uint8_t *RawData;
 };
 
-struct omAnimation
-{
-  uint16_t PosX, PosY;
-  uint16_t FramesNumOf;
-  uint16_t Interval; // msec
-  omGuiT *Ui;
-  omBitmapT *Bitmaps;
-};
+// struct omAnimation
+// {
+//   uint16_t PosX, PosY;
+//   uint16_t FramesNumOf;
+//   uint16_t Interval; // msec
+//   omGuiT *Ui;
+//   omBitmapT *Bitmaps;
+// };
 
-
-/* Public methods */
-extern void omGuiInit(omGuiT *);
-extern void omGuiDeInit(omGuiT *);
-extern void omGuiUpdate(omGuiT *);
-extern void omGuiClear(omGuiT *);
-extern bool omScreenSelect(omScreenT *);
-extern bool omScreenUpdate(omGuiT *);
-extern bool omScreenIsActive(omScreenT *);
-extern void omDrawPixel(omGuiT *, uint32_t x, uint32_t y, uint8_t color);
-extern void omDrawBitmap(omGuiT *, const omBitmapT *, uint32_t x, uint32_t y, bool alpha, bool update);
-extern void omDrawBitmapCropped(omGuiT *, omBitmapT *, uint32_t x, uint32_t y,
-        uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, bool alpha, bool update);
-extern void omDrawLine(omGuiT *, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, bool update);
-extern void omDrawRectangle(omGuiT *,
-        int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color, bool update);
-extern void omDrawRectangleFilled(omGuiT *,
-        int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t bColor, uint8_t fColor, bool update);
 //extern void omAnimationStart(omAnimationT *);
 
 #endif /* _OMGUI_H_ */

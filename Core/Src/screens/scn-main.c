@@ -249,8 +249,7 @@ static bool ScreenUpdateCb(omScreenT *screen)
     is_update += DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN);
 
     // Clock
-    if(osEventFlagsWait(EvtClockUpdate, 0x00000001U, osFlagsWaitAny, 0) == 0x00000001U)
-        { ++is_update; }
+    is_update += (osEventFlagsWait(EvtClockUpdate, 0x00000001U, osFlagsWaitAny, 0) == 0x00000001U);
 
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
@@ -265,40 +264,40 @@ static bool ScreenUpdateCb(omScreenT *screen)
 
 static void DrawStatic(void)
 {
-    omDrawBitmap(&oledUi, &AssetBitmaps.RpmBars, 3, 36, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.RpmBars, 3, 36, false, false);
 
     /* RPM */
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_4, 60, 55, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_1, 68, 55, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 76, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_4, 60, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_1, 68, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 76, 55, false, false);
 
     /* KPH | MPH, dot */
     if(Config.SpeedUnits == UnitsMph)
     {
-        omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 87, 0, false, false);    
+        omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 87, 0, false, false);    
     }
     else if(Config.SpeedUnits == UnitsKph)
     {
-        omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 87, 0, false, false);    
+        omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 87, 0, false, false);    
     }
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_1, 95, 0, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_2, 103, 0, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot4x4, 79, 26, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_1, 95, 0, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_2, 103, 0, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot4x4, 79, 26, false, false);
 
     /* KM (Odo), dot */
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 183, 61, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 208, 55, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 216, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 183, 61, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 208, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 216, 55, false, false);
 
     /* Volt, Ampere dots, units */
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 156, 10, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 156, 27, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainVoltV, 174, 1, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainAmpA, 174, 18, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 156, 10, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 156, 27, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainVoltV, 174, 1, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainAmpA, 174, 18, false, false);
 
     /* Clock dots */
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 231, 3, false, false);
-    omDrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 231, 10, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 231, 3, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 231, 10, false, false);
 }
 
 
@@ -332,20 +331,20 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
  
         if(reg[i] == ' ')
         {
-            omDrawRectangleFilled(&oledUi,
+            omGui_DrawRectangleFilled(&oledUi,
                 ix + (font_w * i), iy, ix + (font_w * (i + 1)) - 1, iy + font_h,
                 OLED_GRAY_00, OLED_GRAY_00, false);
         }
         else
         {
-            omDrawBitmap(&oledUi, ifont[reg[i] - ASCII_NUM], ix + (font_w * i), iy, false, false);
+            omGui_DrawBitmap(&oledUi, ifont[reg[i] - ASCII_NUM], ix + (font_w * i), iy, false, false);
         }
     }
 
     /* Fractional part */
     if(ffont != NULL && ((flags & DRAW_METER_FORCED) || reg[fnumidx] != regPrev[fnumidx]))
     {
-        omDrawBitmap(&oledUi, ffont[reg[fnumidx] - ASCII_NUM], fx, fy, false, false);
+        omGui_DrawBitmap(&oledUi, ffont[reg[fnumidx] - ASCII_NUM], fx, fy, false, false);
     }
 
     return true;
@@ -381,7 +380,7 @@ static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
             continue; // Update only changed bars
         }
 
-        omDrawRectangleFilled(&oledUi, 4 + (i * 14), 37, 13 + (i * 14), 39, color, color, false);
+        omGui_DrawRectangleFilled(&oledUi, 4 + (i * 14), 37, 13 + (i * 14), 39, color, color, false);
     }
 
     return true;
@@ -392,7 +391,7 @@ static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev)
 {
     if(batpien == batpienPrev || batpien >= BAT_PIE_PCS) { return false; }
 
-    omDrawBitmap(&oledUi, BatPie14x14[batpien], 238, 46, false, false);
+    omGui_DrawBitmap(&oledUi, BatPie14x14[batpien], 238, 46, false, false);
 
     return true;
 }

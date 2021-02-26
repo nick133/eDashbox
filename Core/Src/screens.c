@@ -33,7 +33,7 @@ void Screens_Init(void)
     uiScreens[IdScreenMain] = &screenMain;
     uiScreens[IdScreenData] = &screenData;
 
-    omGuiInit(&oledUi);
+    omGui_Init(&oledUi);
 
     /* Assets must be initialized from function, not by global assignment
      * in bitmaps.c, or strange behaviour occurs - only first bitmap is

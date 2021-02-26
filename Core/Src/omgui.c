@@ -14,24 +14,24 @@
 #include "sh1122_conf.h"
 
 
-void omGuiInit(omGuiT *ui)
+void omGui_Init(omGuiT *ui)
 {
     ui->InitCallback(ui); // OLED Driver's Init code goes here
-    ui->ActiveScreen=NULL; // Discarded if set, use omScreenSelect()
+    ui->ActiveScreen=NULL; // Discarded if set, use omScreen_Select()
 }
 
 
-void omGuiDeInit(omGuiT *ui)
+void omGui_DeInit(omGuiT *ui)
 {
     ui->DeInitCallback(ui); // OLED Driver's DeInit code goes here
 }
 
-bool omScreenUpdate(omGuiT *ui)
+bool omScreen_Update(omGuiT *ui)
 {
     if(ui->ActiveScreen->UpdateCallback != NULL
         && ui->ActiveScreen->UpdateCallback(ui->ActiveScreen))
     {
-        omGuiUpdate(ui);
+        omGui_Update(ui);
         return true;
     }
 
@@ -39,45 +39,45 @@ bool omScreenUpdate(omGuiT *ui)
 }
 
 
-bool omScreenSelect(omScreenT *screen)
+bool omScreen_Select(omScreenT *screen)
 {
-    if(omScreenIsActive(screen) == true) { return false; }
+    if(omScreen_IsActive(screen) == true) { return false; }
 
     if(screen->Ui->ActiveScreen != NULL && screen->Ui->ActiveScreen->HideCallback != NULL)
         { screen->Ui->ActiveScreen->HideCallback(screen); }
 
-    omGuiClear(screen->Ui);
+    omGui_Clear(screen->Ui);
 
     if(screen->ShowCallback != NULL)
         { screen->ShowCallback(screen); }
 
     screen->Ui->ActiveScreen = screen;
-    omGuiUpdate(screen->Ui);
+    omGui_Update(screen->Ui);
 
     return true;
 }
 
 
-bool omScreenIsActive(omScreenT *screen)
+bool omScreen_IsActive(omScreenT *screen)
 {
     return (screen->Ui->ActiveScreen == NULL
         || screen->Ui->ActiveScreen->Id != screen->Id) ? false : true;
 }
 
 
-void omGuiUpdate(omGuiT *ui)
+void omGui_Update(omGuiT *ui)
 {
     ui->UpdateCallback(ui);
 }
 
 
-void omGuiClear(omGuiT *ui)
+void omGui_Clear(omGuiT *ui)
 {
     ui->ClearCallback(ui);
 }
 
 
-void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
+void omGui_DrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
 {
     ui->DrawPixelCallback(ui, x, y, color);
 }
@@ -88,7 +88,7 @@ void omDrawPixel(omGuiT *ui, uint32_t x, uint32_t y, uint8_t color)
  * https://electronics.stackexchange.com/questions/74589/how-to-stock-variables-in-flash-memory
  * https://forum.arduino.cc/index.php?topic=461487.0
  */
-void omDrawBitmap(omGuiT *ui, const omBitmapT *bitmap, uint32_t x, uint32_t y, bool alpha, bool update)
+void omGui_DrawBitmap(omGuiT *ui, const omBitmapT *bitmap, uint32_t x, uint32_t y, bool alpha, bool update)
 {
     uint8_t color1, color2;
     uint32_t idx = 0;
@@ -104,14 +104,14 @@ void omDrawBitmap(omGuiT *ui, const omBitmapT *bitmap, uint32_t x, uint32_t y, b
                 color2 = bitmap->RawData[idx] & 0x0f;
 
                 if(!(alpha == true && color1 == 0x0))
-                    { omDrawPixel(ui, xto, yto, color1); }
+                    { omGui_DrawPixel(ui, xto, yto, color1); }
 
                 is_color1 = false;
             }
             else
             {
                 if(!(alpha == true && color2 == 0x0))
-                    { omDrawPixel(ui, xto, yto, color2); }
+                    { omGui_DrawPixel(ui, xto, yto, color2); }
 
                 idx++;
                 is_color1 = true;
@@ -119,14 +119,14 @@ void omDrawBitmap(omGuiT *ui, const omBitmapT *bitmap, uint32_t x, uint32_t y, b
         }
     }
 
-    if(update) { omGuiUpdate(ui); }
+    if(update) { omGui_Update(ui); }
 }
 
 
 /*
  * x1, x2, y1, y2 = 0  croped area is 1x1 pixel, not 0!
  */
-void omDrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
+void omGui_DrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
         uint32_t x, uint32_t y,
         uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
         bool alpha, bool update)
@@ -146,7 +146,7 @@ void omDrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
 
                 if(!(alpha == true && color1 == 0x0)
                         && xto >= x1+x && xto <= x2+x && yto >= y1+y && yto <= y2+y)
-                    { omDrawPixel(ui, xto, yto, color1); }
+                    { omGui_DrawPixel(ui, xto, yto, color1); }
 
                 is_color1 = false;
             }
@@ -154,7 +154,7 @@ void omDrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
             {
                 if(!(alpha == true && color2 == 0x0)
                         && xto >= x1+x && xto <= x2+x && yto >= y1+y && yto <= y2+y)
-                    { omDrawPixel(ui, xto, yto, color2); }
+                    { omGui_DrawPixel(ui, xto, yto, color2); }
 
                 idx++;
                 is_color1 = true;
@@ -162,11 +162,11 @@ void omDrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
         }
     }
 
-    if(update) { omGuiUpdate(ui); }
+    if(update) { omGui_Update(ui); }
 }
 
 
-void omDrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, bool update)
+void omGui_DrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, bool update)
 {
     const int16_t deltaX = abs(x2 - x1);
     const int16_t deltaY = abs(y2 - y1);
@@ -175,11 +175,11 @@ void omDrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, 
 
     int16_t error = deltaX - deltaY;
 
-    omDrawPixel(ui, x2, y2, color);
+    omGui_DrawPixel(ui, x2, y2, color);
 
     while(x1 != x2 || y1 != y2)
     {
-        omDrawPixel(ui, x1, y1, color);
+        omGui_DrawPixel(ui, x1, y1, color);
         const int16_t error2 = error * 2;
 
         if(error2 > -deltaY)
@@ -194,24 +194,24 @@ void omDrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, 
         }
     }
 
-    if(update) { omGuiUpdate(ui); }
+    if(update) { omGui_Update(ui); }
 }
 
 
 // Draw rectangle
-void omDrawRectangle(omGuiT *ui, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color, bool update)
+void omGui_DrawRectangle(omGuiT *ui, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color, bool update)
 {
-    omDrawLine(ui, x1, y1, x1, y2, color, false);
-    omDrawLine(ui, x2, y1, x2, y2, color, false);
-    omDrawLine(ui, x1, y1, x2, y1, color, false);
-    omDrawLine(ui, x1, y2, x2, y2, color, false);
+    omGui_DrawLine(ui, x1, y1, x1, y2, color, false);
+    omGui_DrawLine(ui, x2, y1, x2, y2, color, false);
+    omGui_DrawLine(ui, x1, y1, x2, y1, color, false);
+    omGui_DrawLine(ui, x1, y2, x2, y2, color, false);
 
-    if(update) { omGuiUpdate(ui); }
+    if(update) { omGui_Update(ui); }
 }
 
 
 // Draw rectangle filled
-void omDrawRectangleFilled(omGuiT *ui, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t bColor, uint8_t fColor, bool update)
+void omGui_DrawRectangleFilled(omGuiT *ui, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t bColor, uint8_t fColor, bool update)
 {
     if(x1 > x2)
     {
@@ -232,17 +232,17 @@ void omDrawRectangleFilled(omGuiT *ui, int16_t x1, int16_t y1, int16_t x2, int16
 
     while(y_start <= y2)
     {
-        omDrawLine(ui, x1, y_start, x2, y_start, fColor, false);
+        omGui_DrawLine(ui, x1, y_start, x2, y_start, fColor, false);
         y_start++;
     }
 
     // Border
-    omDrawLine(ui, x1, y1, x1, y2, bColor, false);
-    omDrawLine(ui, x2, y1, x2, y2, bColor, false);
-    omDrawLine(ui, x1, y1, x2, y1, bColor, false);
-    omDrawLine(ui, x1, y2, x2, y2, bColor, false);
+    omGui_DrawLine(ui, x1, y1, x1, y2, bColor, false);
+    omGui_DrawLine(ui, x2, y1, x2, y2, bColor, false);
+    omGui_DrawLine(ui, x1, y1, x2, y1, bColor, false);
+    omGui_DrawLine(ui, x1, y2, x2, y2, bColor, false);
 
-    if(update) { omGuiUpdate(ui); }
+    if(update) { omGui_Update(ui); }
 }
 
 
@@ -252,8 +252,8 @@ void omDrawRectangleFilled(omGuiT *ui, int16_t x1, int16_t y1, int16_t x2, int16
 
     for(uint16_t i = 0; i < anim->FramesNumOf; i++)
     {
-        omDrawBitmap(bitmap, anim->PosX, anim->PosY);
-        omGuiUpdate(anim->Ui);
+        omGui_DrawBitmap(bitmap, anim->PosX, anim->PosY);
+        omGui_Update(anim->Ui);
         SYS_SLEEP(anim->Interval);
 
         bitmap++;

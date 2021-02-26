@@ -136,19 +136,19 @@ void StartDefaultTask(void *argument)
 
     if(Config.ShowLogo)
     {
-        omDrawBitmap(&oledUi, &AssetBitmaps.Logo, 4, 4, false, true);
-        omDrawBitmap(&oledUi, &AssetBitmaps.LogoText1, 69, 30, false, true);
-        omDrawBitmap(&oledUi, &AssetBitmaps.LogoText2, 92, 9, false, true);
+        omGui_DrawBitmap(&oledUi, &AssetBitmaps.Logo, 4, 4, false, true);
+        omGui_DrawBitmap(&oledUi, &AssetBitmaps.LogoText1, 69, 30, false, true);
+        omGui_DrawBitmap(&oledUi, &AssetBitmaps.LogoText2, 92, 9, false, true);
         osDelay(1200);
     }
 
-    omScreenSelect(uiScreens[(Config.Screen1 >= 0 && Config.Screen1 < 4)
+    omScreen_Select(uiScreens[(Config.Screen1 >= 0 && Config.Screen1 < 4)
         ? Config.Screen1 : IdScreenMain]);
 
     do {
-        if(!omScreenUpdate(&oledUi))
+        if(!omScreen_Update(&oledUi))
         {
-//            omGuiUpdate(&oledUi);
+//            omGui_Update(&oledUi);
         }
     } while(osDelay(MAIN_THREAD_DELAY) == osOK); // fixed fps
 

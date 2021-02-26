@@ -28,6 +28,6 @@
 #define debug_printf(...)
 #define debug_fprintf(...)
 
-# endif
+# endif /* DEBUG */
 
 #endif /* _DEBUG_H_ */

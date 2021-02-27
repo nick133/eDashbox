@@ -126,7 +126,7 @@ void omGui_DrawBitmap(omGuiT *ui, const omBitmapT *bitmap, uint32_t x, uint32_t 
 /*
  * x1, x2, y1, y2 = 0  croped area is 1x1 pixel, not 0!
  */
-void omGui_DrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
+/* void omGui_DrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
         uint32_t x, uint32_t y,
         uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
         bool alpha, bool update)
@@ -163,7 +163,7 @@ void omGui_DrawBitmapCropped(omGuiT *ui, omBitmapT *bitmap,
     }
 
     if(update) { omGui_Update(ui); }
-}
+} */
 
 
 void omGui_DrawLine(omGuiT *ui, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint8_t color, bool update)

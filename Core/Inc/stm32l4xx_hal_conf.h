@@ -192,10 +192,7 @@
   * @brief Uncomment the line below to expanse the "assert_param" macro in the
   *        HAL drivers code
   */
-#ifdef DEBUG
-#define USE_FULL_ASSERT    1U
-#endif
-
+/* #define USE_FULL_ASSERT    1U */
 
 /* ################## Register callback feature configuration ############### */
 /**

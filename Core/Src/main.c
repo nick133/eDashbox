@@ -262,17 +262,36 @@ static void MX_NVIC_Init(void)
 /*
  * Callbacks for Interupts
  */
-// void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-// {
-//     if(GPIO_Pin == BTN1_Pin)
-//     {
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
 
-//     }
-//     else if (GPIO_Pin == BTN2_Pin)
-//     {
-
-//     }
-// }
+    // if(GPIO_Pin == BTN1_Pin)
+    // {
+    //     if(__HAL_GPIO_EXTI_GET_FLAG(GPIO_Pin))
+    //     {
+    //         if(HAL_GPIO_ReadPin(GPIOB, GPIO_Pin) == GPIO_PIN_SET)
+    //         {
+    //             debug_printf("BTN1: pressed\n");
+    //         }
+    //         else
+    //         {
+    //             debug_printf("BTN1: released\n");
+    //         }
+    //         __HAL_GPIO_EXTI_CLEAR_FLAG(GPIO_Pin);
+    //     }
+    // }
+    // else if (GPIO_Pin == BTN2_Pin)
+    // {
+    //     if(HAL_GPIO_ReadPin(GPIOB, GPIO_Pin) == GPIO_PIN_SET)
+    //     {
+    //         debug_printf("BTN2: pressed\n");
+    //     }
+    //     else
+    //     {
+    //         debug_printf("BTN2: released\n");
+    //     }
+    // }
+}
 
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)

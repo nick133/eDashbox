@@ -65,9 +65,9 @@ extern osEventFlagsId_t SensorEvent;
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 #define ADC_POLL_DELAY 250U
-#define ADC_NCHANNELS 2U
-#define ADC_CHANNEL_VOLT 0U
-#define ADC_CHANNEL_AMPS 1U
+#define ADC_NCHANNELS 2
+#define ADC_CHANNEL_VOLT 0
+#define ADC_CHANNEL_AMPS 1
 #define ADC_VREF 3.3
 #define ADC_12BIT_MAX 4095U
 

@@ -180,10 +180,18 @@ __NO_RETURN static void AdcPoll(void *params)
     static const double AdcFactor = (double)ADC_VREF / (double)(ADC_12BIT_MAX + 1);
 
     do {
-        if(HAL_ADC_Start_DMA(&hadc1, &ADC_channels, ADC_NCHANNELS) == HAL_OK)
+        HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, &ADC_channels, ADC_NCHANNELS);
+
+        if(status == HAL_OK)
         {
             Sensors.Volt = (double)(ADC_channels[ADC_CHANNEL_VOLT] + 1) * AdcFactor;
             Sensors.Ampere = (double)(ADC_channels[ADC_CHANNEL_AMPS] + 1) * AdcFactor;
+
+            HAL_ADC_Stop_DMA(&hadc1);
+        }
+        else
+        {
+            debug_printf("ADC status: %s\n", (status == HAL_BUSY) ? "BUSY" : "TIMEOUT|ERROR");
         }
     } while(osDelay(ADC_POLL_DELAY) == osOK);
 }

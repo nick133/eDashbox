@@ -285,7 +285,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
         if(!Config.HallOnWheel)
             { Odo /= Config.GearRatio; }
 
-        Sensors.Odo += Odo;
+        Sensors.Odo = (Sensors.Odo < ODOMETER_MAX) ? (Sensors.Odo + Odo) : 0.0;
         Sensors.HallRpm = gf_RpmFactor / (float)(Tick - gu32_SysTickPrev);
 
         gu32_SysTickPrev = Tick;

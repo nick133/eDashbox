@@ -70,9 +70,11 @@ extern osEventFlagsId_t SensorEvent;
 #define ADC_CHANNEL_AMPS 1U
 #define ADC_VREF 3.3
 #define ADC_12BIT_MAX 4095U
+
 #define MAIN_THREAD_DELAY 50U
 #define RPM_IDLE_TIME 1.1 // (float) seconds
 #define DS18B20_POLL_DELAY 600U
+#define ODOMETER_MAX 999999.999
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

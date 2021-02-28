@@ -43,7 +43,18 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef struct
+{
+    void (*Callback)(void *);
+    void *Params;
+} BtnEventCallbackT;
 
+typedef struct
+{
+    uint32_t PressTick;
+    const GPIO_TypeDef* GpioPort;
+    const uint16_t GpioPin;
+} BtnStateT;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -58,6 +69,7 @@
 #define MAIN_THREAD_DELAY 50U
 #define DS18B20_POLL_DELAY 600U
 
+#define NUM_BUTTONS 2U
 #define BTN_POLL_DELAY 80U // debounce
 #define BTN_LONGPRESS_TIME 1000U // at least this time holding before release
 /* USER CODE END PD */
@@ -73,6 +85,10 @@ static osThreadId_t TempPollTask;
 static osThreadId_t AdcPollTask;
 static osThreadId_t BtnPollTask;
 
+/* Use static allocation as pointers are randomly being corrupted if
+ * dynamic allocation is used without malloc()
+ */
+static BtnEventCallbackT BtnCallbacks[NUM_BUTTONS][EvtButtonNumOf];
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -117,6 +133,13 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
+    for(uint8_t i = 0; i < NUM_BUTTONS; i++)
+    {
+        for(uint8_t j = 0; j < EvtButtonNumOf; j++)
+        {
+            BtnCallbacks[i][j] = (BtnEventCallbackT){ NULL, NULL };
+        }
+    }
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -186,7 +209,8 @@ void StartDefaultTask(void *argument)
 
     } while(osDelay(MAIN_THREAD_DELAY) == osOK); // fixed fps
 
-    debug_printf("Exit main thread!\n");
+    debug_printf("Exiting main thread!\n");
+    osThreadExit();
   /* USER CODE END StartDefaultTask */
 }
 
@@ -280,43 +304,80 @@ __NO_RETURN static void AdcPoll(void *params)
 
 __NO_RETURN static void ButtonsPoll(void *params)
 {
-    static uint32_t Btn1PressTick;
-    static uint32_t Btn2PressTick;
+    static BtnStateT buttons[NUM_BUTTONS] =
+    {
+        {
+            .PressTick = 0,
+            .GpioPort = BTN1_GPIO_Port,
+            .GpioPin = BTN1_Pin
+        },
+        {
+            .PressTick = 0,
+            .GpioPort = BTN2_GPIO_Port,
+            .GpioPin = BTN2_Pin
+        }
+    };
 
     do {
         uint32_t Tick = osKernelGetTickCount();
 
-        /* Maximum 2^32 ticks (~49 days), counter resets. One press per 49 days is ignored, not a huge trade-off */
-        if(Btn1PressTick > Tick || Btn2PressTick > Tick)
+        for(uint8_t i = 0; i < NUM_BUTTONS; i++)
         {
-            Btn1PressTick = Btn2PressTick = 0;
-        }
-
-        if(HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin)) // Press
-        {
-            /* Skip multiple press with no release, debounce */
-            if(!Btn1PressTick) { Btn1PressTick = Tick; }
-        }
-        /* Only process release if previous press was detected */
-        else if(Btn1PressTick > 0) // Release
-        {
-            uint32_t pressTime = Tick - Btn1PressTick;
-
-            if(pressTime < BTN_LONGPRESS_TIME)
+            /* Maximum 2^32 ticks (~49 days), counter resets. One press per 49 days is ignored, not a huge trade-off */
+            if(buttons[i].PressTick > Tick)
             {
-                debug_printf("BTN1: Single press!\n");
-            }
-            else
-            {
-                debug_printf("BTN1: Long press!\n");
+                buttons[i].PressTick = 0;
             }
 
-            Btn1PressTick = 0;
-        }
+            if(HAL_GPIO_ReadPin(buttons[i].GpioPort, buttons[i].GpioPin)) // Press
+            {
+                /* Skip multiple press with no release, debounce */
+                if(!buttons[i].PressTick)
+                {
+                    buttons[i].PressTick = Tick;
+                }
+            }
+            /* Only process release if previous press was detected */
+            else if(buttons[i].PressTick > 0) // Release
+            {
+                uint32_t pressTime = Tick - buttons[i].PressTick;
 
+                BtnEventCallbackT *evtcb = &(BtnCallbacks[i][
+                    (pressTime < BTN_LONGPRESS_TIME) ? EvtButtonPress : EvtButtonLongPress]);
+
+                if(evtcb->Callback != NULL)
+                    { evtcb->Callback(evtcb->Params); }
+
+                buttons[i].PressTick = 0;
+            }
+        }
     } while(osDelay(BTN_POLL_DELAY) == osOK);
 
     osThreadExit();
+}
+
+
+bool RegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind, void (*EvtCallback)(void *), void *Params)
+{
+    if(EvtKind >= EvtButtonNumOf) { return false; }
+
+    BtnCallbacks[Btn][EvtKind] = (BtnEventCallbackT){
+        .Callback = EvtCallback,
+        .Params = Params
+    };
+
+    return true;
+}
+
+
+bool UnRegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind)
+{
+    if(EvtKind >= EvtButtonNumOf) { return false; }
+
+    BtnCallbacks[Btn][EvtKind].Callback = NULL;
+    BtnCallbacks[Btn][EvtKind].Params = NULL;
+
+    return true;
 }
 /* USER CODE END Application */
 

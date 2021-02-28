@@ -262,68 +262,6 @@ static void MX_NVIC_Init(void)
 /*
  * Callbacks for Interupts
  */
-
-// #define BTN_SINGLE_PRESS_INTERVAL 400U // 1 press within X msec
-// #define BTN_DOUBLE_PRESS_INTERVAL 800U // 2 press within X msec
-// #define BTN_LONG_PRESS_INTERVAL 1100U // at least X msec holding
-
-// void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-// {
-    /*
-        Process 1, 2
-        a - single press
-        b - double press
-        c - long press
-        ---
-        1 + 2 - single press
-        1 + 2 - long press
-    */
-    //static uint32_t Btn1PressTick;
-    //static uint32_t Btn2PressTick;
-
-    //uint32_t Tick = osKernelGetTickCount();
-
-    /* Maximum 2^32 ticks (~49 days), counter resets. One press per 49 days is ignored, not a huge trade-off */
-    // if(Btn1PressTick > Tick || Btn2PressTick > Tick)
-    // {
-    //     Btn1PressTick = Btn2PressTick = 0;
-    //     return;
-    // }
-
-//     if(GPIO_Pin == BTN1_Pin)
-//     {
-//         /* Ignore any press in between first press detected and release */
-//         //if(HAL_GPIO_ReadPin(GPIOB, GPIO_Pin) && !Btn1PressTick) 
-//         if(HAL_GPIO_ReadPin(GPIOB, GPIO_Pin)) 
-//         {
-// //            Btn1PressTick = Tick;
-//             debug_printf("BTN1: press!\n");
-//         }
-//         else
-//         {
-//             debug_printf("BTN1: release!\n");
-//             // if(Btn1PressTick > 0) // Only process release if previous press was detected
-//             // {
-//             //     if((Tick - Btn1PressTick) <= BTN_SINGLE_PRESS_INTERVAL)
-//             //     {
-//             //         debug_printf("BTN1: Single press!\n");
-//             //     }
-//             //     else if((Tick - Btn1PressTick) >= BTN_DOUBLE_PRESS_INTERVAL)
-//             //     {
-//             //         debug_printf("BTN1: Double press!\n");
-//             //     }
-//             // }
-
-//             // Btn1PressTick = 0;
-//         }
-//     }
-//     else if (GPIO_Pin == BTN2_Pin)
-//     {
-
-//     }
-// }
-
-
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM2)
@@ -340,8 +278,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
         gu32_SysTickPrev = Tick;
     }
 }
-
-
 /* USER CODE END 4 */
 
  /**

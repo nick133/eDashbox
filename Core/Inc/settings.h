@@ -6,9 +6,10 @@
 #include "screens.h"
 
 
-typedef enum {
+typedef enum
+{
     UnitsKph, UnitsMph, UnitsCelsius, UnitsFahrenheit
- } UnitsT;
+} UnitsT;
 
 typedef struct ConfigSettings {
   UnitsT SpeedUnits;

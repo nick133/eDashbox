@@ -8,7 +8,8 @@
 #define KILOS_PER_MILE 1.60934
 
 
-typedef enum {
+typedef enum
+{
     IdScreenMain,
     IdScreenData,
     IdScreenRpm,

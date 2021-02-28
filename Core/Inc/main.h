@@ -43,7 +43,8 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-typedef struct SensorsData {
+typedef struct SensorsData
+{
     float HallRpm;
     float Temperature[_DS18B20_MAX_SENSORS]; // depends on Config.TempUnits
     float Volt;

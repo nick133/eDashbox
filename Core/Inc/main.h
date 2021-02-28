@@ -64,16 +64,7 @@ extern osEventFlagsId_t SensorEvent;
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-#define ADC_POLL_DELAY 250U
-#define ADC_NCHANNELS 2
-#define ADC_CHANNEL_VOLT 0
-#define ADC_CHANNEL_AMPS 1
-#define ADC_VREF 3.3
-#define ADC_12BIT_MAX 4095U
-
-#define MAIN_THREAD_DELAY 50U
 #define RPM_IDLE_TIME 1.1 // (float) seconds
-#define DS18B20_POLL_DELAY 600U
 #define ODOMETER_MAX 999999.999
 /* USER CODE END EC */
 
@@ -104,10 +95,8 @@ void free(void *pvBuffer);
 #define DS18B20_GPIO_Port GPIOA
 #define BTN1_Pin GPIO_PIN_0
 #define BTN1_GPIO_Port GPIOB
-#define BTN1_EXTI_IRQn EXTI0_IRQn
 #define BTN2_Pin GPIO_PIN_1
 #define BTN2_GPIO_Port GPIOB
-#define BTN2_EXTI_IRQn EXTI1_IRQn
 #define OLED_nCS_Pin GPIO_PIN_8
 #define OLED_nCS_GPIO_Port GPIOA
 #define OLED_DC_Pin GPIO_PIN_11

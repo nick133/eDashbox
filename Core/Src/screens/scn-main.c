@@ -8,6 +8,7 @@
 
 #include "main.h"
 #include "rtc.h"
+#include "rtos.h"
 
 #include "settings.h"
 #include "bitmaps.h"
@@ -182,8 +183,8 @@ static void ScreenShowCb(omScreenT *screen)
     }
     else
     {
-        ClockUpdateTask = osThreadNew(ClockUpdate, NULL, NULL);
-        EvtClockUpdate = osEventFlagsNew(NULL);
+        EvtClockUpdate = osEventFlagsNew(NULL); // Obviously must be before clock update task creation
+        ClockUpdateTask = appCreateTask(ClockUpdate, NULL, TASK_NAME("ClockUpdate"));
     }
 }
 
@@ -417,4 +418,6 @@ __NO_RETURN static void ClockUpdate(void *params)
 
         osEventFlagsSet(EvtClockUpdate, 0x00000001U);
     } while(osDelay(1000) == osOK);
+
+    osThreadExit();
 }

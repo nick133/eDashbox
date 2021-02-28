@@ -15,8 +15,8 @@ Note: Development is in 'master' branch, don't be surprised for a lot of compila
 * Nim language compiler
 * GIMP
 * ImageMagick
+* SEGGER JLink debugger and software
 * STM32 CubeMX (optional)
-* SEGGER JLink debugger and software (optional, for debug only)
 * Microsoft VS code (optional)
 
 ### Process
@@ -54,14 +54,16 @@ Fix not found includes in VS code:
 
 
 ## Status
-* Main screen is working for about 70% of functionality, that is: speedo/tacho, clock, battery pie chart, odo.
-* FatFs with MicroSD works but currently not used
-* temperature sensors are working
-* Hall sensor is working
-* Voltage meter (ADC) is working
+List of working features, mostly:
+* Main screen speedo/tacho, rpm bar graph, clock, battery pie chart, odometer.
+* FatFs with MicroSD, currently not used
+* 2 temperature sensors
+* Hall sensor
+* ADC sampling for Volt/Ampere meters
+* 2 buttons
+
 
 ## TODO
-* Buttons processing
 * Config save to EEPROM
 * Change IDE to Vim, configure debugging
 * Test FatFs for MicroSD formatted with mkfs.vfat

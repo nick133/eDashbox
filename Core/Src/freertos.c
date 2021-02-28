@@ -30,6 +30,7 @@
 #include "tim.h"
 #include "adc.h"
 #include "stdbool.h"
+#include "rtos.h"
 
 #include "printf.h"
 #include "ds18b20.h"
@@ -47,6 +48,18 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define ADC_POLL_DELAY 250U
+#define ADC_NCHANNELS 2
+#define ADC_CHANNEL_VOLT 0
+#define ADC_CHANNEL_AMPS 1
+#define ADC_VREF 3.3
+#define ADC_12BIT_MAX 4095U
+
+#define MAIN_THREAD_DELAY 50U
+#define DS18B20_POLL_DELAY 600U
+
+#define BTN_POLL_DELAY 80U // debounce
+#define BTN_LONGPRESS_TIME 1000U // at least this time holding before release
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -58,6 +71,7 @@
 /* USER CODE BEGIN Variables */
 static osThreadId_t TempPollTask;
 static osThreadId_t AdcPollTask;
+static osThreadId_t BtnPollTask;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -65,18 +79,36 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 __NO_RETURN static void TemperaturePoll(void *);
 __NO_RETURN static void AdcPoll(void *);
+__NO_RETURN static void ButtonsPoll(void *);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+
+/* Hook prototypes */
+void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
+
+/* USER CODE BEGIN 4 */
+/* "Stack overflow checking introduces a context switch overhead so its use is only
+ * recommended during the development or testing phases." Further reading:
+ * https://www.freertos.org/Stacks-and-stack-overflow-checking.html
+ */
+void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
+{
+   /* Run time stack overflow checking is performed if
+   configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
+   called if a stack overflow is detected. */
+   debug_printf("Stack overflow: %s\n", pcTaskName);
+}
+/* USER CODE END 4 */
 
 /**
   * @brief  FreeRTOS initialization
@@ -105,8 +137,7 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-    TempPollTask = osThreadNew(TemperaturePoll, NULL, NULL);
-    AdcPollTask = osThreadNew(AdcPoll, NULL, NULL);
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -143,6 +174,10 @@ void StartDefaultTask(void *argument)
         osDelay(1200);
     }
 
+    TempPollTask = appCreateTask(TemperaturePoll, NULL, TASK_NAME("TemperaturePoll"));
+    AdcPollTask = appCreateTask(AdcPoll, NULL, TASK_NAME("AdcPoll"));
+    BtnPollTask = appCreateTask(ButtonsPoll, NULL, TASK_NAME("ButtonsPoll"));
+
     omScreen_Select(uiScreens[(Config.Screen1 >= 0 && Config.Screen1 < 4)
         ? Config.Screen1 : IdScreenMain]);
 
@@ -151,11 +186,52 @@ void StartDefaultTask(void *argument)
 
     } while(osDelay(MAIN_THREAD_DELAY) == osOK); // fixed fps
 
+    debug_printf("Exit main thread!\n");
   /* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+/*
+ * (!) Increase FreeRTOS TOTAL_HEAP_SIZE if new task creation fails with osThreadError.
+ * Further reading: https://stackoverflow.com/questions/40054233/i-can-not-create-more-than-5-tasks-in-freertos
+ * (!) Increase FreeRTOS MINIMAL_STACK_SIZE if stack overflow occurs in tasks.
+ * Working settings so far:
+ * ( FreeRTOS )
+ *     TOTAL_HEAP_SIZE = 8192
+ *     MINIMAL_STACK_SIZE = 256
+ * ( CubeMX )
+ *     Max heap size: 0x400
+ *     Max stack size: 0x800
+ */
+
+osThreadId_t appCreateTask(osThreadFunc_t func, void *args, osThreadAttr_t *attr)
+{
+    char *error;
+    osThreadId_t tid = osThreadNew(func, args, attr);
+
+    if(tid == NULL)
+    {
+        osThreadState_t state = osThreadGetState(tid);
+
+        switch(state)
+        {
+            case osThreadInactive:   error = "Inactive"; break;
+            case osThreadReady:      error = "Ready"; break;
+            case osThreadRunning:    error = "Running"; break;
+            case osThreadBlocked:    error = "Blocked"; break;
+            case osThreadTerminated: error = "Terminated"; break;
+            case osThreadError:      error = "Error"; break;
+            default:                 error = "Unexpected";
+        }
+
+        debug_printf("Thread '%s' creation failed: %s\n", attr->name, error);
+    }
+
+    return tid;
+}
+
+
 __NO_RETURN static void TemperaturePoll(void *params)
 {
     do {
@@ -172,7 +248,10 @@ __NO_RETURN static void TemperaturePoll(void *params)
             }
         }
     } while(osDelay(DS18B20_POLL_DELAY) == osOK);
+
+    osThreadExit();
 }
+
 
 __NO_RETURN static void AdcPoll(void *params)
 {
@@ -180,7 +259,7 @@ __NO_RETURN static void AdcPoll(void *params)
     static const double AdcFactor = (double)ADC_VREF / (double)(ADC_12BIT_MAX + 1);
 
     do {
-        HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, &ADC_channels, ADC_NCHANNELS);
+        HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, ADC_channels, ADC_NCHANNELS);
 
         if(status == HAL_OK)
         {
@@ -194,6 +273,50 @@ __NO_RETURN static void AdcPoll(void *params)
             debug_printf("ADC status: %s\n", (status == HAL_BUSY) ? "BUSY" : "TIMEOUT|ERROR");
         }
     } while(osDelay(ADC_POLL_DELAY) == osOK);
+
+    osThreadExit();
+}
+
+
+__NO_RETURN static void ButtonsPoll(void *params)
+{
+    static uint32_t Btn1PressTick;
+    static uint32_t Btn2PressTick;
+
+    do {
+        uint32_t Tick = osKernelGetTickCount();
+
+        /* Maximum 2^32 ticks (~49 days), counter resets. One press per 49 days is ignored, not a huge trade-off */
+        if(Btn1PressTick > Tick || Btn2PressTick > Tick)
+        {
+            Btn1PressTick = Btn2PressTick = 0;
+        }
+
+        if(HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin)) // Press
+        {
+            /* Skip multiple press with no release, debounce */
+            if(!Btn1PressTick) { Btn1PressTick = Tick; }
+        }
+        /* Only process release if previous press was detected */
+        else if(Btn1PressTick > 0) // Release
+        {
+            uint32_t pressTime = Tick - Btn1PressTick;
+
+            if(pressTime < BTN_LONGPRESS_TIME)
+            {
+                debug_printf("BTN1: Single press!\n");
+            }
+            else
+            {
+                debug_printf("BTN1: Long press!\n");
+            }
+
+            Btn1PressTick = 0;
+        }
+
+    } while(osDelay(BTN_POLL_DELAY) == osOK);
+
+    osThreadExit();
 }
 /* USER CODE END Application */
 

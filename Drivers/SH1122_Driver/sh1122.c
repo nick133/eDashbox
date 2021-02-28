@@ -67,8 +67,8 @@ static uint8_t FrameBuffer[SH1122_OLED_RAM_SIZE] = {0};
 static void SendOneByteCommand(uint8_t Cmd)
 {
     HAL_GPIO_WritePin(SH1122_OLED_CS_PORT, SH1122_OLED_CS_PIN, GPIO_PIN_RESET); // Select OLED
-    HAL_GPIO_WritePin(SH1122_OLED_DC_PORT, SH1122_OLED_DC_PIN, GPIO_PIN_RESET);   // Command mode
-    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)&Cmd, 1, HAL_MAX_DELAY);        // Send byte
+    HAL_GPIO_WritePin(SH1122_OLED_DC_PORT, SH1122_OLED_DC_PIN, GPIO_PIN_RESET); // Command mode
+    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)&Cmd, 1, HAL_MAX_DELAY); // Send byte
     HAL_GPIO_WritePin(SH1122_OLED_CS_PORT, SH1122_OLED_CS_PIN, GPIO_PIN_SET); // Deselect OLED
 }
 
@@ -76,9 +76,9 @@ static void SendOneByteCommand(uint8_t Cmd)
 static void SendDoubleByteCommand(uint8_t CmdH, uint8_t CmdL)
 {
     HAL_GPIO_WritePin(SH1122_OLED_CS_PORT, SH1122_OLED_CS_PIN, GPIO_PIN_RESET); // Select OLED
-    HAL_GPIO_WritePin(SH1122_OLED_DC_PORT, SH1122_OLED_DC_PIN, GPIO_PIN_RESET);   // Command mode
-    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)&CmdH, 1, HAL_MAX_DELAY);        // Send byte 1
-    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)&CmdL, 1, HAL_MAX_DELAY);        // Send byte 2
+    HAL_GPIO_WritePin(SH1122_OLED_DC_PORT, SH1122_OLED_DC_PIN, GPIO_PIN_RESET); // Command mode
+    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)&CmdH, 1, HAL_MAX_DELAY); // Send byte 1
+    HAL_SPI_Transmit(SH1122_OLED_SPI_HANDLE, (uint8_t *)&CmdL, 1, HAL_MAX_DELAY); // Send byte 2
     HAL_GPIO_WritePin(SH1122_OLED_CS_PORT, SH1122_OLED_CS_PIN, GPIO_PIN_SET); // Deselect OLED
 }
 

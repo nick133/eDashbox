@@ -48,13 +48,6 @@ typedef struct
     void (*Callback)(void *);
     void *Params;
 } BtnEventCallbackT;
-
-typedef struct
-{
-    uint32_t PressTick;
-    const GPIO_TypeDef* GpioPort;
-    const uint16_t GpioPin;
-} BtnStateT;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -216,8 +209,8 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-/*
- * (!) Increase FreeRTOS TOTAL_HEAP_SIZE if new task creation fails with osThreadError.
+
+/* (!) Increase FreeRTOS TOTAL_HEAP_SIZE if new task creation fails with osThreadError.
  * Further reading: https://stackoverflow.com/questions/40054233/i-can-not-create-more-than-5-tasks-in-freertos
  * (!) Increase FreeRTOS MINIMAL_STACK_SIZE if stack overflow occurs in tasks.
  * Working settings so far:
@@ -304,19 +297,10 @@ __NO_RETURN static void AdcPoll(void *params)
 
 __NO_RETURN static void ButtonsPoll(void *params)
 {
-    static BtnStateT buttons[NUM_BUTTONS] =
-    {
-        {
-            .PressTick = 0,
-            .GpioPort = BTN1_GPIO_Port,
-            .GpioPin = BTN1_Pin
-        },
-        {
-            .PressTick = 0,
-            .GpioPort = BTN2_GPIO_Port,
-            .GpioPin = BTN2_Pin
-        }
-    };
+    static const GPIO_TypeDef const *BtnGPIOx[NUM_BUTTONS] = { BTN1_GPIO_Port, BTN2_GPIO_Port };
+    static const uint16_t BtnPin[NUM_BUTTONS] = { BTN1_Pin, BTN2_Pin };
+
+    static uint32_t BtnPressTick[NUM_BUTTONS] = {0};
 
     do {
         uint32_t Tick = osKernelGetTickCount();
@@ -324,23 +308,23 @@ __NO_RETURN static void ButtonsPoll(void *params)
         for(uint8_t i = 0; i < NUM_BUTTONS; i++)
         {
             /* Maximum 2^32 ticks (~49 days), counter resets. One press per 49 days is ignored, not a huge trade-off */
-            if(buttons[i].PressTick > Tick)
+            if(BtnPressTick[i] > Tick)
             {
-                buttons[i].PressTick = 0;
+                BtnPressTick[i] = 0;
             }
 
-            if(HAL_GPIO_ReadPin(buttons[i].GpioPort, buttons[i].GpioPin)) // Press
+            if(HAL_GPIO_ReadPin(BtnGPIOx[i], BtnPin[i])) // Press
             {
                 /* Skip multiple press with no release, debounce */
-                if(!buttons[i].PressTick)
+                if(!BtnPressTick[i])
                 {
-                    buttons[i].PressTick = Tick;
+                    BtnPressTick[i] = Tick;
                 }
             }
             /* Only process release if previous press was detected */
-            else if(buttons[i].PressTick > 0) // Release
+            else if(BtnPressTick[i] > 0) // Release
             {
-                uint32_t pressTime = Tick - buttons[i].PressTick;
+                uint32_t pressTime = Tick - BtnPressTick[i];
 
                 BtnEventCallbackT *evtcb = &(BtnCallbacks[i][
                     (pressTime < BTN_LONGPRESS_TIME) ? EvtButtonPress : EvtButtonLongPress]);
@@ -348,7 +332,7 @@ __NO_RETURN static void ButtonsPoll(void *params)
                 if(evtcb->Callback != NULL)
                     { evtcb->Callback(evtcb->Params); }
 
-                buttons[i].PressTick = 0;
+                BtnPressTick[i] = 0;
             }
         }
     } while(osDelay(BTN_POLL_DELAY) == osOK);
@@ -361,7 +345,8 @@ bool RegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind, void (*EvtCallback)(void
 {
     if(EvtKind >= EvtButtonNumOf) { return false; }
 
-    BtnCallbacks[Btn][EvtKind] = (BtnEventCallbackT){
+    BtnCallbacks[Btn][EvtKind] =
+    (BtnEventCallbackT){
         .Callback = EvtCallback,
         .Params = Params
     };

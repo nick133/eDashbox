@@ -111,12 +111,6 @@ static void ScreenShowCb(omScreenT *);
 static void ScreenHideCb(omScreenT *);
 static bool ScreenUpdateCb(omScreenT *);
 
-void butcb1(void*p);
-void butcb2(void*p);
-void butcb3(void*p);
-void butcb4(void*p);
-
-
 __NO_RETURN static void ClockUpdate(void *);
 
 static void DrawStatic(void);
@@ -193,16 +187,11 @@ static void ScreenShowCb(omScreenT *screen)
         ClockUpdateTask = appCreateTask(ClockUpdate, NULL, TASK_NAME("ClockUpdate"));
     }
 
-    RegButtonEvent(0, EvtButtonPress, butcb1, NULL);
-    RegButtonEvent(1, EvtButtonPress, butcb2, NULL);
-    RegButtonEvent(0, EvtButtonLongPress, butcb3, NULL);
-    RegButtonEvent(1, EvtButtonLongPress, butcb4, NULL);
+    // RegButtonEvent(0, EvtButtonPress, butcb1, NULL);
+    // RegButtonEvent(1, EvtButtonPress, butcb2, NULL);
+    // RegButtonEvent(0, EvtButtonLongPress, butcb3, NULL);
+    // RegButtonEvent(1, EvtButtonLongPress, butcb4, NULL);
 }
-void butcb1(void*p){ debug_printf("Event: Btn1 press\n"); }
-void butcb2(void*p){ debug_printf("Event: Btn2 press\n"); }
-void butcb3(void*p){ debug_printf("Event: Btn1 long press\n"); }
-void butcb4(void*p){ debug_printf("Event: Btn2 long press\n"); }
-
 
 
 static void ScreenHideCb(omScreenT *screen)

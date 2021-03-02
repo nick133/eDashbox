@@ -132,6 +132,8 @@ void MainScreenInit(void)
 }
 
 
+void cbk(uint8_t Btn, BtnEventKindT EvtKind, void *Params);
+
 static void ScreenShowCb(omScreenT *screen)
 {
     ScreenDat.Speed = ScreenDatPrev.Speed
@@ -187,12 +189,19 @@ static void ScreenShowCb(omScreenT *screen)
         ClockUpdateTask = appCreateTask(ClockUpdate, NULL, TASK_NAME("ClockUpdate"));
     }
 
-    // RegButtonEvent(0, EvtButtonPress, butcb1, NULL);
-    // RegButtonEvent(1, EvtButtonPress, butcb2, NULL);
-    // RegButtonEvent(0, EvtButtonLongPress, butcb3, NULL);
-    // RegButtonEvent(1, EvtButtonLongPress, butcb4, NULL);
+    RegButtonEvent(0, EvtButtonPress, cbk, NULL);
+    RegButtonEvent(1, EvtButtonPress, cbk, NULL);
+    RegButtonEvent(0, EvtButtonLongPress, cbk, NULL);
+    RegButtonEvent(1, EvtButtonLongPress, cbk, NULL);
+//    RegButtonEvent(NUM_BUTTONS, EvtButtonPress, cbk, NULL);
+//    RegButtonEvent(NUM_BUTTONS, EvtButtonLongPress, cbk, NULL);
 }
 
+void cbk(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
+{
+    debug_printf("Button: %u, event: %u\n", Btn, EvtKind);
+    return;
+}
 
 static void ScreenHideCb(omScreenT *screen)
 {

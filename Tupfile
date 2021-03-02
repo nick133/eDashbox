@@ -50,6 +50,7 @@ CFLAGS += -MMD -MP
 #CFLAGS += -Wno-unused-variable
 #CFLAGS += -Wno-implicit-function-declaration
 #CFLAGS += -Wno-discarded-qualifiers
+CFLAGS += -Wno-missing-braces
 CFLAGS += -Wno-maybe-uninitialized
 CFLAGS += -Wno-misleading-indentation
 

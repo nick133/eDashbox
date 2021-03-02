@@ -45,9 +45,9 @@
 /* USER CODE BEGIN PTD */
 typedef struct
 {
-    void (*Callback)(void *);
+    BtnEventCallbackT Callback;
     void *Params;
-} BtnEventCallbackT;
+} BtnEvtCallbackT;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -62,7 +62,6 @@ typedef struct
 #define MAIN_THREAD_DELAY 50U
 #define DS18B20_POLL_DELAY 600U
 
-#define NUM_BUTTONS 2U
 #define BTN_POLL_DELAY 80U // debounce
 #define BTN_LONGPRESS_TIME 1000U // at least this time holding before release
 /* USER CODE END PD */
@@ -81,7 +80,7 @@ static osThreadId_t BtnPollTask;
 /* Use static allocation as pointers are randomly being corrupted if
  * dynamic allocation is used without malloc()
  */
-static BtnEventCallbackT BtnCallbacks[NUM_BUTTONS][EvtButtonNumOf];
+static BtnEvtCallbackT BtnCallbacks[NUM_BUTTONS][EvtButtonEmpty];
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -128,9 +127,9 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
     for(uint8_t i = 0; i < NUM_BUTTONS; i++)
     {
-        for(uint8_t j = 0; j < EvtButtonNumOf; j++)
+        for(uint8_t j = 0; j < EvtButtonEmpty; j++)
         {
-            BtnCallbacks[i][j] = (BtnEventCallbackT){ NULL, NULL };
+            BtnCallbacks[i][j] = (BtnEvtCallbackT){ NULL, NULL };
         }
     }
   /* USER CODE END Init */
@@ -171,7 +170,6 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
-
     /* Hall sensor timer starts after scheduler as we use RTOS API from ISR.
      * Enable HAL_TIM_PeriodElapsedCallback() before HAL_TIM_IC_Start_IT()
      * as it's not activated by default. Further reading:
@@ -220,6 +218,8 @@ void StartDefaultTask(void *argument)
  * ( CubeMX )
  *     Max heap size: 0x400
  *     Max stack size: 0x800
+ * 
+ * (!) Don't forget to disable stack overflow detection in CubeMX for release (!)
  */
 
 osThreadId_t appCreateTask(osThreadFunc_t func, void *args, osThreadAttr_t *attr)
@@ -297,42 +297,69 @@ __NO_RETURN static void AdcPoll(void *params)
 
 __NO_RETURN static void ButtonsPoll(void *params)
 {
-    static const GPIO_TypeDef const *BtnGPIOx[NUM_BUTTONS] = { BTN1_GPIO_Port, BTN2_GPIO_Port };
-    static const uint16_t BtnPin[NUM_BUTTONS] = { BTN1_Pin, BTN2_Pin };
+    static struct BtnState
+    {
+        uint32_t PressTick;
+        bool IsIdle;
+        bool IsEvent;
+        GPIO_TypeDef *GPIOx;
+        uint16_t Pin;
+    } Btn[] =
+    {
+        0, true, false, BTN1_GPIO_Port, BTN1_Pin,
+        0, true, false, BTN2_GPIO_Port, BTN2_Pin
+    };
 
-    static uint32_t BtnPressTick[NUM_BUTTONS] = {0};
+    void evtfire(uint8_t btn, BtnEventKindT evt)
+    {
+        BtnEvtCallbackT *evtcb = &BtnCallbacks[btn][evt];
+
+        if(evtcb->Callback != NULL)
+        {
+            evtcb->Callback(btn, evt, evtcb->Params);
+        }
+    }
 
     do {
         uint32_t Tick = osKernelGetTickCount();
 
+        /* Maximum 2^32 ticks (~49 days), counter resets. One press per 49 days is ignored, not a huge trade-off */
+        if(Btn[0].PressTick > Tick || Btn[1].PressTick > Tick)
+        {
+            Btn[0].PressTick = Btn[1].PressTick = 0;
+            Btn[0].IsIdle = Btn[1].IsIdle = true;
+            Btn[0].IsEvent = Btn[1].IsEvent = false;
+        }
+
+        /* Detect and save buttons state */
         for(uint8_t i = 0; i < NUM_BUTTONS; i++)
         {
-            /* Maximum 2^32 ticks (~49 days), counter resets. One press per 49 days is ignored, not a huge trade-off */
-            if(BtnPressTick[i] > Tick)
+            if(HAL_GPIO_ReadPin(Btn[i].GPIOx, Btn[i].Pin)) // Press
             {
-                BtnPressTick[i] = 0;
-            }
-
-            if(HAL_GPIO_ReadPin(BtnGPIOx[i], BtnPin[i])) // Press
-            {
-                /* Skip multiple press with no release, debounce */
-                if(!BtnPressTick[i])
+                /* Process only first press, skip multiple presses, debounce */
+                if(Btn[i].IsIdle && !Btn[i].IsEvent)
                 {
-                    BtnPressTick[i] = Tick;
+                    Btn[i].PressTick = Tick;
+                    Btn[i].IsIdle = false;
+                }
+                else if(!Btn[i].IsIdle && !Btn[i].IsEvent && (Tick - Btn[i].PressTick) > BTN_LONGPRESS_TIME)
+                {
+                    evtfire(i, EvtButtonLongPress);
+                    Btn[i].IsEvent = true;
                 }
             }
-            /* Only process release if previous press was detected */
-            else if(BtnPressTick[i] > 0) // Release
+            else if(!Btn[i].IsIdle) // Release
             {
-                uint32_t pressTime = Tick - BtnPressTick[i];
+                if(!Btn[i].IsEvent)
+                {
+                    evtfire(i, EvtButtonPress);
+                }
+                else
+                {
+                    Btn[i].IsEvent = false;
+                }
 
-                BtnEventCallbackT *evtcb = &(BtnCallbacks[i][
-                    (pressTime < BTN_LONGPRESS_TIME) ? EvtButtonPress : EvtButtonLongPress]);
-
-                if(evtcb->Callback != NULL)
-                    { evtcb->Callback(evtcb->Params); }
-
-                BtnPressTick[i] = 0;
+                Btn[i].IsIdle = true;
             }
         }
     } while(osDelay(BTN_POLL_DELAY) == osOK);
@@ -341,12 +368,14 @@ __NO_RETURN static void ButtonsPoll(void *params)
 }
 
 
-bool RegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind, void (*EvtCallback)(void *), void *Params)
+bool RegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind, BtnEventCallbackT EvtCallback, void *Params)
 {
-    if(EvtKind >= EvtButtonNumOf) { return false; }
+    if(EvtKind >= EvtButtonEmpty) { return false; }
+
+    if(Btn >= NUM_BUTTONS) { Btn = NUM_BUTTONS - 1; }
 
     BtnCallbacks[Btn][EvtKind] =
-    (BtnEventCallbackT){
+    (BtnEvtCallbackT){
         .Callback = EvtCallback,
         .Params = Params
     };
@@ -357,7 +386,9 @@ bool RegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind, void (*EvtCallback)(void
 
 bool UnRegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind)
 {
-    if(EvtKind >= EvtButtonNumOf) { return false; }
+    if(EvtKind >= EvtButtonEmpty) { return false; }
+
+    if(Btn >= NUM_BUTTONS) { Btn = NUM_BUTTONS - 1; }
 
     BtnCallbacks[Btn][EvtKind].Callback = NULL;
     BtnCallbacks[Btn][EvtKind].Params = NULL;

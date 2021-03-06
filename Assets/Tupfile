@@ -89,15 +89,19 @@ roboto10x12 += $(roboto10x12_base)8.pgm
 roboto10x12 += $(roboto10x12_base)9.pgm
 
 ##################################################
-fonts_srcs += $(fonts_dir)/main_kphmr8x9.xcf
+fonts_srcs += $(fonts_dir)/main_kphmrodst8x9.xcf
 
-kphmr8x9_base = $(pgm_dir)/mainKphmr8x9_
+kphmrodst8x9_base = $(pgm_dir)/mainKphmrodst8x9_
 
-kphmr8x9 += $(kphmr8x9_base)0.pgm
-kphmr8x9 += $(kphmr8x9_base)1.pgm
-kphmr8x9 += $(kphmr8x9_base)2.pgm
-kphmr8x9 += $(kphmr8x9_base)3.pgm
-kphmr8x9 += $(kphmr8x9_base)4.pgm
+kphmrodst8x9 += $(kphmrodst8x9_base)0.pgm
+kphmrodst8x9 += $(kphmrodst8x9_base)1.pgm
+kphmrodst8x9 += $(kphmrodst8x9_base)2.pgm
+kphmrodst8x9 += $(kphmrodst8x9_base)3.pgm
+kphmrodst8x9 += $(kphmrodst8x9_base)4.pgm
+kphmrodst8x9 += $(kphmrodst8x9_base)5.pgm
+kphmrodst8x9 += $(kphmrodst8x9_base)6.pgm
+kphmrodst8x9 += $(kphmrodst8x9_base)7.pgm
+kphmrodst8x9 += $(kphmrodst8x9_base)8.pgm
 
 ################################################################################
 # Rules macros
@@ -125,4 +129,4 @@ kphmr8x9 += $(kphmr8x9_base)4.pgm
 : $(temp_dir)/roboto_mono25x30.pgm |> !crop2pgm '10x1@' $(roboto25x30_base) |> $(roboto25x30) <bitmaps>
 : $(temp_dir)/roboto_mono14x17.pgm |> !crop2pgm '10x1@' $(roboto14x17_base) |> $(roboto14x17) <bitmaps>
 : $(temp_dir)/roboto_mono10x12.pgm |> !crop2pgm '10x1@' $(roboto10x12_base) |> $(roboto10x12) <bitmaps>
-: $(temp_dir)/main_kphmr8x9.pgm |> !crop2pgm '5x1@' $(kphmr8x9_base) |> $(kphmr8x9) <bitmaps>
+: $(temp_dir)/main_kphmrodst8x9.pgm |> !crop2pgm '9x1@' $(kphmrodst8x9_base) |> $(kphmrodst8x9) <bitmaps>

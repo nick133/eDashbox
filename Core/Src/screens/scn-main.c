@@ -24,6 +24,12 @@
 #define DRAW_METER_SIGNED 0x01
 #define DRAW_METER_FORCED 0x10
 
+#define DRAW_METER_SPEEDO(n, m, f)    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, n, m, f)
+#define DRAW_METER_RPM(n, m, f)    DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, n, m, f)
+#define DRAW_METER_VOLT(n, m, f)    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0, n, m, f)
+#define DRAW_METER_AMPERE(n, m, f)    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17, n, m, f)
+#define DRAW_METER_ODO(n, m, f)    DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 91, 47, 186, 47, n, m, f)
+
 /******************************************************************************/
 /* Speedo font */
 static const omBitmapT *Roboto25x30[] = {
@@ -158,22 +164,11 @@ static void ScreenShowCb(omScreenT *screen)
     DrawStatic();
 
     /* Draw all meters zero */
-    // Speedo
-    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, 0.0, 0.0, DRAW_METER_FORCED);
-
-    // RPM
-    DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, 0.0, 0.0, DRAW_METER_FORCED);
-
-    // Volt
-    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0, ScreenDat.Volt, 0.0, DRAW_METER_FORCED);
-
-    // Ampere
-    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17, ScreenDat.Ampere, 0.0, DRAW_METER_FORCED);
-
-    // Odo
-    DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47, ScreenDat.Odo, 0.0, DRAW_METER_FORCED);
-
-    // Battery pie chart
+    DRAW_METER_SPEEDO(0.0, 0.0, DRAW_METER_FORCED);
+    DRAW_METER_RPM(0.0, 0.0, DRAW_METER_FORCED);
+    DRAW_METER_VOLT(ScreenDat.Volt, 0.0, DRAW_METER_FORCED);
+    DRAW_METER_AMPERE(ScreenDat.Ampere, 0.0, DRAW_METER_FORCED);
+    DRAW_METER_ODO(ScreenDat.Odo, 0.0, DRAW_METER_FORCED);
     DrawBatPie(0, 1);
 
  //   for(uint8_t i; i < DS18B20_Quantity(); i++)
@@ -232,32 +227,14 @@ static bool ScreenUpdateCb(omScreenT *screen)
         }
     }
 
-    // Speedo
-    is_update += DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13,
-        ScreenDat.Speed, ScreenDatPrev.Speed, 0);
-
-    // RPM
-    is_update += DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0,
-        ScreenDat.Rpm, ScreenDatPrev.Rpm, 0);
-    is_update += DrawRpmBars(ScreenDat.RpmBarsN, ScreenDatPrev.RpmBarsN);
-
-    // Volt
-    is_update += DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0,
-        ScreenDat.Volt, ScreenDatPrev.Volt, 0);
-
-    // Ampere
-    is_update += DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17,
-        ScreenDat.Ampere, ScreenDatPrev.Ampere, 0);
-
-    // Odo
-    is_update += DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 95, 47, 190, 47,
-        ScreenDat.Odo, ScreenDatPrev.Odo, 0);
-
-    // Battery pie chart
-    is_update += DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN);
-
-    // Clock
-    is_update += (osEventFlagsWait(EvtClockUpdate, 0x00000001U, osFlagsWaitAny, 0) == 0x00000001U);
+    is_update += DRAW_METER_SPEEDO(ScreenDat.Speed, ScreenDatPrev.Speed, 0)
+        + DRAW_METER_RPM(ScreenDat.Rpm, ScreenDatPrev.Rpm, 0)
+        + DrawRpmBars(ScreenDat.RpmBarsN, ScreenDatPrev.RpmBarsN)
+        + DRAW_METER_VOLT(ScreenDat.Volt, ScreenDatPrev.Volt, 0)
+        + DRAW_METER_AMPERE(ScreenDat.Ampere, ScreenDatPrev.Ampere, 0)
+        + DRAW_METER_ODO(ScreenDat.Odo, ScreenDatPrev.Odo, 0)
+        + DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN)
+        + (osEventFlagsWait(EvtClockUpdate, 0x00000001U, osFlagsWaitAny, 0) == 0x00000001U);
 
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
@@ -276,27 +253,29 @@ static void DrawStatic(void)
     omGui_DrawBitmap(&oledUi, &AssetBitmaps.RpmBars, 3, 36, false, false);
 
     /* RPM */
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_4, 60, 55, false, false);
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_1, 68, 55, false, false);
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 76, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_4, 60, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_1, 68, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_3, 76, 55, false, false);
 
     /* KPH | MPH, dot */
     if(Config.SpeedUnits == UnitsMph)
     {
-        omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 87, 0, false, false);    
+        omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_3, 87, 0, false, false);    
     }
     else if(Config.SpeedUnits == UnitsKph)
     {
-        omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 87, 0, false, false);    
+        omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_0, 87, 0, false, false);    
     }
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_1, 95, 0, false, false);
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_2, 103, 0, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_1, 95, 0, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_2, 103, 0, false, false);
     omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot4x4, 79, 26, false, false);
 
-    /* KM (Odo), dot */
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 183, 61, false, false);
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_0, 208, 55, false, false);
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmr8x9_3, 216, 55, false, false);
+    /* Odo, dot */
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 179, 61, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_5, 204, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_6, 212, 55, false, false);
+    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_5, 220, 55, false, false);
+    
 
     /* Volt, Ampere dots, units */
     omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 156, 10, false, false);

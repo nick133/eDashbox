@@ -30,12 +30,11 @@
 #define DRAW_METER_FORCED 0x10
 
 #define DRAW_METER_SPEEDO(n, m, f)    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, n, m, f)
-#define DRAW_METER_RPM(n, m, f)    DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, n, m, f)
-#define DRAW_METER_VOLT(n, m, f)    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0, n, m, f)
+#define DRAW_METER_RPM(n, m, f)       DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, n, m, f)
+#define DRAW_METER_VOLT(n, m, f)      DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0, n, m, f)
 #define DRAW_METER_AMPERE(n, m, f)    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17, n, m, f)
 
 /******************************************************************************/
-/* Speedo font */
 static const omBitmapT *Roboto25x30[] = {
     &AssetBitmaps.Roboto25x30_0,
     &AssetBitmaps.Roboto25x30_1,
@@ -188,7 +187,7 @@ static void ScreenShowCb(omScreenT *screen)
  //   for(uint8_t i; i < DS18B20_Quantity(); i++)
  //       { RefreshTemprt(i); }
 
-    if (osThreadGetState(ClockUpdateTask) == osThreadBlocked)
+    if(osThreadGetState(ClockUpdateTask) == osThreadBlocked)
     {
         osThreadResume(ClockUpdateTask);
     }
@@ -331,7 +330,7 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
 
     snprintf_(reg, sizeof(reg), format, num);
 
-    if (!(flags & DRAW_METER_FORCED))
+    if(!(flags & DRAW_METER_FORCED))
         { snprintf_(regPrev, sizeof(regPrev), format, numPrev); }
 
     for(uint8_t i = 0; i < isize; i++)
@@ -409,6 +408,7 @@ static bool DrawOdoDst(bool force)
     {
         ScreenDat.OdoIsActive = !ScreenDat.OdoIsActive;
 
+        /* No need to clean digits area in force mode (at startup), only here at ODO/DST change */
         omGui_DrawRectangleFilled(&oledUi, 91, 47, 174, 63, OLED_GRAY_00, OLED_GRAY_00, false);
         omGui_DrawRectangleFilled(&oledUi, 186, 47, 199, 63, OLED_GRAY_00, OLED_GRAY_00, false);
 
@@ -460,7 +460,7 @@ __NO_RETURN static void ClockUpdate(void *params)
     uint8_t flags = DRAW_METER_FORCED;
  
     do {
-       /* STM32 HAL Manual: "You must call HAL_RTC_GetDate() after HAL_RTC_GetTime()
+        /* STM32 HAL Manual: "You must call HAL_RTC_GetDate() after HAL_RTC_GetTime()
          * to unlock the values in the higher-order calendar shadow registers to
          * ensure consistency between the time and date values. Reading RTC current
          * time locks the values in calendar shadow registers until current date is read."

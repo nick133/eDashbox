@@ -264,7 +264,7 @@ static void MX_NVIC_Init(void)
  */
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim->Instance == TIM2)
+    if(htim->Instance == TIM2)
     {
         uint32_t Tick = osKernelGetSysTimerCount();
         float Odo = (float)Config.WheelCirc / 1000000.0;

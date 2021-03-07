@@ -63,7 +63,7 @@ typedef struct
 #define DS18B20_POLL_DELAY 600U
 
 #define BTN_POLL_DELAY 80U // debounce
-#define BTN_LONGPRESS_TIME 1000U // at least this time holding before release
+#define BTN_LONGPRESS_TIME 1000U // hold at least this time before release
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/

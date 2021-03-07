@@ -16,11 +16,16 @@
 #include "screens.h"
 
 /******************************************************************************/
+#define EVENT_CLOCK_UPDATE 0x00000001U
+#define EVENT_SELECT_DST   0x00000010U
+
+#define MAX_DST_KMS 9999.9
 #define MAX_RPM_BARS 18
 #define BAT_PIE_PCS 20
 #define ASCII_NUM '0'
 
-#define METER_REG_SZ 10
+#define DRAW_METER_REG_SZ 10
+#define DRAW_METER_NONE   0x00
 #define DRAW_METER_SIGNED 0x01
 #define DRAW_METER_FORCED 0x10
 
@@ -28,7 +33,6 @@
 #define DRAW_METER_RPM(n, m, f)    DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, n, m, f)
 #define DRAW_METER_VOLT(n, m, f)    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0, n, m, f)
 #define DRAW_METER_AMPERE(n, m, f)    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17, n, m, f)
-#define DRAW_METER_ODO(n, m, f)    DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 91, 47, 186, 47, n, m, f)
 
 /******************************************************************************/
 /* Speedo font */
@@ -98,24 +102,31 @@ typedef struct ScreenData {
     float Speed;
     float Rpm;
     float Odo;
+    float Dst;
     float Temprt[_DS18B20_MAX_SENSORS];
     float Volt;
     float Ampere;
     uint8_t RpmBarsN;
     uint8_t BatPieN;
     RTC_TimeTypeDef Time;
+    // no previous state from here
+    bool OdoIsActive;
+    float DstStart;
 } ScreenDataT;
 
 static ScreenDataT ScreenDat;
 static ScreenDataT ScreenDatPrev;
 
 static osThreadId_t ClockUpdateTask;
-static osEventFlagsId_t EvtClockUpdate;
+static osEventFlagsId_t EvtFlagsMain;
 
 /******************************************************************************/
 static void ScreenShowCb(omScreenT *);
 static void ScreenHideCb(omScreenT *);
 static bool ScreenUpdateCb(omScreenT *);
+
+static void DstSelectCb(uint8_t Btn, BtnEventKindT, void *Params);
+static void DstResetCb(uint8_t Btn, BtnEventKindT, void *Params);
 
 __NO_RETURN static void ClockUpdate(void *);
 
@@ -126,6 +137,7 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     float num, float numPrev, uint8_t flags);
 static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev);
 static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev);
+static bool DrawOdoDst(bool force);
 
 /******************************************************************************/
 void MainScreenInit(void)
@@ -135,16 +147,18 @@ void MainScreenInit(void)
     screenMain.ShowCallback = ScreenShowCb;
     screenMain.HideCallback = ScreenHideCb;
     screenMain.UpdateCallback = ScreenUpdateCb;
+
+    ScreenDat.DstStart = Sensors.Odo;
+    ScreenDat.OdoIsActive = true;
 }
 
-
-void cbk(uint8_t Btn, BtnEventKindT EvtKind, void *Params);
 
 static void ScreenShowCb(omScreenT *screen)
 {
     ScreenDat.Speed = ScreenDatPrev.Speed
         = ScreenDat.Rpm = ScreenDatPrev.Rpm
         = ScreenDatPrev.Odo
+        = ScreenDat.Dst = ScreenDatPrev.Dst
         = ScreenDat.Volt = ScreenDatPrev.Volt
         = ScreenDat.Ampere = ScreenDatPrev.Ampere
         = 0.0;
@@ -168,7 +182,7 @@ static void ScreenShowCb(omScreenT *screen)
     DRAW_METER_RPM(0.0, 0.0, DRAW_METER_FORCED);
     DRAW_METER_VOLT(ScreenDat.Volt, 0.0, DRAW_METER_FORCED);
     DRAW_METER_AMPERE(ScreenDat.Ampere, 0.0, DRAW_METER_FORCED);
-    DRAW_METER_ODO(ScreenDat.Odo, 0.0, DRAW_METER_FORCED);
+    DrawOdoDst(true);
     DrawBatPie(0, 1);
 
  //   for(uint8_t i; i < DS18B20_Quantity(); i++)
@@ -180,23 +194,26 @@ static void ScreenShowCb(omScreenT *screen)
     }
     else
     {
-        EvtClockUpdate = osEventFlagsNew(NULL); // Obviously must be before clock update task creation
+        EvtFlagsMain = osEventFlagsNew(NULL); // Obviously must be before clock update task creation
         ClockUpdateTask = appCreateTask(ClockUpdate, NULL, TASK_NAME("ClockUpdate"));
     }
 
-    RegButtonEvent(0, EvtButtonPress, cbk, NULL);
-    RegButtonEvent(1, EvtButtonPress, cbk, NULL);
-    RegButtonEvent(0, EvtButtonLongPress, cbk, NULL);
-    RegButtonEvent(1, EvtButtonLongPress, cbk, NULL);
-//    RegButtonEvent(NUM_BUTTONS, EvtButtonPress, cbk, NULL);
-//    RegButtonEvent(NUM_BUTTONS, EvtButtonLongPress, cbk, NULL);
+    RegButtonEvent(1, EvtButtonPress, DstSelectCb, NULL);
+    RegButtonEvent(1, EvtButtonLongPress, DstResetCb, NULL);
 }
 
-void cbk(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
+
+static void DstSelectCb(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
 {
-    debug_printf("Button: %u, event: %u\n", Btn, EvtKind);
-    return;
+    osEventFlagsSet(EvtFlagsMain, EVENT_SELECT_DST);
 }
+
+
+static void DstResetCb(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
+{
+    ScreenDat.Dst = ScreenDatPrev.Dst = 0.0;
+}
+
 
 static void ScreenHideCb(omScreenT *screen)
 {
@@ -215,6 +232,13 @@ static bool ScreenUpdateCb(omScreenT *screen)
     ScreenDat.Volt = Sensors.Volt;
     ScreenDat.Ampere = Sensors.Ampere;
     ScreenDat.Odo = Sensors.Odo;
+    ScreenDat.Dst = ScreenDat.Odo - ScreenDat.DstStart;
+
+    if(ScreenDat.Dst > MAX_DST_KMS)
+    {
+        ScreenDat.DstStart = ScreenDat.Odo;
+        ScreenDat.Dst = 0.0;
+    }
 
     for(uint8_t i; i < DS18B20_Quantity(); i++)
     {
@@ -232,9 +256,14 @@ static bool ScreenUpdateCb(omScreenT *screen)
         + DrawRpmBars(ScreenDat.RpmBarsN, ScreenDatPrev.RpmBarsN)
         + DRAW_METER_VOLT(ScreenDat.Volt, ScreenDatPrev.Volt, 0)
         + DRAW_METER_AMPERE(ScreenDat.Ampere, ScreenDatPrev.Ampere, 0)
-        + DRAW_METER_ODO(ScreenDat.Odo, ScreenDatPrev.Odo, 0)
-        + DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN)
-        + (osEventFlagsWait(EvtClockUpdate, 0x00000001U, osFlagsWaitAny, 0) == 0x00000001U);
+        + DrawOdoDst(false)
+        + DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN);
+
+    if(osEventFlagsGet(EvtFlagsMain) & EVENT_CLOCK_UPDATE)
+    {
+        osEventFlagsClear(EvtFlagsMain, EVENT_CLOCK_UPDATE);
+        is_update++;
+    }
 
     ScreenDatPrev.Speed = ScreenDat.Speed;
     ScreenDatPrev.Rpm = ScreenDat.Rpm;
@@ -242,6 +271,7 @@ static bool ScreenUpdateCb(omScreenT *screen)
     ScreenDatPrev.Volt = ScreenDat.Volt;
     ScreenDatPrev.Ampere = ScreenDat.Ampere;
     ScreenDatPrev.Odo = ScreenDat.Odo;
+    ScreenDatPrev.Dst = ScreenDat.Dst;
     ScreenDatPrev.BatPieN = ScreenDat.BatPieN;
 
     return (is_update > 0);
@@ -270,12 +300,8 @@ static void DrawStatic(void)
     omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_2, 103, 0, false, false);
     omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot4x4, 79, 26, false, false);
 
-    /* Odo, dot */
+    /* Odo/Dst dot */
     omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x3, 179, 61, false, false);
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_5, 204, 55, false, false);
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_6, 212, 55, false, false);
-    omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_5, 220, 55, false, false);
-    
 
     /* Volt, Ampere dots, units */
     omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainDot3x2, 156, 10, false, false);
@@ -301,7 +327,7 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
 
     uint8_t fnumidx = isize + 1;
 
-    char reg[METER_REG_SZ], regPrev[METER_REG_SZ];
+    char reg[DRAW_METER_REG_SZ], regPrev[DRAW_METER_REG_SZ];
 
     snprintf_(reg, sizeof(reg), format, num);
 
@@ -375,6 +401,49 @@ static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
 }
 
 
+static bool DrawOdoDst(bool force)
+{
+    uint8_t flags;
+
+    if(osEventFlagsGet(EvtFlagsMain) & EVENT_SELECT_DST)
+    {
+        ScreenDat.OdoIsActive = !ScreenDat.OdoIsActive;
+
+        omGui_DrawRectangleFilled(&oledUi, 91, 47, 174, 63, OLED_GRAY_00, OLED_GRAY_00, false);
+        omGui_DrawRectangleFilled(&oledUi, 186, 47, 199, 63, OLED_GRAY_00, OLED_GRAY_00, false);
+
+        osEventFlagsClear(EvtFlagsMain, EVENT_SELECT_DST);
+        force = true;
+    }
+
+    if(force)
+    {
+        if(ScreenDat.OdoIsActive) // ODO
+        {
+            omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_5, 204, 55, false, false);
+            omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_6, 212, 55, false, false);
+            omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_5, 220, 55, false, false);        
+        }
+        else // DST
+        {
+            omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_6, 204, 55, false, false);
+            omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_7, 212, 55, false, false);
+            omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_8, 220, 55, false, false);
+        }
+
+        flags = DRAW_METER_FORCED;
+    }
+    else
+    {
+        flags = DRAW_METER_NONE;
+    }
+    
+    return (ScreenDat.OdoIsActive
+        ? DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 91, 47, 186, 47, ScreenDat.Odo, ScreenDatPrev.Odo, flags)
+        : DrawMeter(Roboto14x17, Roboto14x17, 4, "%6.1f", 119, 47, 186, 47, ScreenDat.Dst, ScreenDatPrev.Dst, flags));
+}
+
+
 static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev)
 {
     if(batpien == batpienPrev || batpien >= BAT_PIE_PCS) { return false; }
@@ -400,7 +469,7 @@ __NO_RETURN static void ClockUpdate(void *params)
         HAL_RTC_GetDate(&hrtc, &dateRtc, RTC_FORMAT_BIN);
 
         DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 209, 0, 0, 0,
-            (float)ScreenDat.Time.Hours, (float)ScreenDat.Time.Hours, flags);
+            (float)ScreenDat.Time.Hours, (float)ScreenDatPrev.Time.Hours, flags);
 
         DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 236, 0, 0, 0,
             (float)ScreenDat.Time.Minutes, (float)ScreenDatPrev.Time.Minutes, flags);
@@ -409,7 +478,7 @@ __NO_RETURN static void ClockUpdate(void *params)
 
         ScreenDatPrev.Time = ScreenDat.Time;
 
-        osEventFlagsSet(EvtClockUpdate, 0x00000001U);
+        osEventFlagsSet(EvtFlagsMain, EVENT_CLOCK_UPDATE);
     } while(osDelay(1000) == osOK);
 
     osThreadExit();

@@ -20,8 +20,7 @@ typedef enum
 
 typedef void (*BtnEventCallbackT)(uint8_t Btn, BtnEventKindT EvtKind, void *Params);
 
-extern osThreadId_t appCreateTask(osThreadFunc_t, void *, osThreadAttr_t *);
-
+extern osThreadId_t appCreateTask(osThreadFunc_t, void *Params, osThreadAttr_t *);
 extern bool RegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind, BtnEventCallbackT EvtCallback, void *Params);
 extern bool UnRegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind);
 

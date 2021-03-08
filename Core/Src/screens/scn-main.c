@@ -18,8 +18,9 @@
 /******************************************************************************/
 #define EVENT_CLOCK_UPDATE 0x00000001U
 #define EVENT_SELECT_DST   0x00000010U
+#define EVENT_RESET_DST    0x00000100U
 
-#define MAX_DST_KMS 9999.9
+#define MAX_DST 9999.9
 #define MAX_RPM_BARS 18
 #define BAT_PIE_PCS 20
 #define ASCII_NUM '0'
@@ -30,7 +31,6 @@
 #define DRAW_METER_FORCED 0x10
 
 #define DRAW_METER_SPEEDO(n, m, f)    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, n, m, f)
-#define DRAW_METER_RPM(n, m, f)       DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0, n, m, f)
 #define DRAW_METER_VOLT(n, m, f)      DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0, n, m, f)
 #define DRAW_METER_AMPERE(n, m, f)    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17, n, m, f)
 
@@ -99,18 +99,9 @@ static const omBitmapT *BatPie14x14[] = {
 
 typedef struct ScreenData {
     float Speed;
-    float Rpm;
-    float Odo;
-    float Dst;
     float Temprt[_DS18B20_MAX_SENSORS];
     float Volt;
     float Ampere;
-    uint8_t RpmBarsN;
-    uint8_t BatPieN;
-    RTC_TimeTypeDef Time;
-    // no previous state from here
-    bool OdoIsActive;
-    float DstStart;
 } ScreenDataT;
 
 static ScreenDataT ScreenDat;
@@ -134,9 +125,10 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
     uint8_t isize, const char* format,
     uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy,
     float num, float numPrev, uint8_t flags);
-static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev);
-static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev);
+
+static bool DrawTacho(bool force);
 static bool DrawOdoDst(bool force);
+static bool DrawBatPie(bool force);
 
 /******************************************************************************/
 void MainScreenInit(void)
@@ -146,43 +138,29 @@ void MainScreenInit(void)
     screenMain.ShowCallback = ScreenShowCb;
     screenMain.HideCallback = ScreenHideCb;
     screenMain.UpdateCallback = ScreenUpdateCb;
-
-    ScreenDat.DstStart = Sensors.Odo;
-    ScreenDat.OdoIsActive = true;
 }
 
 
 static void ScreenShowCb(omScreenT *screen)
 {
     ScreenDat.Speed = ScreenDatPrev.Speed
-        = ScreenDat.Rpm = ScreenDatPrev.Rpm
-        = ScreenDatPrev.Odo
-        = ScreenDat.Dst = ScreenDatPrev.Dst
         = ScreenDat.Volt = ScreenDatPrev.Volt
         = ScreenDat.Ampere = ScreenDatPrev.Ampere
         = 0.0;
 
-    ScreenDat.RpmBarsN = ScreenDatPrev.RpmBarsN
-        = ScreenDat.BatPieN = ScreenDatPrev.BatPieN
-        = 0;
-
-    ScreenDat.Odo = Sensors.Odo;
-
-    // for ClockUpdate task start and resume
-    ScreenDatPrev.Time.Hours = ScreenDatPrev.Time.Minutes = 0;
-
-    memset(ScreenDat.Temprt, 0.0, sizeof(ScreenDat.Temprt));
-    memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
+    // memset(ScreenDat.Temprt, 0.0, sizeof(ScreenDat.Temprt));
+    // memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
 
     DrawStatic();
 
     /* Draw all meters zero */
     DRAW_METER_SPEEDO(0.0, 0.0, DRAW_METER_FORCED);
-    DRAW_METER_RPM(0.0, 0.0, DRAW_METER_FORCED);
     DRAW_METER_VOLT(ScreenDat.Volt, 0.0, DRAW_METER_FORCED);
     DRAW_METER_AMPERE(ScreenDat.Ampere, 0.0, DRAW_METER_FORCED);
+
+    DrawTacho(true);
     DrawOdoDst(true);
-    DrawBatPie(0, 1);
+    DrawBatPie(true);
 
  //   for(uint8_t i; i < DS18B20_Quantity(); i++)
  //       { RefreshTemprt(i); }
@@ -202,21 +180,25 @@ static void ScreenShowCb(omScreenT *screen)
 }
 
 
-static void DstSelectCb(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
-{
-    osEventFlagsSet(EvtFlagsMain, EVENT_SELECT_DST);
-}
-
-
-static void DstResetCb(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
-{
-    ScreenDat.Dst = ScreenDatPrev.Dst = 0.0;
-}
-
-
 static void ScreenHideCb(omScreenT *screen)
 {
     osThreadSuspend(ClockUpdateTask);
+}
+
+
+static void SaveSensorsData(void)
+{
+    ScreenDatPrev.Speed = ScreenDat.Speed;
+    ScreenDatPrev.Volt = ScreenDat.Volt;
+    ScreenDatPrev.Ampere = ScreenDat.Ampere;
+}
+
+
+static void CollectSensorsData(void)
+{
+    ScreenDat.Speed = SsrGetSpeed(&Sensors);
+    ScreenDat.Volt = Sensors.Volt;
+    ScreenDat.Ampere = Sensors.Ampere;
 }
 
 
@@ -224,39 +206,25 @@ static bool ScreenUpdateCb(omScreenT *screen)
 {
     uint8_t is_update = 0;
 
-    ScreenDat.Speed = SsrGetSpeed(&Sensors);
-    ScreenDat.Rpm = SsrGetMotorRpm(&Sensors);
-    ScreenDat.RpmBarsN = roundf(SsrGetRpmPerctg(&Sensors) * MAX_RPM_BARS / 100.0);
-    ScreenDat.BatPieN = SsrGetBatPerctg(&Sensors) / (100 / BAT_PIE_PCS); // implicit cast to int
-    ScreenDat.Volt = Sensors.Volt;
-    ScreenDat.Ampere = Sensors.Ampere;
-    ScreenDat.Odo = Sensors.Odo;
-    ScreenDat.Dst = ScreenDat.Odo - ScreenDat.DstStart;
+    CollectSensorsData();
 
-    if(ScreenDat.Dst > MAX_DST_KMS)
-    {
-        ScreenDat.DstStart = ScreenDat.Odo;
-        ScreenDat.Dst = 0.0;
-    }
+    // for(uint8_t i; i < DS18B20_Quantity(); i++)
+    // {
+    //     ScreenDat.Temprt[i] = SsrGetTemprt(&Sensors, i);
 
-    for(uint8_t i; i < DS18B20_Quantity(); i++)
-    {
-        ScreenDat.Temprt[i] = SsrGetTemprt(&Sensors, i);
-
-        if(ScreenDat.Temprt[i] != ScreenDatPrev.Temprt[i])
-        {
-            //RefreshTemprt(i);
-            ScreenDatPrev.Temprt[i] = ScreenDat.Temprt[i];
-        }
-    }
+    //     if(ScreenDat.Temprt[i] != ScreenDatPrev.Temprt[i])
+    //     {
+    //         //RefreshTemprt(i);
+    //         ScreenDatPrev.Temprt[i] = ScreenDat.Temprt[i];
+    //     }
+    // }
 
     is_update += DRAW_METER_SPEEDO(ScreenDat.Speed, ScreenDatPrev.Speed, 0)
-        + DRAW_METER_RPM(ScreenDat.Rpm, ScreenDatPrev.Rpm, 0)
-        + DrawRpmBars(ScreenDat.RpmBarsN, ScreenDatPrev.RpmBarsN)
+        + DrawTacho(false)
         + DRAW_METER_VOLT(ScreenDat.Volt, ScreenDatPrev.Volt, 0)
         + DRAW_METER_AMPERE(ScreenDat.Ampere, ScreenDatPrev.Ampere, 0)
         + DrawOdoDst(false)
-        + DrawBatPie(ScreenDat.BatPieN, ScreenDatPrev.BatPieN);
+        + DrawBatPie(false);
 
     if(osEventFlagsGet(EvtFlagsMain) & EVENT_CLOCK_UPDATE)
     {
@@ -264,14 +232,7 @@ static bool ScreenUpdateCb(omScreenT *screen)
         is_update++;
     }
 
-    ScreenDatPrev.Speed = ScreenDat.Speed;
-    ScreenDatPrev.Rpm = ScreenDat.Rpm;
-    ScreenDatPrev.RpmBarsN = ScreenDat.RpmBarsN;
-    ScreenDatPrev.Volt = ScreenDat.Volt;
-    ScreenDatPrev.Ampere = ScreenDat.Ampere;
-    ScreenDatPrev.Odo = ScreenDat.Odo;
-    ScreenDatPrev.Dst = ScreenDat.Dst;
-    ScreenDatPrev.BatPieN = ScreenDat.BatPieN;
+    SaveSensorsData();
 
     return (is_update > 0);
 }
@@ -364,15 +325,32 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
 }
 
 
-static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
+static bool DrawTacho(bool force)
 {
-    if(nbars == nbarsPrev) { return false; }
+    static float rpm, rpmPrev = 0.0;
+    static uint8_t nbars, nbarsPrev = 0;
 
-    static const uint8_t RpmBarsColors[] = {
+    static const uint8_t RpmBarsColors[] =
+    {
         OLED_GRAY_03, OLED_GRAY_03, OLED_GRAY_03, OLED_GRAY_04, OLED_GRAY_05, OLED_GRAY_06,
         OLED_GRAY_07, OLED_GRAY_08, OLED_GRAY_09, OLED_GRAY_10, OLED_GRAY_11, OLED_GRAY_12,
         OLED_GRAY_13, OLED_GRAY_14, OLED_GRAY_15, OLED_GRAY_15, OLED_GRAY_15, OLED_GRAY_15
     };
+
+    /* Digital tacho */
+    rpm = SsrGetMotorRpm(&Sensors);    
+
+    bool is_update = DrawMeter(Roboto14x17, NULL, 4, "%4.0f", 0, 47, 0, 0,
+        rpm, rpmPrev, (force ? DRAW_METER_FORCED : DRAW_METER_NONE));
+
+    rpmPrev = rpm;
+
+    /* Bars graph */
+    nbars = roundf(SsrGetRpmPerctg(&Sensors) * MAX_RPM_BARS / 100.0);
+
+    if(force) { nbarsPrev = 0; } // Redraw bars only if nbars > 0 in force mode
+
+    if(nbars == nbarsPrev) { return is_update; }
 
     for(uint8_t i = 0; i < ((nbars > nbarsPrev) ? nbars : nbarsPrev); i++)
     {
@@ -396,17 +374,33 @@ static bool DrawRpmBars(uint8_t nbars, uint8_t nbarsPrev)
         omGui_DrawRectangleFilled(&oledUi, 4 + (i * 14), 37, 13 + (i * 14), 39, color, color, false);
     }
 
+    nbarsPrev = nbars;
     return true;
+}
+
+
+static void DstSelectCb(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
+{
+    osEventFlagsSet(EvtFlagsMain, EVENT_SELECT_DST);
+}
+static void DstResetCb(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
+{
+    osEventFlagsSet(EvtFlagsMain, EVENT_RESET_DST);
 }
 
 
 static bool DrawOdoDst(bool force)
 {
+    static float odo, odoPrev = 0.0, dst, dstPrev = 0.0, dstStart = 0.0;
+    static bool odoIsActive = true;
     uint8_t flags;
+    bool is_update = false;
+
+    if(!dstStart) { dstStart = Sensors.Odo; }
 
     if(osEventFlagsGet(EvtFlagsMain) & EVENT_SELECT_DST)
     {
-        ScreenDat.OdoIsActive = !ScreenDat.OdoIsActive;
+        odoIsActive = !odoIsActive;
 
         /* No need to clean digits area in force mode (at startup), only here at ODO/DST change */
         omGui_DrawRectangleFilled(&oledUi, 91, 47, 174, 63, OLED_GRAY_00, OLED_GRAY_00, false);
@@ -418,7 +412,7 @@ static bool DrawOdoDst(bool force)
 
     if(force)
     {
-        if(ScreenDat.OdoIsActive) // ODO
+        if(odoIsActive) // ODO
         {
             omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_5, 204, 55, false, false);
             omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_6, 212, 55, false, false);
@@ -437,46 +431,70 @@ static bool DrawOdoDst(bool force)
     {
         flags = DRAW_METER_NONE;
     }
-    
-    return (ScreenDat.OdoIsActive
-        ? DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 91, 47, 186, 47, ScreenDat.Odo, ScreenDatPrev.Odo, flags)
-        : DrawMeter(Roboto14x17, Roboto14x17, 4, "%6.1f", 119, 47, 186, 47, ScreenDat.Dst, ScreenDatPrev.Dst, flags));
+
+    odo = Sensors.Odo;
+    dst = odo - dstStart;
+
+    if(dst > MAX_DST)
+    {
+        dstStart = odo;
+        dst = 0.0;
+    }
+
+    is_update = (odoIsActive
+        ? DrawMeter(Roboto14x17, Roboto14x17, 6, "%8.1f", 91, 47, 186, 47, odo, odoPrev, flags)
+        : DrawMeter(Roboto14x17, Roboto14x17, 4, "%6.1f", 119, 47, 186, 47, dst, dstPrev, flags));
+
+    odoPrev = odo;
+    dstPrev = dst;
+
+    return is_update;
 }
 
 
-static bool DrawBatPie(uint8_t batpien, uint8_t batpienPrev)
+static bool DrawBatPie(bool force)
 {
+    static uint8_t batpien, batpienPrev = 0;
+
+    batpien = SsrGetBatPerctg(&Sensors) / (100 / BAT_PIE_PCS); // implicit cast to int
+
+    if(force) { batpienPrev = batpien + 1; }
+
     if(batpien == batpienPrev || batpien >= BAT_PIE_PCS) { return false; }
 
     omGui_DrawBitmap(&oledUi, BatPie14x14[batpien], 238, 46, false, false);
 
+    batpienPrev = batpien;
     return true;
 }
 
 
 __NO_RETURN static void ClockUpdate(void *params)
 {
+    static RTC_TimeTypeDef timeRtc, timeRtcPrev;
     RTC_DateTypeDef dateRtc;
     uint8_t flags = DRAW_METER_FORCED;
  
+    timeRtcPrev.Hours = timeRtcPrev.Minutes = 0;
+
     do {
         /* STM32 HAL Manual: "You must call HAL_RTC_GetDate() after HAL_RTC_GetTime()
          * to unlock the values in the higher-order calendar shadow registers to
          * ensure consistency between the time and date values. Reading RTC current
          * time locks the values in calendar shadow registers until current date is read."
          */
-        HAL_RTC_GetTime(&hrtc, &(ScreenDat.Time), RTC_FORMAT_BIN);
+        HAL_RTC_GetTime(&hrtc, &timeRtc, RTC_FORMAT_BIN);
         HAL_RTC_GetDate(&hrtc, &dateRtc, RTC_FORMAT_BIN);
 
         DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 209, 0, 0, 0,
-            (float)ScreenDat.Time.Hours, (float)ScreenDatPrev.Time.Hours, flags);
+            (float)timeRtc.Hours, (float)timeRtcPrev.Hours, flags);
 
         DrawMeter(Roboto10x12, NULL, 2, "%02.0f", 236, 0, 0, 0,
-            (float)ScreenDat.Time.Minutes, (float)ScreenDatPrev.Time.Minutes, flags);
+            (float)timeRtc.Minutes, (float)timeRtcPrev.Minutes, flags);
 
-        if(flags & DRAW_METER_FORCED) { flags = 0; }
+        if(flags) { flags = 0; }
 
-        ScreenDatPrev.Time = ScreenDat.Time;
+        timeRtc = timeRtcPrev;
 
         osEventFlagsSet(EvtFlagsMain, EVENT_CLOCK_UPDATE);
     } while(osDelay(1000) == osOK);

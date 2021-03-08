@@ -115,6 +115,7 @@ int main(void)
     Config.BatLowV = 57.0;
     Config.BatHighV = 84.0;
     Config.HourFormat24 = true;
+    Config.StandByTimeout = 15;
 
     Sensors.HallRpm = 0.0;
     Sensors.Volt = 0.0;

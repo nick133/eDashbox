@@ -17,6 +17,9 @@ typedef struct ConfigSettings {
   uint16_t WheelCirc; // millimeters
   float GearRatio;
   uint16_t MaxRpm;
+  float BatLowV;
+  float BatHighV;
+  uint8_t StandByTimeout; // minutes
   IdScreenT Screen1;
   IdScreenT Screen2;
   IdScreenT Screen3;
@@ -24,9 +27,7 @@ typedef struct ConfigSettings {
   bool HallOnWheel;
   bool ShowLogo;
   bool HourFormat24;
-  float BatLowV;
-  float BatHighV;
-} ConfigSettingsT;
+  } ConfigSettingsT;
 
 
 extern ConfigSettingsT Config;

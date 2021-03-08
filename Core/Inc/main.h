@@ -50,11 +50,6 @@ typedef struct SensorsData
     float Volt;
     float Ampere;
     float Odo;
-
-    bool Button1Pressed;
-    bool Button1Released;
-    bool Button2Pressed;
-    bool Button2Released;
  } SensorsDataT;
 
 extern SensorsDataT Sensors;

@@ -59,7 +59,7 @@ struct omScreen
   bool (*UpdateCallback)(omScreenT *);
 };
 
-extern bool omScreen_Select(omScreenT *);
+extern bool omScreen_Select(omScreenT *, void* params);
 extern bool omScreen_Update(omGuiT *);
 extern bool omScreen_IsActive(omScreenT *);
 

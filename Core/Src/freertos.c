@@ -188,19 +188,25 @@ void StartDefaultTask(void *argument)
         osDelay(1200);
     }
 
+    Sensors.StandByTimeoutTick = osKernelGetTickCount();
+
     TempPollTask = appCreateTask(TemperaturePoll, NULL, TASK_NAME("TemperaturePoll"));
     AdcPollTask = appCreateTask(AdcPoll, NULL, TASK_NAME("AdcPoll"));
     BtnPollTask = appCreateTask(ButtonsPoll, NULL, TASK_NAME("ButtonsPoll"));
 
-    omScreen_Select(uiScreens[(Config.Screen1 >= 0 && Config.Screen1 < 4)
-        ? Config.Screen1 : IdScreenMain]);
+    omScreen_Select(uiScreens[
+        (Config.Screen1 >= 0 && Config.Screen1 < 4) ? Config.Screen1 : IdScreenMain], NULL);
 
     do {
         omScreen_Update(&oledUi);
 
+        // if(osKernelGetTickCount() - Sensors.TimeoutTick > Config.StandByTimeout * 60 * 1000)
+        // {
+        //     // StandBy mode on!
+        // }
     } while(osDelay(MAIN_THREAD_DELAY) == osOK); // fixed fps
 
-    debug_printf("Exiting main thread!\n");
+    debug_printf("Error: exiting main thread!\n");
     osThreadExit();
   /* USER CODE END StartDefaultTask */
 }
@@ -368,7 +374,7 @@ __NO_RETURN static void ButtonsPoll(void *params)
 }
 
 
-bool RegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind, BtnEventCallbackT EvtCallback, void *Params)
+bool RegButtonEvent(IdButtonT Btn, BtnEventKindT EvtKind, BtnEventCallbackT EvtCallback, void *Params)
 {
     if(EvtKind >= EvtButtonEmpty) { return false; }
 
@@ -384,7 +390,7 @@ bool RegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind, BtnEventCallbackT EvtCal
 }
 
 
-bool UnRegButtonEvent(uint8_t Btn, BtnEventKindT EvtKind)
+bool UnRegButtonEvent(IdButtonT Btn, BtnEventKindT EvtKind)
 {
     if(EvtKind >= EvtButtonEmpty) { return false; }
 

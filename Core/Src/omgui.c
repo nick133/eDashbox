@@ -39,7 +39,7 @@ bool omScreen_Update(omGuiT *ui)
 }
 
 
-bool omScreen_Select(omScreenT *screen)
+bool omScreen_Select(omScreenT *screen, void* params)
 {
     if(omScreen_IsActive(screen) == true) { return false; }
 
@@ -49,7 +49,7 @@ bool omScreen_Select(omScreenT *screen)
     omGui_Clear(screen->Ui);
 
     if(screen->ShowCallback != NULL)
-        { screen->ShowCallback(screen); }
+        { screen->ShowCallback(screen, params); }
 
     screen->Ui->ActiveScreen = screen;
     omGui_Update(screen->Ui);

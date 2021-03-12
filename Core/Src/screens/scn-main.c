@@ -104,12 +104,12 @@ static osThreadId_t ClockUpdateTask;
 static osEventFlagsId_t EvtFlagsMain;
 
 /******************************************************************************/
-static void ScreenShowCb(omScreenT *);
+static void ScreenShowCb(omScreenT *, void* params);
 static void ScreenHideCb(omScreenT *);
 static bool ScreenUpdateCb(omScreenT *);
 
-static void DstSelectCb(IdButtonT, BtnEventKindT, void *Params);
-static void DstResetCb(IdButtonT, BtnEventKindT, void *Params);
+static void DstSelectCb(IdButtonT, BtnEventKindT, void *params);
+static void DstResetCb(IdButtonT, BtnEventKindT, void *params);
 
 __NO_RETURN static void ClockUpdate(void *);
 
@@ -137,7 +137,7 @@ void MainScreen_Init(void)
 }
 
 
-static void ScreenShowCb(omScreenT *screen)
+static void ScreenShowCb(omScreenT *screen, void* params)
 {
     DrawStatic();
 
@@ -388,11 +388,11 @@ static bool DrawTacho(bool force)
 }
 
 
-static void DstSelectCb(IdButtonT Btn, BtnEventKindT EvtKind, void *Params)
+static void DstSelectCb(IdButtonT btn, BtnEventKindT evtKind, void *params)
 {
     osEventFlagsSet(EvtFlagsMain, EVENT_SELECT_DST);
 }
-static void DstResetCb(IdButtonT Btn, BtnEventKindT EvtKind, void *Params)
+static void DstResetCb(IdButtonT btn, BtnEventKindT evtKind, void *params)
 {
     osEventFlagsSet(EvtFlagsMain, EVENT_RESET_DST);
 }

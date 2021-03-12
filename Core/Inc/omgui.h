@@ -54,7 +54,7 @@ struct omScreen
 {
   uint16_t Id;
   omGuiT *Ui;
-  void (*ShowCallback)(omScreenT *);
+  void (*ShowCallback)(omScreenT *, void* params);
   void (*HideCallback)(omScreenT *);
   bool (*UpdateCallback)(omScreenT *);
 };

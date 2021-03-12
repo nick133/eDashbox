@@ -14,13 +14,13 @@ typedef enum
     IdScreenData,
     IdScreenStats,
     IdScreenSettings,
-    IdScreenNumEditor,
+    IdScreenNumEdit,
 
     IdScreensNumOf
 } IdScreenT;
 
 extern omGuiT oledUi;
-extern omScreenT screenMain, screenData, screenSetup;
+extern omScreenT screenMain, screenData, screenSettings, screenNumEdit;
 extern omScreenT *uiScreens[4];
 
 
@@ -32,6 +32,6 @@ extern float SsrGetRpmPerctg(SensorsDataT *);
 extern float SsrGetMotorRpm(SensorsDataT *);
 extern float SsrGetSpeed(SensorsDataT *);
 extern float SsrGetTemprt(SensorsDataT *, uint8_t index);
-extern float SsrGetBatPerctg(SensorsDataT *data);
+extern float SsrGetBatPerctg(SensorsDataT *);
 
 #endif /* _SCREENS_H_ */

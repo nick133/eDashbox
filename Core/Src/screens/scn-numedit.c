@@ -13,22 +13,22 @@
 #include "screens.h"
 
 
-static void ScreenShowCb(omScreenT *);
+static void ScreenShowCb(omScreenT *, void* params);
 static void ScreenHideCb(omScreenT *);
 static bool ScreenUpdateCb(omScreenT *);
 
-static void NextNumCb(IdButtonT, BtnEventKindT, void *Params);
-static void IncNumCb(IdButtonT, BtnEventKindT, void *Params);
-static void SaveSettingsCb(IdButtonT, BtnEventKindT, void *Params);
+static void NextNumCb(IdButtonT, BtnEventKindT, void *params);
+static void IncNumCb(IdButtonT, BtnEventKindT, void *params);
+static void SaveSettingsCb(IdButtonT, BtnEventKindT, void *params);
 
 
 void NumEditScreen_Init(void)
 {
-    screenMain.Id = IdScreenNumEditor;
-    screenMain.Ui = &oledUi;
-    screenMain.ShowCallback = ScreenShowCb;
-    screenMain.HideCallback = ScreenHideCb;
-    screenMain.UpdateCallback = ScreenUpdateCb;
+    screenNumEdit.Id = IdScreenNumEdit;
+    screenNumEdit.Ui = &oledUi;
+    screenNumEdit.ShowCallback = ScreenShowCb;
+    screenNumEdit.HideCallback = ScreenHideCb;
+    screenNumEdit.UpdateCallback = ScreenUpdateCb;
 }
 
 /*
@@ -38,11 +38,28 @@ void NumEditScreen_Init(void)
     12:23
 
     Params:
+    Title =  Wheel circumference
+    Units =  mm
+    i_len, f_len, separator
     max val
     min val
+
+
+    Digit
+    x, y
 */
 
-static void ScreenShowCb(omScreenT *screen)
+typedef struct NumEditParams
+{
+    char *Title;
+    char *Units;
+    char Sep; // '.' | ':'
+    uint8_t iLen, fLen;
+    float MinVal, MaxVal;
+} NumEditParamsT;
+
+
+static void ScreenShowCb(omScreenT *screen, void* params)
 {
 
 
@@ -66,19 +83,19 @@ static bool ScreenUpdateCb(omScreenT *screen)
 }
 
 
-static void NextNumCb(IdButtonT Btn, BtnEventKindT EvtKind, void *Params)
+static void NextNumCb(IdButtonT btn, BtnEventKindT evtKind, void *params)
 {
 
 }
 
 
-static void IncNumCb(IdButtonT Btn, BtnEventKindT EvtKind, void *Params)
+static void IncNumCb(IdButtonT btn, BtnEventKindT evtKind, void *params)
 {
 
 }
 
 
-static void SaveSettingsCb(IdButtonT Btn, BtnEventKindT EvtKind, void *Params)
+static void SaveSettingsCb(IdButtonT btn, BtnEventKindT evtKind, void *params)
 {
 
 }

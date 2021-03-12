@@ -42,6 +42,7 @@ void Screens_Init(void)
     Bitmaps_Init();
 
     MainScreen_Init();
+    NumEditScreen_Init();
 }
 
 

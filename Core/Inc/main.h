@@ -50,6 +50,7 @@ typedef struct SensorsData
     float Volt;
     float Ampere;
     float Odo;
+    uint32_t StandByTimeoutTick;
  } SensorsDataT;
 
 extern SensorsDataT Sensors;

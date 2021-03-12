@@ -30,10 +30,6 @@
 #define DRAW_METER_SIGNED 0x01
 #define DRAW_METER_FORCED 0x10
 
-#define DRAW_METER_SPEEDO(n, m, f)    DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13, n, m, f)
-#define DRAW_METER_VOLT(n, m, f)      DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0, n, m, f)
-#define DRAW_METER_AMPERE(n, m, f)    DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17, n, m, f)
-
 /******************************************************************************/
 static const omBitmapT *Roboto25x30[] = {
     &AssetBitmaps.Roboto25x30_0,
@@ -97,15 +93,12 @@ static const omBitmapT *BatPie14x14[] = {
     &AssetBitmaps.BatPie14x14_19
 };
 
-typedef struct ScreenData {
-    float Speed;
-    float Temprt[_DS18B20_MAX_SENSORS];
-    float Volt;
-    float Ampere;
-} ScreenDataT;
+// typedef struct ScreenData {
+//     float Temprt[_DS18B20_MAX_SENSORS];
+// } ScreenDataT;
 
-static ScreenDataT ScreenDat;
-static ScreenDataT ScreenDatPrev;
+// static ScreenDataT ScreenDat;
+// static ScreenDataT ScreenDatPrev;
 
 static osThreadId_t ClockUpdateTask;
 static osEventFlagsId_t EvtFlagsMain;
@@ -115,23 +108,26 @@ static void ScreenShowCb(omScreenT *);
 static void ScreenHideCb(omScreenT *);
 static bool ScreenUpdateCb(omScreenT *);
 
-static void DstSelectCb(uint8_t Btn, BtnEventKindT, void *Params);
-static void DstResetCb(uint8_t Btn, BtnEventKindT, void *Params);
+static void DstSelectCb(IdButtonT, BtnEventKindT, void *Params);
+static void DstResetCb(IdButtonT, BtnEventKindT, void *Params);
 
 __NO_RETURN static void ClockUpdate(void *);
 
 static void DrawStatic(void);
-static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
+static bool DrawMeter(const omBitmapT * [], const omBitmapT * [],
     uint8_t isize, const char* format,
     uint32_t ix, uint32_t iy, uint32_t fx, uint32_t fy,
     float num, float numPrev, uint8_t flags);
 
+static bool DrawSpeedo(bool force);
 static bool DrawTacho(bool force);
+static bool DrawVolt(bool force);
+static bool DrawAmpere(bool force);
 static bool DrawOdoDst(bool force);
 static bool DrawBatPie(bool force);
 
 /******************************************************************************/
-void MainScreenInit(void)
+void MainScreen_Init(void)
 {
     screenMain.Id = IdScreenMain;
     screenMain.Ui = &oledUi;
@@ -143,25 +139,18 @@ void MainScreenInit(void)
 
 static void ScreenShowCb(omScreenT *screen)
 {
-    ScreenDat.Speed = ScreenDatPrev.Speed
-        = ScreenDat.Volt = ScreenDatPrev.Volt
-        = ScreenDat.Ampere = ScreenDatPrev.Ampere
-        = 0.0;
-
-    // memset(ScreenDat.Temprt, 0.0, sizeof(ScreenDat.Temprt));
-    // memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
-
     DrawStatic();
 
     /* Draw all meters zero */
-    DRAW_METER_SPEEDO(0.0, 0.0, DRAW_METER_FORCED);
-    DRAW_METER_VOLT(ScreenDat.Volt, 0.0, DRAW_METER_FORCED);
-    DRAW_METER_AMPERE(ScreenDat.Ampere, 0.0, DRAW_METER_FORCED);
-
+    DrawSpeedo(true);
     DrawTacho(true);
+    DrawVolt(true);
+    DrawAmpere(true);
     DrawOdoDst(true);
     DrawBatPie(true);
 
+    // memset(ScreenDat.Temprt, 0.0, sizeof(ScreenDat.Temprt));
+    // memset(ScreenDatPrev.Temprt, 0.0, sizeof(ScreenDatPrev.Temprt));
  //   for(uint8_t i; i < DS18B20_Quantity(); i++)
  //       { RefreshTemprt(i); }
 
@@ -175,8 +164,8 @@ static void ScreenShowCb(omScreenT *screen)
         ClockUpdateTask = appCreateTask(ClockUpdate, NULL, TASK_NAME("ClockUpdate"));
     }
 
-    RegButtonEvent(1, EvtButtonPress, DstSelectCb, NULL);
-    RegButtonEvent(1, EvtButtonLongPress, DstResetCb, NULL);
+    RegButtonEvent(IdButton2, EvtButtonPress, DstSelectCb, NULL);
+    RegButtonEvent(IdButton2, EvtButtonLongPress, DstResetCb, NULL);
 }
 
 
@@ -186,27 +175,14 @@ static void ScreenHideCb(omScreenT *screen)
 }
 
 
-static void SaveSensorsData(void)
-{
-    ScreenDatPrev.Speed = ScreenDat.Speed;
-    ScreenDatPrev.Volt = ScreenDat.Volt;
-    ScreenDatPrev.Ampere = ScreenDat.Ampere;
-}
-
-
-static void CollectSensorsData(void)
-{
-    ScreenDat.Speed = SsrGetSpeed(&Sensors);
-    ScreenDat.Volt = Sensors.Volt;
-    ScreenDat.Ampere = Sensors.Ampere;
-}
-
-
 static bool ScreenUpdateCb(omScreenT *screen)
 {
-    uint8_t is_update = 0;
-
-    CollectSensorsData();
+    uint8_t is_update = DrawSpeedo(false)
+        + DrawTacho(false)
+        + DrawVolt(false)
+        + DrawAmpere(false)
+        + DrawOdoDst(false)
+        + DrawBatPie(false);
 
     // for(uint8_t i; i < DS18B20_Quantity(); i++)
     // {
@@ -219,20 +195,11 @@ static bool ScreenUpdateCb(omScreenT *screen)
     //     }
     // }
 
-    is_update += DRAW_METER_SPEEDO(ScreenDat.Speed, ScreenDatPrev.Speed, 0)
-        + DrawTacho(false)
-        + DRAW_METER_VOLT(ScreenDat.Volt, ScreenDatPrev.Volt, 0)
-        + DRAW_METER_AMPERE(ScreenDat.Ampere, ScreenDatPrev.Ampere, 0)
-        + DrawOdoDst(false)
-        + DrawBatPie(false);
-
     if(osEventFlagsGet(EvtFlagsMain) & EVENT_CLOCK_UPDATE)
     {
         osEventFlagsClear(EvtFlagsMain, EVENT_CLOCK_UPDATE);
         is_update++;
     }
-
-    SaveSensorsData();
 
     return (is_update > 0);
 }
@@ -325,6 +292,48 @@ static bool DrawMeter(const omBitmapT *ifont[], const omBitmapT *ffont[],
 }
 
 
+static bool DrawSpeedo(bool force)
+{
+    static float speed, speedPrev = 0.0;
+
+    speed = SsrGetSpeed(&Sensors);
+
+    bool is_update = DrawMeter(Roboto25x30, Roboto14x17, 3, "%5.1f", 0, 0, 87, 13,
+        speed, speedPrev, (force ? DRAW_METER_FORCED : DRAW_METER_NONE));
+
+    speedPrev = speed;
+    return is_update;
+}
+
+
+static bool DrawVolt(bool force)
+{
+    static float volt, voltPrev = 0.0;
+
+    volt = Sensors.Volt;
+
+    bool is_update = DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 0, 161, 0,
+        volt, voltPrev, (force ? DRAW_METER_FORCED : DRAW_METER_NONE));
+
+    voltPrev = volt;
+    return is_update;
+}
+
+
+static bool DrawAmpere(bool force)
+{
+    static float amps, ampsPrev = 0.0;
+
+    amps = Sensors.Ampere;
+
+    bool is_update = DrawMeter(Roboto10x12, Roboto10x12, 3, "%5.1f", 124, 17, 161, 17,
+        amps, ampsPrev, (force ? DRAW_METER_FORCED : DRAW_METER_NONE));
+
+    ampsPrev = amps;
+    return is_update;
+}
+
+
 static bool DrawTacho(bool force)
 {
     static float rpm, rpmPrev = 0.0;
@@ -379,11 +388,11 @@ static bool DrawTacho(bool force)
 }
 
 
-static void DstSelectCb(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
+static void DstSelectCb(IdButtonT Btn, BtnEventKindT EvtKind, void *Params)
 {
     osEventFlagsSet(EvtFlagsMain, EVENT_SELECT_DST);
 }
-static void DstResetCb(uint8_t Btn, BtnEventKindT EvtKind, void *Params)
+static void DstResetCb(IdButtonT Btn, BtnEventKindT EvtKind, void *Params)
 {
     osEventFlagsSet(EvtFlagsMain, EVENT_RESET_DST);
 }
@@ -393,7 +402,7 @@ static bool DrawOdoDst(bool force)
 {
     static float odo, odoPrev = 0.0, dst, dstPrev = 0.0, dstStart = 0.0;
     static bool odoIsActive = true;
-    uint8_t flags;
+    uint8_t flags = DRAW_METER_NONE;
     bool is_update = false;
 
     if(!dstStart) { dstStart = Sensors.Odo; }
@@ -410,15 +419,21 @@ static bool DrawOdoDst(bool force)
         force = true;
     }
 
+    if(osEventFlagsGet(EvtFlagsMain) & EVENT_RESET_DST)
+    {
+        dstStart = Sensors.Odo;
+        osEventFlagsClear(EvtFlagsMain, EVENT_RESET_DST);
+    }
+
     if(force)
     {
-        if(odoIsActive) // ODO
+        if(odoIsActive) // write: ODO
         {
             omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_5, 204, 55, false, false);
             omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_6, 212, 55, false, false);
             omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_5, 220, 55, false, false);        
         }
-        else // DST
+        else // write: DST
         {
             omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_6, 204, 55, false, false);
             omGui_DrawBitmap(&oledUi, &AssetBitmaps.MainKphmrodst8x9_7, 212, 55, false, false);
@@ -426,10 +441,6 @@ static bool DrawOdoDst(bool force)
         }
 
         flags = DRAW_METER_FORCED;
-    }
-    else
-    {
-        flags = DRAW_METER_NONE;
     }
 
     odo = Sensors.Odo;

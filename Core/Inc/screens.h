@@ -12,9 +12,9 @@ typedef enum
 {
     IdScreenMain,
     IdScreenData,
-    IdScreenRpm,
-    IdScreenSetup,
-    IdScreenSetupEditor,
+    IdScreenStats,
+    IdScreenSettings,
+    IdScreenNumEditor,
 
     IdScreensNumOf
 } IdScreenT;
@@ -25,8 +25,8 @@ extern omScreenT *uiScreens[4];
 
 
 extern void Screens_Init(void);
-extern void MainScreenInit(void);
-//void DataScreenInit(void
+extern void MainScreen_Init(void);
+extern void NumEditScreen_Init(void);
 
 extern float SsrGetRpmPerctg(SensorsDataT *);
 extern float SsrGetMotorRpm(SensorsDataT *);

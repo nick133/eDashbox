@@ -41,7 +41,7 @@ void Screens_Init(void)
      */
     Bitmaps_Init();
 
-    MainScreenInit();
+    MainScreen_Init();
 }
 
 
